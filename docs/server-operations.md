@@ -62,3 +62,6 @@ sudo env \
 Optional variables are `BAIM_SERVER_GROUP`, `BAIM_HTTPS_PORT`, `BAIM_LEGO_ROOT`, and
 `BAIM_LEGO_BIN`. Copy
 `tools/baim-ip-certificate.cron` to `/etc/cron.d/` and replace its example paths, address, and user.
+
+HTTPS also enables service-worker registration outside `localhost`. See
+`docs/installable-web-app.md` for installation, caching, and offline behavior.

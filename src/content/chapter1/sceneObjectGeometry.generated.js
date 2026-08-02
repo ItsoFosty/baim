@@ -216,19 +216,19 @@ export const apartmentObjectGeometry = {
       "id": "hotspot.apartment.rakia_bottle",
       "polygon": [
         {
-          "x": 54,
+          "x": 82,
           "y": 520
         },
         {
-          "x": 92,
+          "x": 120,
           "y": 520
         },
         {
-          "x": 105,
+          "x": 133,
           "y": 650
         },
         {
-          "x": 50,
+          "x": 78,
           "y": 650
         }
       ]

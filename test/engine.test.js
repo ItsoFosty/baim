@@ -1543,14 +1543,14 @@ test("hovering actionable geometry selects it and enables the pointer cursor", (
   assert.equal(game.canvas.style.cursor, "default");
 });
 
-test("hovered actionable geometry is outlined in dim yellow", () => {
+test("hovered actionable geometry uses a transparent yellow outer glow", () => {
   const calls = [];
   const ctx = {
     save() {},
     restore() {},
     beginPath() {},
     rect(...args) { calls.push(["rect", ...args]); },
-    stroke() { calls.push(["stroke", this.strokeStyle, this.lineWidth, this.shadowColor]); }
+    stroke() { calls.push(["stroke", this.strokeStyle, this.lineWidth, this.shadowColor, this.shadowBlur]); }
   };
   const renderer = Object.create(Renderer.prototype);
   renderer.ctx = ctx;
@@ -1559,7 +1559,7 @@ test("hovered actionable geometry is outlined in dim yellow", () => {
   renderer.drawHoveredTarget();
 
   assert.deepEqual(calls[0], ["rect", 10, 20, 30, 40]);
-  assert.deepEqual(calls[1], ["stroke", "rgba(196, 163, 76, 0.82)", 3, "rgba(196, 163, 76, 0.42)"]);
+  assert.deepEqual(calls[1], ["stroke", "rgba(225, 194, 100, 0.26)", 2, "rgba(225, 194, 100, 0.68)", 14]);
 });
 
 test("hover outline uses scene depth so Bai covers objects behind him", () => {

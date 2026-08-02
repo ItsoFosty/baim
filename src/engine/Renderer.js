@@ -140,10 +140,10 @@ export class Renderer {
     if (!target) return;
     const { ctx } = this;
     ctx.save();
-    ctx.strokeStyle = "rgba(196, 163, 76, 0.82)";
-    ctx.lineWidth = 3;
-    ctx.shadowColor = "rgba(196, 163, 76, 0.42)";
-    ctx.shadowBlur = 8;
+    ctx.strokeStyle = "rgba(225, 194, 100, 0.26)";
+    ctx.lineWidth = 2;
+    ctx.shadowColor = "rgba(225, 194, 100, 0.68)";
+    ctx.shadowBlur = 14;
     ctx.beginPath();
     if (target.polygon?.length) {
       target.polygon.forEach((point, index) => {

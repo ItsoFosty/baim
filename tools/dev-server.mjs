@@ -1,11 +1,18 @@
-import { createServer } from "node:http";
-import { createReadStream, existsSync, statSync, writeFileSync } from "node:fs";
-import { extname, join, normalize } from "node:path";
+import { createServer as createHttpServer } from "node:http";
+import { createServer as createHttpsServer } from "node:https";
+import { createReadStream, existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { extname, isAbsolute, join, normalize, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 const root = normalize(join(fileURLToPath(new URL("..", import.meta.url))));
 const port = Number(process.env.PORT || 5173);
+const secure = process.env.HTTPS === "1";
+const protocol = secure ? "https" : "http";
+const serverOptions = secure ? {
+  key: readFileSync(process.env.TLS_KEY || join(root, "target/server/localhost-key.pem")),
+  cert: readFileSync(process.env.TLS_CERT || join(root, "target/server/localhost-cert.pem"))
+} : undefined;
 const editorScenes = {
   "scene.chapter1.apartment": {
     walkGeometryPath: "assets_src/chapter1/scenes/apartment/walk-geometry-v1.json",
@@ -25,14 +32,21 @@ const types = {
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".png": "image/png",
   ".webp": "image/webp",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg"
 };
 
-createServer((req, res) => {
-  const url = new URL(req.url || "/", `http://localhost:${port}`);
+const server = secure ? createHttpsServer(serverOptions, handleRequest) : createHttpServer(handleRequest);
+
+server.listen(port, () => {
+  console.log(`Comrade Candidate dev server: ${protocol}://localhost:${port}`);
+});
+
+function handleRequest(req, res) {
+  const url = new URL(req.url || "/", `${protocol}://localhost:${port}`);
   if (req.method === "OPTIONS" && ["/__editor/save-scene-geometry", "/__editor/fit-action"].includes(url.pathname)) {
     res.writeHead(204, editorCorsHeaders());
     res.end();
@@ -48,21 +62,21 @@ createServer((req, res) => {
   }
   const requested = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
   const path = normalize(join(root, requested));
+  const relativePath = relative(root, path);
 
-  if (!path.startsWith(root) || !existsSync(path) || !statSync(path).isFile()) {
+  if (relativePath.startsWith("..") || isAbsolute(relativePath) || !existsSync(path) || !statSync(path).isFile()) {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Not found");
     return;
   }
 
+  const extension = extname(path);
   res.writeHead(200, {
-    "Content-Type": types[extname(path)] || "application/octet-stream",
-    "Cache-Control": "public, max-age=31536000, immutable"
+    "Content-Type": types[extension] || "application/octet-stream",
+    "Cache-Control": "no-cache"
   });
   createReadStream(path).pipe(res);
-}).listen(port, () => {
-  console.log(`Comrade Candidate dev server: http://localhost:${port}`);
-});
+}
 
 function handleEditorSave(req, res) {
   let body = "";

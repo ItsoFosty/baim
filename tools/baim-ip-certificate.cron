@@ -1,0 +1,2 @@
+# Copy this example into /etc/cron.d/baim-ip-certificate and replace the values.
+17 */12 * * * root BAIM_PROJECT_ROOT=/srv/baim BAIM_PUBLIC_IP=203.0.113.10 BAIM_SERVER_USER=baim /srv/baim/tools/renew-ip-certificate.sh >> /var/log/baim-ip-certificate.log 2>&1

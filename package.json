@@ -4,7 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "node tools/build-external-runtime-staging.js",
     "dev": "node tools/dev-server.mjs",
+    "server:start": "node tools/server-control.mjs start",
+    "server:status": "node tools/server-control.mjs status",
+    "server:stop": "node tools/server-control.mjs stop",
+    "server:restart": "node tools/server-control.mjs restart",
+    "server:https:start": "HTTPS=1 PORT=5174 TLS_CERT=target/server/ip-cert.pem TLS_KEY=target/server/ip-key.pem node tools/server-control.mjs start",
+    "server:https:status": "HTTPS=1 PORT=5174 TLS_CERT=target/server/ip-cert.pem TLS_KEY=target/server/ip-key.pem node tools/server-control.mjs status",
+    "server:https:stop": "HTTPS=1 PORT=5174 TLS_CERT=target/server/ip-cert.pem TLS_KEY=target/server/ip-key.pem node tools/server-control.mjs stop",
+    "server:https:restart": "HTTPS=1 PORT=5174 TLS_CERT=target/server/ip-cert.pem TLS_KEY=target/server/ip-key.pem node tools/server-control.mjs restart",
     "build:walkmasks": "node tools/build-walk-masks.js",
     "build:object-geometry": "node tools/build-scene-object-geometry.js",
     "build:scene-layers": "node tools/build-scene-layers.js",
@@ -12,7 +21,7 @@
     "build:characters": "node tools/build-character-chroma-assets.js",
     "fit:action": "node tools/register-external-action.mjs",
     "verify:action-render": "node tools/verify-action-render.mjs",
-    "test": "node --test test/engine.test.js"
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "gifenc": "^1.0.3",

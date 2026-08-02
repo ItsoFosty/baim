@@ -1286,8 +1286,8 @@ export class Game {
 
     const meters = element("div", "hud-meters");
     meters.append(
-      this.createHudMeter("ui.meter.influence", this.state.influence, "influence"),
       this.createIntoxicationMeter(),
+      this.createHudMeter("ui.meter.influence", this.state.influence, "influence"),
       this.createHudMeter("ui.meter.suspicion", this.state.suspicion, "suspicion"),
       this.createHudMeter("ui.meter.public_mood", this.state.publicMood, "public-mood")
     );

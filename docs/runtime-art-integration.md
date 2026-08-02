@@ -114,8 +114,10 @@ The active apartment manifest entry is:
 ```js
 "scene.chapter1.apartment": {
   background: "assets/chapter1/scenes/apartment/background.png",
-  foreground: "assets/chapter1/scenes/apartment/foreground.webp",
-  geometry: "assets/chapter1/scenes/apartment/scene.geometry.json"
+  foregroundTable: "assets/chapter1/scenes/apartment/foreground-table.png",
+  billsOnTable: "assets/chapter1/scenes/apartment/bills-on-table.png",
+  windowOpen: "assets/chapter1/scenes/apartment/window-open.png",
+  windowOpenBack: "assets/chapter1/scenes/apartment/window-open-0.png"
 }
 ```
 
@@ -123,11 +125,13 @@ The active village square manifest entry is:
 
 ```js
 "scene.chapter1.village_square": {
-  background: "assets/chapter1/scenes/village_square/background.png",
-  foreground: "assets/chapter1/scenes/village_square/foreground.webp",
-  geometry: "assets/chapter1/scenes/village_square/scene.geometry.json"
+  background: "assets/chapter1/scenes/village_square/background.png"
 }
 ```
+
+Missing assets are omitted from the manifest so preload does not generate expected 404 responses.
+Mehana keeps an empty scene entry and therefore uses the renderer's intentional debug-art fallback
+until its background direction is approved.
 
 The renderer resolves these paths relative to `index.html`.
 

@@ -6,23 +6,15 @@ export const assetManifest = {
   scenes: {
     "scene.chapter1.apartment": {
       background: "assets/chapter1/scenes/apartment/background.png",
-      foreground: "assets/chapter1/scenes/apartment/foreground.webp",
       foregroundTable: "assets/chapter1/scenes/apartment/foreground-table.png",
       billsOnTable: "assets/chapter1/scenes/apartment/bills-on-table.png",
       windowOpen: "assets/chapter1/scenes/apartment/window-open.png",
-      windowOpenBack: "assets/chapter1/scenes/apartment/window-open-0.png",
-      geometry: "assets/chapter1/scenes/apartment/scene.geometry.json"
+      windowOpenBack: "assets/chapter1/scenes/apartment/window-open-0.png"
     },
     "scene.chapter1.village_square": {
-      background: "assets/chapter1/scenes/village_square/background.png",
-      foreground: "assets/chapter1/scenes/village_square/foreground.webp",
-      geometry: "assets/chapter1/scenes/village_square/scene.geometry.json"
+      background: "assets/chapter1/scenes/village_square/background.png"
     },
-    "scene.chapter1.mehana": {
-      background: "assets/chapter1/scenes/mehana/background.png",
-      foreground: "assets/chapter1/scenes/mehana/foreground.webp",
-      geometry: "assets/chapter1/scenes/mehana/scene.geometry.json"
-    }
+    "scene.chapter1.mehana": {}
   },
   characters: {
     "npc.bai_mitko": {

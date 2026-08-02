@@ -568,7 +568,7 @@ export class Renderer {
     const spriteInfo = this.resolveCharacterSprite(p, definition);
     const sprite = spriteInfo.image;
     const walkBob = p.animation === "walk" ? Math.sin(p.animationTime * 16) * 5 : 0;
-    if (!sprite) return;
+    if (!this.game.assets.isLoaded(sprite)) return;
     const height = characterHeight(definition, this.game.currentScene, p.position);
     const preserveFrameLayout = Boolean(spriteInfo.frame?.usesOriginalLudoLayout || spriteInfo.frame?.frameRects?.length);
     const boundsForSize = spriteInfo.frame?.contentBounds || null;

@@ -18,8 +18,19 @@ export const dialogues = [
       challenge: {
         lineKey: "dialogue.tony.challenge",
         choices: [
-          { textKey: "dialogue.tony.choice.accept", effect: "tonyChallengeStarted" },
-          { textKey: "dialogue.tony.choice.refuse", effect: "tonyChallengeRefused" }
+          {
+            textKey: "dialogue.tony.choice.accept",
+            effect: {
+              effects: [{ type: "setFlag", key: "tonyChallengeStarted" }],
+              messageKey: "dialogue.tony.challenge"
+            }
+          },
+          {
+            textKey: "dialogue.tony.choice.refuse",
+            effect: {
+              effects: [{ type: "adjustState", key: "suspicion", amount: 3 }]
+            }
+          }
         ]
       }
     }

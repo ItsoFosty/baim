@@ -18,6 +18,7 @@ export const DEFAULT_SAVE = {
   suspicion: 0,
   publicMood: 50,
   inventory: [],
+  hasAccordion: false,
   hasFakeDiploma: false,
   hasSunflowerOil: false,
   hasRakia: false,

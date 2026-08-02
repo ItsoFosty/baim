@@ -54,7 +54,9 @@ const rawScenes = [
         kind: "hotspot",
         nameKey: "item.accordion.name",
         rect: { x: 1120, y: 375, w: 150, h: 190 },
-        lookKey: "look.apartment.accordion"
+        lookKey: "look.apartment.accordion",
+        takeItemId: "item.accordion",
+        flagOnTake: "hasAccordion"
       },
       {
         id: "hotspot.apartment.unpaid_bills",
@@ -255,7 +257,14 @@ const rawScenes = [
         rect: { x: 540, y: 405, w: 70, h: 70 },
         lookKey: "look.mehana.oil",
         takeItemId: "item.sunflower_oil",
-        flagOnTake: "hasSunflowerOil"
+        flagOnTake: "hasSunflowerOil",
+        useRules: [
+          {
+            requirements: { items: ["item.sunflower_oil"] },
+            effects: [{ type: "setState", key: "drankOilBeforeTonyChallenge", value: true }],
+            messageKey: "msg.oil_used"
+          }
+        ]
       },
       {
         id: "hotspot.mehana.water_jug",
@@ -264,7 +273,35 @@ const rawScenes = [
         rect: { x: 710, y: 370, w: 90, h: 105 },
         lookKey: "look.mehana.water_jug",
         takeItemId: "item.glass_of_water",
-        flagOnTake: "hasGlassOfWater"
+        flagOnTake: "hasGlassOfWater",
+        useRules: [
+          {
+            requirements: {
+              flags: ["tonyChallengeStarted", "tonyDistracted"],
+              state: { tonyVote: false }
+            },
+            effects: [
+              { type: "setState", key: "swappedOwnRakiaWithWater", value: true },
+              { type: "setState", key: "tonyVote", value: true },
+              { type: "setState", key: "tonyFavorOwed", value: true },
+              { type: "adjustState", key: "influence", amount: 25 },
+              { type: "adjustState", key: "suspicion", amount: 10 },
+              { type: "adjustState", key: "publicMood", amount: 5 },
+              { type: "completeQuest", questId: "quest.chapter1.tony_vote" }
+            ],
+            messageKey: "msg.water_swap_success"
+          },
+          {
+            requirements: {
+              flags: ["tonyChallengeStarted"],
+              notFlags: ["tonyDistracted"],
+              state: { tonyVote: false }
+            },
+            effects: [{ type: "adjustState", key: "suspicion", amount: 8 }],
+            messageKey: "msg.water_swap_missing",
+            reject: true
+          }
+        ]
       }
     ],
     npcs: [
@@ -274,7 +311,14 @@ const rawScenes = [
         nameKey: "npc.tony_fridge.name",
         rect: { x: 930, y: 305, w: 115, h: 180 },
         dialogueId: "dialogue.tony_fridge",
-        lookKey: "look.npc.tony_fridge"
+        lookKey: "look.npc.tony_fridge",
+        useRules: [
+          {
+            requirements: { items: ["item.accordion"] },
+            effects: [{ type: "setFlag", key: "tonyDistracted" }],
+            messageKey: "msg.accordion_tony"
+          }
+        ]
       }
     ]
   }

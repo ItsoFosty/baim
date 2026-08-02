@@ -1,4 +1,5 @@
 import { DialogueSystem } from "./DialogueSystem.js";
+import { applyEffects, firstMatchingRule } from "./EffectSystem.js";
 import { InventorySystem } from "./InventorySystem.js";
 import { Localization } from "./Localization.js";
 import { eastWestFallbackFacing, facingFromDelta, motionMultiplierAtFrame, MovementSystem } from "./MovementSystem.js";
@@ -1087,51 +1088,28 @@ export class Game {
   }
 
   useTarget(target) {
-    if (target.id === "hotspot.mehana.oil" && this.inventory.has("item.sunflower_oil")) {
-      this.state.drankOilBeforeTonyChallenge = true;
-      this.setStatusMessage(this.t("msg.oil_used"));
-      this.save();
-      return;
-    }
-    if (target.id === "npc.tony_fridge" && this.inventory.has("item.accordion")) {
-      this.state.flags.tonyDistracted = true;
-      this.setStatusMessage(this.t("msg.accordion_tony"));
-      this.save();
-      return;
-    }
-    if (target.id === "hotspot.mehana.water_jug" && this.state.flags.tonyChallengeStarted) {
-      if (!this.state.flags.tonyDistracted) {
-        this.setStatusMessage(this.t("msg.water_swap_missing"), { reject: true });
-        this.state.suspicion += 8;
-        this.save();
-        return;
-      }
-      this.state.swappedOwnRakiaWithWater = true;
-      this.state.tonyVote = true;
-      this.state.tonyFavorOwed = true;
-      this.state.influence += 25;
-      this.state.suspicion += 10;
-      this.state.publicMood += 5;
-      this.quests.complete("quest.chapter1.tony_vote");
-      this.setStatusMessage(this.t("msg.water_swap_success"));
-      this.save();
-      return;
-    }
+    const rule = firstMatchingRule(target.useRules, this.effectContext());
+    if (rule) return this.applyContentEffect(rule);
     this.setStatusMessage(this.t("msg.no_use"), { reject: true });
   }
 
   applyDialogueEffect(effect) {
-    if (effect === "tonyChallengeStarted") {
-      this.state.flags.tonyChallengeStarted = true;
-      this.setStatusMessage(this.t("dialogue.tony.challenge"));
-    }
-    if (effect === "tonyChallengeRefused") {
-      this.state.suspicion += 3;
-    }
+    this.applyContentEffect(effect, { render: false });
     this.player.speaking = false;
     this.dialogue.close();
-    this.save();
     this.renderUi();
+  }
+
+  effectContext() {
+    return { state: this.state, inventory: this.inventory, quests: this.quests };
+  }
+
+  applyContentEffect(definition = {}, options = {}) {
+    applyEffects(definition.effects, this.effectContext());
+    if (definition.messageKey) this.setStatusMessage(this.t(definition.messageKey), { reject: Boolean(definition.reject) });
+    this.save();
+    if (options.render !== false) this.renderUi();
+    return true;
   }
 
   async changeScene(sceneId, position) {

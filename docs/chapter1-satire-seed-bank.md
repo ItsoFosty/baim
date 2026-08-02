@@ -335,6 +335,29 @@ Evergreen
 Risk:
 Safe. Fictional local-business satire.
 
+### Seed: Advisory Menu, Final Bill
+
+Placement:
+Mehana waiter opening line and food-order responses
+
+Real-world mechanism:
+Public frustration with restaurant prices, unclear value, and the ritual authority of the final bill.
+
+Fictional transformation:
+The menu is treated as a non-binding consultation, while the bill behaves like an official decision.
+
+BG:
+`Менюто е ориентировъчно. Сметката е окончателна.`
+
+EN:
+`The menu is advisory. The bill is final.`
+
+Freshness:
+Evergreen
+
+Risk:
+Safe. No real venue, price, person, or copied complaint is referenced.
+
 ## scene.chapter1.municipality
 
 Recent-news-inspired jokes can enter through:

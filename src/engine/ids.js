@@ -17,6 +17,8 @@ export const DEFAULT_SAVE = {
   influence: 0,
   suspicion: 0,
   publicMood: 50,
+  rakiaGlasses: 0,
+  rakiaLastChangedAt: null,
   inventory: [],
   hasAccordion: false,
   hasFakeDiploma: false,

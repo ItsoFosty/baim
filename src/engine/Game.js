@@ -18,6 +18,13 @@ import { chapter1 } from "../content/chapter1/index.js";
 import { characterDefinitions } from "../content/art/characters.js";
 import { assetManifest } from "../content/art/assetManifest.js";
 import { externalAnimationV1 } from "../content/art/externalAnimationV1.generated.js";
+import {
+  applyTimedSobering,
+  intoxicationBandKey,
+  intoxicationColor,
+  intoxicationMovementMultiplier,
+  RAKIA_MAX_GLASSES
+} from "./IntoxicationSystem.js";
 
 const verbs = [VERBS.LOOK, VERBS.TALK, VERBS.USE, VERBS.TAKE];
 const CHARACTER_DISTANCE_SPEED_MULTIPLIER = 1.5625;
@@ -122,6 +129,8 @@ export class Game {
     const params = new URLSearchParams(globalThis.location?.search || "");
     this.menuOpen = !this.editMode && !this.simpleAnimTest && !this.animLab && !this.devHome && params.get("play") !== "1" && !params.has("scene") && !params.has("debugGeometry");
     this.paused = false;
+    this.sceneTransitionPending = false;
+    this.hoveredTarget = null;
     this.lastTime = 0;
     this.inputBound = false;
     this.renderUi();
@@ -147,6 +156,7 @@ export class Game {
   tick(time) {
     const dt = Math.min(0.05, (time - this.lastTime) / 1000 || 0);
     this.lastTime = time;
+    this.updateTimedIntoxication();
     if (this.simpleAnimTest) {
       this.updateSimpleAnim(dt);
     } else if (this.animLab) {
@@ -192,11 +202,16 @@ export class Game {
       this.handleWorldClick(this.renderer.screenToWorld(event.clientX, event.clientY));
     });
     this.canvas.addEventListener("pointermove", (event) => {
-      if (!this.editMode) return;
-      this.sceneEditor?.handlePointerMove(event, this.renderer.screenToWorld(event.clientX, event.clientY));
+      const point = this.renderer.screenToWorld(event.clientX, event.clientY);
+      if (this.editMode) {
+        this.sceneEditor?.handlePointerMove(event, point);
+        return;
+      }
+      this.updateHoveredTarget(point);
     });
     this.canvas.addEventListener("pointerleave", () => {
       if (this.editMode) this.sceneEditor?.handlePointerLeave();
+      else this.updateHoveredTarget(null);
     });
     window.addEventListener("pointerup", () => {
       if (this.editMode) this.sceneEditor?.handlePointerUp();
@@ -205,6 +220,8 @@ export class Game {
       if (event.key === "Escape") {
         this.paused = !this.paused;
         this.menuOpen = false;
+        this.hoveredTarget = null;
+        if (this.canvas?.style) this.canvas.style.cursor = "default";
         this.renderUi();
       }
       if (event.key.toLowerCase() === "v") this.cycleVerb();
@@ -466,7 +483,19 @@ export class Game {
   }
 
   sceneMovementSpeed(scene) {
-    return (scene.movementSpeed || 100) * CHARACTER_DISTANCE_SPEED_MULTIPLIER * this.walkSpeedMultiplier;
+    return (scene.movementSpeed || 100)
+      * CHARACTER_DISTANCE_SPEED_MULTIPLIER
+      * this.walkSpeedMultiplier
+      * intoxicationMovementMultiplier(this.state?.rakiaGlasses);
+  }
+
+  updateTimedIntoxication(now = Date.now()) {
+    const reduction = applyTimedSobering(this.state, now);
+    if (!reduction) return false;
+    this.player.speed = this.sceneMovementSpeed(this.currentScene);
+    this.save();
+    this.renderUi();
+    return true;
   }
 
   cycleVerb() {
@@ -861,6 +890,7 @@ export class Game {
   }
 
   handleWorldClick(point) {
+    if (this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action") return;
     const target = findTargetAt(this.currentScene, point, (candidate) => this.targetAvailable(candidate));
     if (target) {
       this.handleTarget(target, point);
@@ -883,6 +913,16 @@ export class Game {
     }
   }
 
+  updateHoveredTarget(point) {
+    const blocked = this.menuOpen || this.paused || this.dialogue.current
+      || this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action";
+    this.hoveredTarget = !blocked && point
+      ? findTargetAt(this.currentScene, point, (candidate) => this.targetAvailable(candidate))
+      : null;
+    if (this.canvas?.style) this.canvas.style.cursor = this.hoveredTarget ? "pointer" : "default";
+    return this.hoveredTarget;
+  }
+
   targetAvailable(target) {
     if (target?.hiddenWhenItemOwned && this.inventory?.has(target.hiddenWhenItemOwned)) return false;
     return true;
@@ -895,6 +935,7 @@ export class Game {
 
   shouldApproachTargetBeforeAction(target, clickPoint = null) {
     if (target.kind === "exit") return false;
+    if (this.currentScene?.playerMode === "seated") return false;
     const actionSequence = this.actionSequenceForTarget(target, this.selectedVerb);
     const actionApproach = this.actionSequenceApproachPoint(actionSequence);
     if (actionApproach) {
@@ -1101,12 +1142,20 @@ export class Game {
   }
 
   effectContext() {
-    return { state: this.state, inventory: this.inventory, quests: this.quests };
+    return { state: this.state, inventory: this.inventory, quests: this.quests, now: () => Date.now() };
   }
 
   applyContentEffect(definition = {}, options = {}) {
     applyEffects(definition.effects, this.effectContext());
-    if (definition.messageKey) this.setStatusMessage(this.t(definition.messageKey), { reject: Boolean(definition.reject) });
+    const stateMessage = definition.messageByState;
+    const stateValue = Number(this.state[stateMessage?.key]);
+    const matchingMessage = stateMessage?.ranges?.find((range) => (
+      (!Number.isFinite(Number(range.min)) || stateValue >= Number(range.min))
+      && (!Number.isFinite(Number(range.max)) || stateValue <= Number(range.max))
+    ));
+    const messageKey = matchingMessage?.messageKey || definition.messageKey;
+    if (messageKey) this.setStatusMessage(this.t(messageKey), { reject: Boolean(definition.reject) });
+    this.player.speed = this.sceneMovementSpeed(this.currentScene);
     this.save();
     if (options.render !== false) this.renderUi();
     return true;
@@ -1119,19 +1168,28 @@ export class Game {
     }
     const sceneLoadToken = Symbol(sceneId);
     this.sceneLoadToken = sceneLoadToken;
-    await this.assets.preloadSceneAssets(sceneId);
-    if (this.sceneLoadToken !== sceneLoadToken) return;
-    this.currentScene = this.content.scenes[sceneId];
-    this.state.currentSceneId = sceneId;
-    this.player.position = { ...(position || this.currentScene.playerStart) };
-    this.player.target = null;
-    this.player.walkPath = [];
-    this.player.shortWalk = false;
-    this.player.pendingInteraction = null;
-    this.player.pendingFacingPoint = null;
-    this.player.interactionDebug = null;
-    this.player.speed = this.sceneMovementSpeed(this.currentScene);
-    this.save();
+    this.sceneTransitionPending = true;
+    try {
+      await this.assets.preloadSceneAssets(sceneId);
+      if (this.sceneLoadToken !== sceneLoadToken) return;
+      this.currentScene = this.content.scenes[sceneId];
+      this.state.currentSceneId = sceneId;
+      this.player.position = { ...(position || this.currentScene.playerStart) };
+      this.player.target = null;
+      this.player.walkPath = [];
+      this.player.shortWalk = false;
+      this.player.pendingInteraction = null;
+      this.player.pendingFacingPoint = null;
+      this.player.interactionDebug = null;
+      this.hoveredTarget = null;
+      this.player.actionSequence = null;
+      this.player.actionAnimation = null;
+      this.player.animation = "idle";
+      this.player.speed = this.sceneMovementSpeed(this.currentScene);
+      this.save();
+    } finally {
+      if (this.sceneLoadToken === sceneLoadToken) this.sceneTransitionPending = false;
+    }
   }
 
   setLanguage(language) {
@@ -1160,6 +1218,10 @@ export class Game {
     this.player.pendingInteraction = null;
     this.player.pendingFacingPoint = null;
     this.player.interactionDebug = null;
+    this.player.actionSequence = null;
+    this.player.actionAnimation = null;
+    this.player.animation = "idle";
+    this.hoveredTarget = null;
     this.message = this.t("ui.hint");
     this.menuOpen = true;
     this.paused = false;
@@ -1171,6 +1233,27 @@ export class Game {
     if (!confirmed) return;
     this.reset();
     globalThis.location?.reload();
+  }
+
+  restartGame() {
+    const confirmed = globalThis.confirm?.(this.t("ui.restart_confirm")) ?? false;
+    if (!confirmed) return;
+    const language = this.state.language;
+    this.reset();
+    this.state.language = language;
+    this.localization.setLanguage(language);
+    this.menuOpen = false;
+    this.paused = false;
+    this.save();
+    this.renderUi();
+  }
+
+  returnToMainMenu() {
+    this.save();
+    this.menuOpen = true;
+    this.paused = false;
+    this.hoveredTarget = null;
+    this.renderUi();
   }
 
   renderUi() {
@@ -1204,6 +1287,7 @@ export class Game {
     const meters = element("div", "hud-meters");
     meters.append(
       this.createHudMeter("ui.meter.influence", this.state.influence, "influence"),
+      this.createIntoxicationMeter(),
       this.createHudMeter("ui.meter.suspicion", this.state.suspicion, "suspicion"),
       this.createHudMeter("ui.meter.public_mood", this.state.publicMood, "public-mood")
     );
@@ -1240,6 +1324,23 @@ export class Game {
     meter.innerHTML = `
       <span class="hud-meter-label">${escapeHtml(this.t(labelKey))}</span>
       <span class="hud-meter-track"><span class="hud-meter-fill" style="width:${normalized}%"></span></span>
+    `;
+    return meter;
+  }
+
+  createIntoxicationMeter() {
+    const glasses = Math.max(0, Math.min(RAKIA_MAX_GLASSES, Math.round(Number(this.state.rakiaGlasses) || 0)));
+    const labelKey = `ui.intoxication.${intoxicationBandKey(glasses)}`;
+    const color = intoxicationColor(glasses);
+    const meter = element("div", "hud-meter intoxication");
+    meter.setAttribute("role", "meter");
+    meter.setAttribute("aria-label", `${this.t("ui.meter.rakia")}: ${this.t(labelKey)}`);
+    meter.setAttribute("aria-valuemin", "0");
+    meter.setAttribute("aria-valuemax", String(RAKIA_MAX_GLASSES));
+    meter.setAttribute("aria-valuenow", String(glasses));
+    meter.innerHTML = `
+      <span class="hud-meter-label">${escapeHtml(this.t(labelKey))}</span>
+      <span class="hud-meter-track"><span class="hud-meter-fill" style="width:${glasses * 10}%;background:${color}"></span><span class="hud-meter-glass">🥃 ${glasses}/${RAKIA_MAX_GLASSES}</span></span>
     `;
     return meter;
   }
@@ -1304,9 +1405,14 @@ export class Game {
     const bar = element("div", "top-bar");
     const left = element("div", "top-bar-left");
     const right = element("div", "top-bar-right");
-    left.append(
-      button(this.t("ui.reset"), () => this.confirmResetAndReload())
-    );
+    const menuButton = button(this.t("ui.menu"), () => {
+        this.paused = !this.paused;
+        this.hoveredTarget = null;
+        this.renderUi();
+      });
+    menuButton.classList.toggle("active", this.paused);
+    menuButton.setAttribute("aria-pressed", String(this.paused));
+    left.append(menuButton);
     right.append(
       button(this.t("verb.look"), () => { this.selectedVerb = VERBS.LOOK; this.renderUi(); }),
       button(this.t("verb.talk"), () => { this.selectedVerb = VERBS.TALK; this.renderUi(); }),
@@ -1865,19 +1971,16 @@ node tools/build-external-runtime-staging.js</pre>
 
   createPause() {
     const pause = element("section", "panel pause-menu");
-    pause.innerHTML = `<h2>${this.t("ui.pause")}</h2>`;
+    pause.innerHTML = `<h2>${this.t("ui.menu")}</h2>`;
     pause.append(
-      button(this.t("ui.resume"), () => {
-        this.paused = false;
-        this.renderUi();
-      }),
       button(this.t("ui.save"), () => {
         this.save();
         this.message = this.t("msg.scene_saved");
+        this.paused = false;
+        this.renderUi();
       }),
-      button(this.t("ui.reset"), () => this.reset()),
-      button("BG", () => this.setLanguage("bg")),
-      button("EN", () => this.setLanguage("en"))
+      button(this.t("ui.restart"), () => this.restartGame()),
+      button(this.t("ui.main_menu"), () => this.returnToMainMenu())
     );
     const quests = element("div", "quest-list");
     quests.innerHTML = `<h3>${this.t("ui.quests")}</h3>`;

@@ -212,6 +212,48 @@ export const apartmentObjectGeometry = {
         }
       ]
     },
+    "hotspot.apartment.rakia_bottle": {
+      "id": "hotspot.apartment.rakia_bottle",
+      "polygon": [
+        {
+          "x": 54,
+          "y": 520
+        },
+        {
+          "x": 92,
+          "y": 520
+        },
+        {
+          "x": 105,
+          "y": 650
+        },
+        {
+          "x": 50,
+          "y": 650
+        }
+      ]
+    },
+    "hotspot.apartment.bed": {
+      "id": "hotspot.apartment.bed",
+      "polygon": [
+        {
+          "x": 1060,
+          "y": 535
+        },
+        {
+          "x": 1279,
+          "y": 525
+        },
+        {
+          "x": 1279,
+          "y": 705
+        },
+        {
+          "x": 1065,
+          "y": 690
+        }
+      ]
+    },
     "window": {
       "id": "window",
       "polygon": [
@@ -253,20 +295,20 @@ export const villageSquareObjectGeometry = {
       "id": "exit.square.to_apartment",
       "polygon": [
         {
-          "x": 10,
-          "y": 485
+          "x": 368,
+          "y": 73
         },
         {
-          "x": 200,
-          "y": 485
+          "x": 555,
+          "y": 70
         },
         {
-          "x": 200,
-          "y": 585
+          "x": 552,
+          "y": 316
         },
         {
-          "x": 10,
-          "y": 585
+          "x": 370,
+          "y": 314
         }
       ]
     },
@@ -274,24 +316,20 @@ export const villageSquareObjectGeometry = {
       "id": "exit.square.to_mehana",
       "polygon": [
         {
-          "x": 34,
-          "y": 214
+          "x": 0,
+          "y": 430
         },
         {
-          "x": 158,
-          "y": 226
+          "x": 208,
+          "y": 430
         },
         {
-          "x": 161,
-          "y": 520
+          "x": 252,
+          "y": 590
         },
         {
-          "x": 63,
-          "y": 532
-        },
-        {
-          "x": 18,
-          "y": 441
+          "x": 0,
+          "y": 635
         }
       ]
     },

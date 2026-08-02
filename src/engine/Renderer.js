@@ -2,6 +2,7 @@ import { clamp } from "./geometry.js";
 import { characterHeight } from "./CharacterRenderMath.js";
 import { canExitToStop, eastWestFallbackFacing, stopExitFrameForPlayer } from "./MovementSystem.js";
 import { externalAnimationV1 } from "../content/art/externalAnimationV1.generated.js";
+import { intoxicationSway } from "./IntoxicationSystem.js";
 
 const PLAYER_SHADOW_FULL_SIZE_Y_OFFSET = -4;
 
@@ -81,6 +82,19 @@ export function sceneZIndexForPoint(scene, point) {
   return 100 - t * 100;
 }
 
+export function targetZIndex(scene, target) {
+  const points = target?.polygon?.length
+    ? target.polygon
+    : target?.rect
+      ? [
+          { x: target.rect.x, y: target.rect.y },
+          { x: target.rect.x + target.rect.w, y: target.rect.y + target.rect.h }
+        ]
+      : [];
+  if (!points.length) return 100;
+  return sceneZIndexForPoint(scene, { y: Math.max(...points.map((point) => point.y)) });
+}
+
 export class Renderer {
   constructor(canvas, game) {
     this.canvas = canvas;
@@ -115,8 +129,53 @@ export class Renderer {
       ? [this.game.player]
       : [];
     this.drawSceneZLayers(scene, actors);
+    if (!hasRealBackground && scene.playerMode === "seated") this.drawSeatedTableFallback(scene);
     if (this.game.editMode) this.game.sceneEditor?.draw(ctx);
-    else if (this.game.debugSceneGeometry || !hasRealBackground) this.drawSceneGeometry(scene);
+    else {
+      if (this.game.debugSceneGeometry || !hasRealBackground) this.drawSceneGeometry(scene);
+    }
+  }
+
+  drawHoveredTarget(target = this.game.hoveredTarget) {
+    if (!target) return;
+    const { ctx } = this;
+    ctx.save();
+    ctx.strokeStyle = "rgba(196, 163, 76, 0.82)";
+    ctx.lineWidth = 3;
+    ctx.shadowColor = "rgba(196, 163, 76, 0.42)";
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    if (target.polygon?.length) {
+      target.polygon.forEach((point, index) => {
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      });
+      ctx.closePath();
+    } else if (target.rect) {
+      ctx.rect(target.rect.x, target.rect.y, target.rect.w, target.rect.h);
+    } else {
+      ctx.restore();
+      return;
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  drawSeatedTableFallback(scene) {
+    const rect = scene.seatedPresentation?.tableRect;
+    if (!rect) return;
+    const { ctx } = this;
+    ctx.save();
+    ctx.fillStyle = "#5a3521";
+    ctx.strokeStyle = "#c69a56";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 24);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "rgba(246, 214, 157, 0.12)";
+    ctx.fillRect(rect.x + 18, rect.y + 18, rect.w - 36, 8);
+    ctx.restore();
   }
 
   drawSimpleAnimTest() {
@@ -345,6 +404,9 @@ export class Renderer {
   drawSceneZLayers(scene, actors) {
     const entries = [
       ...actors.map((actor) => ({ kind: "actor", actor, zIndex: sceneZIndexForPoint(scene, actor.position) })),
+      ...(!this.game.editMode && this.game.hoveredTarget
+        ? [{ kind: "hover", target: this.game.hoveredTarget, zIndex: targetZIndex(scene, this.game.hoveredTarget) }]
+        : []),
       ...(scene.foregroundLayers || [])
         .filter((layer) => this.sceneLayerVisible(layer))
         .map((layer) => ({ kind: "layer", layer, zIndex: Number(layer.zIndex) }))
@@ -355,6 +417,7 @@ export class Renderer {
     });
     for (const entry of entries) {
       if (entry.kind === "actor") this.drawPlayer(entry.actor);
+      else if (entry.kind === "hover") this.drawHoveredTarget(entry.target);
       else this.drawSceneRasterLayer(scene, entry.layer);
     }
   }
@@ -590,11 +653,12 @@ export class Renderer {
     const renderOffset = animationRenderOffset(spriteInfo.frame, frameIndex, mirrored);
     const renderOffsetX = stopRenderOffsetX(spriteInfo.frame, frameIndex, mirrored) + renderOffset.x;
     const renderOffsetY = stopRenderOffsetY(spriteInfo.frame, frameIndex) + renderOffset.y;
-    const drawX = p.position.x + renderOffsetX - width * anchor.x;
+    const sway = intoxicationSway(this.game.state?.rakiaGlasses, p.animationTime);
+    const drawX = p.position.x + renderOffsetX + sway.x - width * anchor.x;
     const baselineOffset = preserveFrameLayout && spriteInfo.frame
       ? stableBounds?.baselineY || spriteInfo.frame.baselineY || sourceHeight
       : spriteInfo.frame?.baselineY && boundsForSize ? spriteInfo.frame.baselineY - boundsForSize.y : sourceHeight * anchor.y;
-    const drawY = p.position.y + renderOffsetY - baselineOffset * scale + verticalOffset;
+    const drawY = p.position.y + renderOffsetY + sway.y - baselineOffset * scale + verticalOffset;
     ctx.save();
     ctx.fillStyle = "rgba(0, 0, 0, 0.26)";
     ctx.beginPath();

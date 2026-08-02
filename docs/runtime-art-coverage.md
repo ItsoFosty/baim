@@ -5,11 +5,17 @@
 - Apartment background: integrated as first real default-start background.
 - Village square background: integrated, technical proof works.
 - Village square art direction: usable for layout/runtime proof, but still too realistic and text-heavy for final style.
+- Mehana interaction scene: functional seated-table prototype with waiter ordering and Tony dialogue;
+  it still uses intentional debug fallback art.
 - Bai Mitko model sheet: locked identity source.
 - Bai Mitko runtime animation: current source-art direction is model-sheet-preserving east walk
   only, with west mirrored from east. North/south walk, talk/look/use/take remain placeholders or
   deferred.
-- Inventory icons: starting inventory icons integrated for accordion, unpaid bills, and empty envelope.
+- Inventory icons: icons integrated for accordion, unpaid bills, and empty envelope. Ordered rakia
+  and Shopska salad currently use the text fallback.
+- Apartment interaction geometry now includes the visible lower-left rakia bottle and treats the
+  existing right-hand green sofa as a temporary sofa-bed recovery hotspot. Dedicated bed art is
+  still pending approval.
 - UI skin: prototype.
 - Debug geometry: should remain hidden unless `Shift+G` or `?debugGeometry=1` is enabled.
 

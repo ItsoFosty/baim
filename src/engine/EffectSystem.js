@@ -24,7 +24,11 @@ export function applyEffects(effects = [], context = {}) {
     } else if (effect.type === "setState") {
       state[effect.key] = effect.value;
     } else if (effect.type === "adjustState") {
-      state[effect.key] = (Number(state[effect.key]) || 0) + Number(effect.amount || 0);
+      const adjusted = (Number(state[effect.key]) || 0) + Number(effect.amount || 0);
+      const minimum = Number.isFinite(Number(effect.min)) ? Number(effect.min) : -Infinity;
+      const maximum = Number.isFinite(Number(effect.max)) ? Number(effect.max) : Infinity;
+      state[effect.key] = Math.max(minimum, Math.min(maximum, adjusted));
+      if (effect.timestampKey) state[effect.timestampKey] = state[effect.key] > minimum ? (context.now?.() ?? Date.now()) : null;
     } else if (effect.type === "addItem") {
       context.inventory?.add(effect.itemId);
     } else if (effect.type === "removeItem") {

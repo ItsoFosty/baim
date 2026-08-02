@@ -56,7 +56,46 @@ const rawScenes = [
         rect: { x: 1120, y: 375, w: 150, h: 190 },
         lookKey: "look.apartment.accordion",
         takeItemId: "item.accordion",
+        hiddenWhenItemOwned: "item.accordion",
         flagOnTake: "hasAccordion"
+      },
+      {
+        id: "hotspot.apartment.rakia_bottle",
+        kind: "hotspot",
+        nameKey: "hotspot.apartment.rakia_bottle.name",
+        rect: { x: 50, y: 515, w: 60, h: 140 },
+        lookKey: "look.apartment.rakia_bottle",
+        useRules: [
+          {
+            effects: [
+              { type: "adjustState", key: "rakiaGlasses", amount: 1, min: 0, max: 10, timestampKey: "rakiaLastChangedAt" }
+            ],
+            messageByState: {
+              key: "rakiaGlasses",
+              ranges: [
+                { max: 1, messageKey: "msg.rakia.level.daisy" },
+                { min: 2, max: 4, messageKey: "msg.rakia.level.merry" },
+                { min: 5, max: 7, messageKey: "msg.rakia.level.tipsy" },
+                { min: 8, messageKey: "msg.rakia.level.plastered" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: "hotspot.apartment.bed",
+        kind: "hotspot",
+        nameKey: "hotspot.apartment.bed.name",
+        rect: { x: 1060, y: 525, w: 220, h: 180 },
+        lookKey: "look.apartment.bed",
+        useRules: [
+          {
+            effects: [
+              { type: "adjustState", key: "rakiaGlasses", amount: -3, min: 0, max: 10, timestampKey: "rakiaLastChangedAt" }
+            ],
+            messageKey: "msg.apartment.nap"
+          }
+        ]
       },
       {
         id: "hotspot.apartment.unpaid_bills",
@@ -150,7 +189,7 @@ const rawScenes = [
         nameKey: "exit.to_mehana",
         rect: { x: 0, y: 120, w: 235, h: 345 },
         targetSceneId: "scene.chapter1.mehana",
-        targetPosition: { x: 220, y: 505 }
+        targetPosition: { x: 430, y: 530 }
       },
       {
         id: "exit.square.to_municipality",
@@ -221,7 +260,11 @@ const rawScenes = [
     titleKey: "scene.chapter1.mehana.title",
     palette: { sky: "#4a3327", wall: "#7a5538", floor: "#32251d" },
     movementSpeed: 75,
-    playerStart: { x: 220, y: 505 },
+    playerMode: "seated",
+    playerStart: { x: 430, y: 530 },
+    seatedPresentation: {
+      tableRect: { x: 285, y: 455, w: 365, h: 150 }
+    },
     walkPolygons: [
       {
         id: "walk.chapter1.mehana.main",
@@ -235,8 +278,10 @@ const rawScenes = [
     ],
     perspectiveScale: { horizonY: 415, bottomY: 590, far: 0.8, near: 1.12 },
     anchors: {
+      baiMitkoSeat: { x: 430, y: 530 },
       tonyTable: { x: 900, y: 505 },
       bar: { x: 620, y: 500 },
+      waiter: { x: 650, y: 465 },
       exit: { x: 170, y: 505 }
     },
     exits: [
@@ -246,10 +291,17 @@ const rawScenes = [
         nameKey: "exit.to_village_square",
         rect: { x: 30, y: 320, w: 120, h: 190 },
         targetSceneId: "scene.chapter1.village_square",
-        targetPosition: { x: 930, y: 505 }
+        targetPosition: { x: 245, y: 555 }
       }
     ],
     interactables: [
+      {
+        id: "hotspot.mehana.table",
+        kind: "hotspot",
+        nameKey: "hotspot.mehana_table.name",
+        rect: { x: 280, y: 430, w: 360, h: 175 },
+        lookKey: "look.mehana.table"
+      },
       {
         id: "hotspot.mehana.oil",
         kind: "hotspot",
@@ -300,11 +352,27 @@ const rawScenes = [
             effects: [{ type: "adjustState", key: "suspicion", amount: 8 }],
             messageKey: "msg.water_swap_missing",
             reject: true
+          },
+          {
+            requirements: { items: ["item.glass_of_water"] },
+            effects: [
+              { type: "removeItem", itemId: "item.glass_of_water" },
+              { type: "adjustState", key: "rakiaGlasses", amount: -1, min: 0, max: 10, timestampKey: "rakiaLastChangedAt" }
+            ],
+            messageKey: "msg.water_recovery"
           }
         ]
       }
     ],
     npcs: [
+      {
+        id: "npc.mehana_waiter",
+        kind: "npc",
+        nameKey: "npc.mehana_waiter.name",
+        rect: { x: 600, y: 275, w: 125, h: 225 },
+        dialogueId: "dialogue.mehana_waiter",
+        lookKey: "look.npc.mehana_waiter"
+      },
       {
         id: "npc.tony_fridge",
         kind: "npc",

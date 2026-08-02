@@ -48,6 +48,21 @@ test("content effects update reusable state, inventory, and quest systems", () =
   assert.deepEqual(completed, ["quest.example"]);
 });
 
+test("bounded state effects clamp counters and record a deterministic change time", () => {
+  const state = { rakiaGlasses: 9, flags: {} };
+  applyEffects([
+    { type: "adjustState", key: "rakiaGlasses", amount: 4, min: 0, max: 10, timestampKey: "rakiaLastChangedAt" }
+  ], { state, now: () => 123456 });
+  assert.equal(state.rakiaGlasses, 10);
+  assert.equal(state.rakiaLastChangedAt, 123456);
+
+  applyEffects([
+    { type: "adjustState", key: "rakiaGlasses", amount: -20, min: 0, max: 10, timestampKey: "rakiaLastChangedAt" }
+  ], { state, now: () => 789000 });
+  assert.equal(state.rakiaGlasses, 0);
+  assert.equal(state.rakiaLastChangedAt, null);
+});
+
 test("unknown content effect types fail loudly", () => {
   assert.throws(
     () => applyEffects([{ type: "misspelledEffect" }], { state: { flags: {} } }),
@@ -88,4 +103,45 @@ test("Tony vote vertical slice is reachable from authored Chapter 1 data", () =>
   assert.equal(state.suspicion, 10);
   assert.equal(state.publicMood, 55);
   assert.deepEqual(completed, ["quest.chapter1.tony_vote"]);
+});
+
+test("Mehana waiter orders are authored as reusable inventory effects", () => {
+  const waiterDialogue = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.mehana_waiter");
+  const choices = waiterDialogue.nodes.start.choices;
+  const rakiaOrder = choices.find((choice) => choice.textKey === "dialogue.waiter.choice.rakia");
+  const shopskaOrder = choices.find((choice) => choice.textKey === "dialogue.waiter.choice.shopska");
+  const inventory = inventoryWith();
+  const state = { flags: {} };
+
+  applyEffects(rakiaOrder.effect.effects, { state, inventory });
+  applyEffects(shopskaOrder.effect.effects, { state, inventory });
+
+  assert.equal(inventory.has("item.rakia"), true);
+  assert.equal(inventory.has("item.shopska_salad"), true);
+  assert.equal(state.flags.mehanaOrderedRakia, true);
+  assert.equal(state.flags.mehanaOrderedShopska, true);
+  assert.equal(state.rakiaGlasses, 1);
+});
+
+test("apartment bottle, sofa-bed, water, and tripe soup author the intoxication loop", () => {
+  const apartment = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.apartment");
+  const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
+  const waiter = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.mehana_waiter");
+  const bottle = apartment.interactables.find((target) => target.id === "hotspot.apartment.rakia_bottle");
+  const bed = apartment.interactables.find((target) => target.id === "hotspot.apartment.bed");
+  const water = mehana.interactables.find((target) => target.id === "hotspot.mehana.water_jug");
+  const soup = waiter.nodes.start.choices.find((choice) => choice.textKey === "dialogue.waiter.choice.tripe_soup");
+  const inventory = inventoryWith("item.glass_of_water");
+  const state = { rakiaGlasses: 5, tonyVote: false, flags: {} };
+  const context = { state, inventory, now: () => 9000 };
+
+  applyEffects(bottle.useRules[0].effects, context);
+  assert.equal(state.rakiaGlasses, 6);
+  applyEffects(bed.useRules[0].effects, context);
+  assert.equal(state.rakiaGlasses, 3);
+  applyEffects(firstMatchingRule(water.useRules, context).effects, context);
+  assert.equal(state.rakiaGlasses, 2);
+  assert.equal(inventory.has("item.glass_of_water"), false);
+  applyEffects(soup.effect.effects, context);
+  assert.equal(state.rakiaGlasses, 0);
 });

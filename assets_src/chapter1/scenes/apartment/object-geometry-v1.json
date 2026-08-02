@@ -212,6 +212,24 @@
       ]
     },
     {
+      "id": "hotspot.apartment.rakia_bottle",
+      "polygon": [
+        { "x": 54, "y": 520 },
+        { "x": 92, "y": 520 },
+        { "x": 105, "y": 650 },
+        { "x": 50, "y": 650 }
+      ]
+    },
+    {
+      "id": "hotspot.apartment.bed",
+      "polygon": [
+        { "x": 1060, "y": 535 },
+        { "x": 1279, "y": 525 },
+        { "x": 1279, "y": 705 },
+        { "x": 1065, "y": 690 }
+      ]
+    },
+    {
       "id": "window",
       "polygon": [
         {

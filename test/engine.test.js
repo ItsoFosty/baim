@@ -9,7 +9,8 @@ import { characterHeight } from "../src/engine/CharacterRenderMath.js";
 import { facingFromDelta, MovementSystem, requestWalkStop, eastWestFallbackFacing, motionMultiplierAtFrame, walkMotionMultiplierForFrame } from "../src/engine/MovementSystem.js";
 import { AnimationPlayer } from "../src/engine/AnimationPlayer.js";
 import { Game, SHORT_WALK_PATH_DISTANCE } from "../src/engine/Game.js";
-import { Renderer, animationRenderMirrored, animationRenderOffset, animationRenderScale, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY } from "../src/engine/Renderer.js";
+import { Renderer, animationRenderMirrored, animationRenderOffset, animationRenderScale, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY, targetZIndex } from "../src/engine/Renderer.js";
+import { applyTimedSobering, intoxicationBandKey, intoxicationColor, intoxicationMovementMultiplier, RAKIA_SOBER_INTERVAL_MS } from "../src/engine/IntoxicationSystem.js";
 import { strings } from "../src/content/localization/index.js";
 import { chapter1 } from "../src/content/chapter1/index.js";
 import { assetManifest } from "../src/content/art/assetManifest.js";
@@ -102,6 +103,16 @@ test("localization returns Bulgarian and English strings from stable keys", () =
   assert.equal(l10n.t("chapter1.title"), "Election Day in the Village");
 });
 
+test("menu and Mehana interaction labels are authored in both languages", () => {
+  const bgKeys = Object.keys(strings.bg).sort();
+  const enKeys = Object.keys(strings.en).sort();
+  assert.deepEqual(bgKeys, enKeys);
+  assert.equal(strings.bg["ui.menu"], "Меню");
+  assert.equal(strings.en["ui.menu"], "Menu");
+  assert.equal(strings.bg["dialogue.waiter.choice.shopska"], "Една шопска салата.");
+  assert.equal(strings.en["dialogue.waiter.choice.shopska"], "One Shopska salad.");
+});
+
 test("localization falls back to English before returning the key", () => {
   const l10n = new Localization({ bg: {}, en: { "known.key": "Known" } }, "bg");
   assert.equal(l10n.t("known.key"), "Known");
@@ -186,6 +197,29 @@ test("village square uses the shared raster, object, and layer scene pipeline", 
   for (const object of [...scene.exits, ...scene.interactables, ...scene.npcs]) {
     assert.ok(object.polygon?.length >= 3, `${object.id} needs generated editor geometry`);
   }
+});
+
+test("village square routes the apartment building home and the Mehana table inside", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const apartmentExit = scene.exits.find((exit) => exit.id === "exit.square.to_apartment");
+  const mehanaExit = scene.exits.find((exit) => exit.id === "exit.square.to_mehana");
+
+  assert.equal(pointInPolygon({ x: 400, y: 200 }, apartmentExit.polygon), true);
+  assert.equal(pointInPolygon({ x: 100, y: 520 }, mehanaExit.polygon), true);
+  assert.equal(pointInPolygon({ x: 100, y: 520 }, apartmentExit.polygon), false);
+  assert.equal(apartmentExit.targetSceneId, "scene.chapter1.apartment");
+  assert.equal(mehanaExit.targetSceneId, "scene.chapter1.mehana");
+});
+
+test("Mehana starts Bai Mitko seated with waiter and table interactions", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.mehana");
+  const waiter = scene.npcs.find((npc) => npc.id === "npc.mehana_waiter");
+
+  assert.equal(scene.playerMode, "seated");
+  assert.deepEqual(scene.playerStart, scene.anchors.baiMitkoSeat);
+  assert.equal(scene.interactables.some((target) => target.id === "hotspot.mehana.table"), true);
+  assert.equal(waiter.dialogueId, "dialogue.mehana_waiter");
+  assert.equal(scene.npcs.some((npc) => npc.id === "npc.tony_fridge"), true);
 });
 
 test("village square depth scaling shrinks Bai Mitko at the distant bench without changing foreground size", () => {
@@ -317,6 +351,30 @@ test("runtime movement speed multiplier affects distance over time only", () => 
   assert.equal(game.sceneMovementSpeed({ movementSpeed: 70 }), 109.375);
 });
 
+test("rakia bands, color, and movement change progressively from zero to ten", () => {
+  assert.equal(intoxicationBandKey(0), "daisy");
+  assert.equal(intoxicationBandKey(1), "daisy");
+  assert.equal(intoxicationBandKey(2), "merry");
+  assert.equal(intoxicationBandKey(5), "tipsy");
+  assert.equal(intoxicationBandKey(8), "plastered");
+  assert.equal(intoxicationBandKey(10), "plastered");
+  assert.equal(intoxicationColor(1), "rgb(218, 190, 82)");
+  assert.equal(intoxicationColor(10), "rgb(211, 52, 48)");
+  assert.ok(intoxicationMovementMultiplier(10) < intoxicationMovementMultiplier(5));
+  assert.ok(intoxicationMovementMultiplier(5) < intoxicationMovementMultiplier(0));
+});
+
+test("one rakia glass clears for each five minutes of elapsed wall time", () => {
+  const start = 1_000_000;
+  const state = { rakiaGlasses: 6, rakiaLastChangedAt: start };
+  assert.equal(applyTimedSobering(state, start + RAKIA_SOBER_INTERVAL_MS * 2 + 1000), 2);
+  assert.equal(state.rakiaGlasses, 4);
+  assert.equal(state.rakiaLastChangedAt, start + RAKIA_SOBER_INTERVAL_MS * 2);
+  assert.equal(applyTimedSobering(state, start + RAKIA_SOBER_INTERVAL_MS * 6), 4);
+  assert.equal(state.rakiaGlasses, 0);
+  assert.equal(state.rakiaLastChangedAt, null);
+});
+
 test("save system merges old saves with current defaults", () => {
   const storage = new MemoryStorage({ test: JSON.stringify({ influence: 10 }) });
   const save = new SaveSystem(storage, "test").load();
@@ -327,6 +385,8 @@ test("save system merges old saves with current defaults", () => {
 
 test("fresh chapter start has no preloaded inventory items", () => {
   assert.deepEqual(DEFAULT_SAVE.inventory, []);
+  assert.equal(DEFAULT_SAVE.rakiaGlasses, 0);
+  assert.equal(DEFAULT_SAVE.rakiaLastChangedAt, null);
 });
 
 test("save migration removes the old prototype starter inventory", () => {
@@ -1434,6 +1494,94 @@ test("looking at an already-open window still approaches but skips animation and
   assert.equal(game.player.pendingInteraction, null);
   assert.equal(game.player.animation, "idle");
   assert.equal(game.spokenMessage, "translated:msg.apartment.window_opened");
+});
+
+test("world clicks cannot trigger an exit while an interaction action is running", () => {
+  const game = Object.create(Game.prototype);
+  let sceneChanges = 0;
+  game.sceneTransitionPending = false;
+  game.currentScene = {
+    npcs: [],
+    interactables: [],
+    exits: [{
+      id: "exit.apartment.to_square",
+      kind: "exit",
+      rect: { x: 0, y: 0, w: 100, h: 100 },
+      targetSceneId: "scene.chapter1.village_square"
+    }]
+  };
+  game.player = {
+    animation: "action",
+    actionSequence: { target: { id: "window" } }
+  };
+  game.changeScene = () => { sceneChanges += 1; };
+
+  game.handleWorldClick({ x: 50, y: 50 });
+
+  assert.equal(sceneChanges, 0);
+  assert.equal(game.player.actionSequence.target.id, "window");
+});
+
+test("hovering actionable geometry selects it and enables the pointer cursor", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const game = Object.create(Game.prototype);
+  game.currentScene = scene;
+  game.menuOpen = false;
+  game.paused = false;
+  game.sceneTransitionPending = false;
+  game.dialogue = { current: null };
+  game.inventory = { has: () => false };
+  game.player = { animation: "idle", actionSequence: null };
+  game.canvas = { style: {} };
+
+  const target = game.updateHoveredTarget({ x: 400, y: 200 });
+
+  assert.equal(target.id, "exit.square.to_apartment");
+  assert.equal(game.canvas.style.cursor, "pointer");
+  game.updateHoveredTarget(null);
+  assert.equal(game.hoveredTarget, null);
+  assert.equal(game.canvas.style.cursor, "default");
+});
+
+test("hovered actionable geometry is outlined in dim yellow", () => {
+  const calls = [];
+  const ctx = {
+    save() {},
+    restore() {},
+    beginPath() {},
+    rect(...args) { calls.push(["rect", ...args]); },
+    stroke() { calls.push(["stroke", this.strokeStyle, this.lineWidth, this.shadowColor]); }
+  };
+  const renderer = Object.create(Renderer.prototype);
+  renderer.ctx = ctx;
+  renderer.game = { hoveredTarget: { rect: { x: 10, y: 20, w: 30, h: 40 } } };
+
+  renderer.drawHoveredTarget();
+
+  assert.deepEqual(calls[0], ["rect", 10, 20, 30, 40]);
+  assert.deepEqual(calls[1], ["stroke", "rgba(196, 163, 76, 0.82)", 3, "rgba(196, 163, 76, 0.42)"]);
+});
+
+test("hover outline uses scene depth so Bai covers objects behind him", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const building = scene.exits.find((target) => target.id === "exit.square.to_apartment");
+  const table = scene.exits.find((target) => target.id === "exit.square.to_mehana");
+  const actor = { position: { x: 430, y: 540 } };
+  assert.ok(targetZIndex(scene, building) > sceneZIndexForPoint(scene, actor.position));
+  assert.ok(targetZIndex(scene, table) < sceneZIndexForPoint(scene, actor.position));
+});
+
+test("apartment-building target trims about one third from its old left edge", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const building = scene.exits.find((target) => target.id === "exit.square.to_apartment");
+  assert.equal(pointInPolygon({ x: 300, y: 200 }, building.polygon), false);
+  assert.equal(pointInPolygon({ x: 430, y: 200 }, building.polygon), true);
+});
+
+test("active Menu switch uses the same color as button hover", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  assert.match(css, /button:hover\s*{\s*background:\s*#4a3825;/);
+  assert.match(css, /button\.active\s*{\s*background:\s*#4a3825;/);
 });
 
 test("rect target approach uses click point as hand target and left-middle fallback without click", () => {

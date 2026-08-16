@@ -132,6 +132,42 @@ Bulgarian absurdity that fits:
 - village gossip as political analysis
 - old promises pasted over older promises
 
+### Implemented Seed: Baba's Household Price List
+
+Placement:
+Baba Stoyanka dialogue / `quest.chapter1.baba_vote`
+
+Mechanism:
+
+- The explicit `Let's discuss your vote` / `Да поговорим за гласа ти` choice starts
+  `quest.chapter1.baba_vote` and advances to Baba's terms without closing the dialogue.
+- Bai Mitko mistakes a sequence of cheap household objects for escalating political persuasion.
+- Baba rejects the objects according to practical household logic, not ideology.
+- Kiro always sells takeaway village wine so the fallback item is discoverable instead of being
+  hidden behind an invisible state condition.
+- Shop-bought rakia and prematurely offered wine receive explicit rejections and remain in inventory;
+  these responses steer the player toward oil without silently hiding a purchased item.
+- Sunflower oil is acceptable before Bai Mitko insults her repeatedly; afterward it counts only as
+  interest on the damaged relationship.
+- A bottle of fictional village wine becomes the relationship-repair item, keeping the puzzle rooted
+  in hospitality rather than a current real-world scheme.
+
+Intake sources:
+
+- [BNT overview of recurring controlled-vote mechanisms](https://bntnews.bg/news/pari-sreshtu-glas-kakvi-sa-novite-shemi-za-kupuvane-na-glasove-1388867news.html)
+- [BNT report noting checks involving firewood supply during election enforcement](https://bntnews.bg/news/akcii-sreshtu-kupeniya-vot-v-blagoevgrad-i-sliven-1388456news.html)
+- [BNR report on public concern around staple-food prices](https://bnr.bg/post/102175939/pet-grajdanski-organizacii-obaviha-kampania-za-grajdanski-kontrol-na-cenite)
+
+Transformation:
+Only the broad mechanisms—transactional politics, household scarcity, and escalating expectations—are
+retained. All characters, objects, dialogue, thresholds, and outcomes are fictional and evergreen.
+
+Freshness:
+Evergreen core with replaceable contemporary inspiration.
+
+Risk:
+Safe. No real person, party, locality, accusation, amount, or reported incident is represented.
+
 ### Seed: Repair Of The Repair
 
 Placement:

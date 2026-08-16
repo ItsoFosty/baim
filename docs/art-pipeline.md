@@ -13,9 +13,9 @@ backgrounds, depth metadata, object layers, and character animation assets.
 - Runtime scene target: `1280x720` logical canvas.
 - Source/background generation target: keep the highest useful original image under `assets_src/`;
   AI tools may produce different source resolutions.
-- Runtime backgrounds and runtime scene layers under `assets/chapter1/scenes/` must be prepared at
-  their final canvas-space pixel size before integration. The renderer draws them 1:1 and does not
-  scale them to fit.
+- Runtime backgrounds and full-canvas scene layers under `assets/chapter1/scenes/` must be prepared
+  at their final canvas-space pixel size before integration. Trimmed cutouts normally render at their
+  natural size, but may use an authored `width` or `height` for deliberate scene calibration.
 
 ## Scene Construction
 
@@ -48,8 +48,10 @@ Defaults are `top: 0` and `left: 0`; use `right` or `bottom` for layers that sho
 scene edges. Layer placement and z-order are authored in
 `assets_src/chapter1/scenes/<scene>/layers.json` and compiled into
 `src/content/chapter1/sceneLayers.generated.js`; `src/content/chapter1/scenes.js` should only import
-the generated scene layer metadata. Runtime layers are drawn at their natural PNG size; do not use
-metadata to scale them. See `docs/raster-scene-runtime.md`.
+the generated scene layer metadata. Optional positive `width` and `height` values scale a trimmed
+layer; when only one is provided, the renderer preserves the PNG aspect ratio. Use scaling for
+intentional calibration such as matching a static NPC to the scene's perspective, not as a substitute
+for preparing full-canvas production art. See `docs/raster-scene-runtime.md`.
 
 Scene geometry is data, not drawn into the background:
 

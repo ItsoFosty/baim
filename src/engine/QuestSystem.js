@@ -10,6 +10,10 @@ export class QuestSystem {
     }
   }
 
+  start(questId) {
+    this.activate(questId);
+  }
+
   complete(questId) {
     this.state.activeQuests = this.state.activeQuests.filter((id) => id !== questId);
     if (!this.state.completedQuests.includes(questId)) this.state.completedQuests.push(questId);

@@ -14,6 +14,7 @@ export const assetManifest = {
     },
     "scene.chapter1.village_square": {
       background: "assets/chapter1/scenes/village_square/background.png",
+      babaStoyankaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v1.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.mehana": {

@@ -24,6 +24,11 @@ test("content requirements combine inventory, flags, and state values", () => {
     state: { voteWon: false }
   }, context), true);
   assert.equal(requirementsMet({ items: ["item.missing"] }, context), false);
+  assert.equal(requirementsMet({ stateMin: { cheapOffers: 2 }, stateMax: { cheapOffers: 4 } }, {
+    state: { cheapOffers: 3 }
+  }), true);
+  assert.equal(requirementsMet({ stateMin: { cheapOffers: 4 } }, { state: { cheapOffers: 3 } }), false);
+  assert.equal(requirementsMet({ stateMax: { cheapOffers: 2 } }, { state: { cheapOffers: 3 } }), false);
 });
 
 test("content effects update reusable state, inventory, and quest systems", () => {
@@ -111,9 +116,11 @@ test("Mehana waiter asks for here or to go before serving every order", () => {
   const rakiaOrder = choices.find((choice) => choice.textKey === "dialogue.waiter.choice.rakia");
   const shopskaOrder = choices.find((choice) => choice.textKey === "dialogue.waiter.choice.shopska");
   const soupOrder = choices.find((choice) => choice.textKey === "dialogue.waiter.choice.tripe_soup");
+  const wineOrder = choices.find((choice) => choice.textKey === "dialogue.waiter.choice.village_wine");
   assert.equal(rakiaOrder.next, "rakia_serving");
   assert.equal(shopskaOrder.next, "shopska_serving");
   assert.equal(soupOrder.next, "tripe_soup_serving");
+  assert.equal(wineOrder.next, "village_wine_serving");
 
   const forHere = (nodeId) => waiterDialogue.nodes[nodeId].choices
     .find((choice) => choice.textKey === "dialogue.waiter.choice.for_here");
@@ -125,25 +132,157 @@ test("Mehana waiter asks for here or to go before serving every order", () => {
   applyEffects(forHere("rakia_serving").effect.effects, { state, inventory });
   applyEffects(forHere("shopska_serving").effect.effects, { state, inventory });
   applyEffects(forHere("tripe_soup_serving").effect.effects, { state, inventory });
+  applyEffects(forHere("village_wine_serving").effect.effects, { state, inventory });
 
   assert.equal(inventory.has("item.rakia"), false);
   assert.equal(inventory.has("item.shopska_salad"), false);
   assert.equal(inventory.has("item.tripe_soup"), false);
+  assert.equal(inventory.has("item.village_wine"), false);
   assert.equal(state.flags.mehanaOrderedRakia, true);
   assert.equal(state.flags.mehanaOrderedShopska, true);
   assert.equal(state.flags.mehanaOrderedTripeSoup, true);
-  assert.equal(state.rakiaGlasses, 3);
+  assert.equal(state.rakiaGlasses, 4);
 
   const takeawayInventory = inventoryWith();
   const takeawayState = { flags: {}, rakiaGlasses: 0 };
   applyEffects(toGo("rakia_serving").effect.effects, { state: takeawayState, inventory: takeawayInventory });
   applyEffects(toGo("shopska_serving").effect.effects, { state: takeawayState, inventory: takeawayInventory });
   applyEffects(toGo("tripe_soup_serving").effect.effects, { state: takeawayState, inventory: takeawayInventory });
+  applyEffects(toGo("village_wine_serving").effect.effects, { state: takeawayState, inventory: takeawayInventory });
 
   assert.equal(takeawayInventory.has("item.rakia"), true);
   assert.equal(takeawayInventory.has("item.shopska_salad"), true);
   assert.equal(takeawayInventory.has("item.tripe_soup"), true);
+  assert.equal(takeawayInventory.has("item.village_wine"), true);
   assert.equal(takeawayState.rakiaGlasses, 0);
+});
+
+test("Baba accepts early oil but requires village wine after three cheap offers", () => {
+  const baba = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.baba_stoyanka");
+  const waiter = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.mehana_waiter");
+  const choice = (textKey, predicate = () => true) => baba.nodes.start.choices
+    .find((candidate) => candidate.textKey === textKey && predicate(candidate));
+  const earlyOil = choice("dialogue.baba.choice.offer_oil", (candidate) => candidate.effect.requirements.stateMax);
+  const lateOil = choice("dialogue.baba.choice.offer_oil", (candidate) => candidate.effect.requirements.stateMin);
+  const earlyWine = choice("dialogue.baba.choice.offer_wine", (candidate) => candidate.effect.requirements.notFlags);
+  const repairWine = choice("dialogue.baba.choice.offer_wine", (candidate) => candidate.effect.requirements.flags);
+
+  const earlyInventory = inventoryWith("item.sunflower_oil");
+  const earlyState = {
+    flags: {}, babaCheapOfferAttempts: 2, babaStoyankaVote: false, babaTrust: "neutral",
+    influence: 0, suspicion: 0, publicMood: 50
+  };
+  const earlyCompleted = [];
+  assert.equal(requirementsMet(earlyOil.effect.requirements, { state: earlyState, inventory: earlyInventory }), true);
+  applyEffects(earlyOil.effect.effects, {
+    state: earlyState,
+    inventory: earlyInventory,
+    quests: { start() {}, complete: (questId) => earlyCompleted.push(questId) }
+  });
+  assert.equal(earlyInventory.has("item.sunflower_oil"), false);
+  assert.equal(earlyState.babaStoyankaVote, true);
+  assert.equal(earlyState.babaTrust, "traditional");
+  assert.deepEqual(earlyCompleted, ["quest.chapter1.baba_vote"]);
+
+  const lateInventory = inventoryWith(
+    "item.unpaid_bills", "item.glass_of_water", "item.shopska_salad", "item.sunflower_oil"
+  );
+  const lateState = {
+    flags: {}, babaCheapOfferAttempts: 0, babaStoyankaVote: false, babaTrust: "neutral",
+    influence: 0, suspicion: 0, publicMood: 50
+  };
+  const started = [];
+  const completed = [];
+  const context = {
+    state: lateState,
+    inventory: lateInventory,
+    quests: {
+      start: (questId) => started.push(questId),
+      complete: (questId) => completed.push(questId)
+    }
+  };
+  for (const textKey of [
+    "dialogue.baba.choice.offer_bills",
+    "dialogue.baba.choice.offer_water",
+    "dialogue.baba.choice.offer_shopska"
+  ]) {
+    const cheapOffer = choice(textKey);
+    assert.equal(requirementsMet(cheapOffer.effect.requirements, context), true);
+    applyEffects(cheapOffer.effect.effects, context);
+  }
+  assert.equal(lateState.babaCheapOfferAttempts, 3);
+  assert.equal(requirementsMet(earlyOil.effect.requirements, context), false);
+  assert.equal(requirementsMet(lateOil.effect.requirements, context), true);
+  applyEffects(lateOil.effect.effects, context);
+  assert.equal(lateInventory.has("item.sunflower_oil"), true);
+  assert.equal(lateState.flags.babaRequiresBetterGift, true);
+
+  const wineOrder = waiter.nodes.start.choices
+    .find((candidate) => candidate.textKey === "dialogue.waiter.choice.village_wine");
+  assert.equal(wineOrder.requirements, undefined);
+  assert.equal(requirementsMet(wineOrder.requirements, context), true);
+  const takeawayWine = waiter.nodes[wineOrder.next].choices
+    .find((candidate) => candidate.textKey === "dialogue.waiter.choice.to_go");
+  applyEffects(takeawayWine.effect.effects, context);
+  assert.equal(lateInventory.has("item.village_wine"), true);
+
+  assert.equal(requirementsMet(earlyWine.effect.requirements, context), false);
+  assert.equal(requirementsMet(repairWine.effect.requirements, context), true);
+  applyEffects(repairWine.effect.effects, context);
+  assert.equal(lateInventory.has("item.village_wine"), false);
+  assert.equal(lateState.babaStoyankaVote, true);
+  assert.equal(lateState.babaTrust, "transactional");
+  assert.deepEqual(completed, ["quest.chapter1.baba_vote"]);
+  assert.ok(started.length >= 4);
+});
+
+test("Kiro always sells village wine and Baba reacts to early wine and rakia offers", () => {
+  const baba = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.baba_stoyanka");
+  const waiter = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.mehana_waiter");
+  const choices = baba.nodes.start.choices;
+  const rakiaOffer = choices.find((choice) => choice.textKey === "dialogue.baba.choice.offer_rakia");
+  const earlyWineOffer = choices.find((choice) => (
+    choice.textKey === "dialogue.baba.choice.offer_wine" && choice.effect.requirements.notFlags
+  ));
+  const wineOrder = waiter.nodes.start.choices
+    .find((choice) => choice.textKey === "dialogue.waiter.choice.village_wine");
+  const inventory = inventoryWith("item.rakia", "item.village_wine");
+  const state = {
+    flags: {}, babaStoyankaVote: false, babaCheapOfferAttempts: 0, suspicion: 0
+  };
+  const context = { state, inventory, quests: { start() {} } };
+
+  assert.equal(wineOrder.requirements, undefined);
+  assert.equal(requirementsMet(rakiaOffer.effect.requirements, context), true);
+  assert.equal(requirementsMet(earlyWineOffer.effect.requirements, context), true);
+
+  applyEffects(rakiaOffer.effect.effects, context);
+  assert.equal(state.flags.babaRejectedRakia, true);
+  assert.equal(inventory.has("item.rakia"), true);
+  assert.equal(rakiaOffer.effect.messageKey, "msg.baba.reject_rakia");
+
+  applyEffects(earlyWineOffer.effect.effects, context);
+  assert.equal(inventory.has("item.village_wine"), true);
+  assert.equal(earlyWineOffer.effect.messageKey, "msg.baba.reject_early_wine");
+});
+
+test("Baba dialogue exposes a first-conversation choice that starts her vote quest", () => {
+  const baba = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.baba_stoyanka");
+  const startChoice = baba.nodes.start.choices
+    .find((choice) => choice.textKey === "dialogue.baba.choice.ask_vote");
+  const started = [];
+  const state = { flags: {}, babaStoyankaVote: false };
+
+  assert.ok(startChoice);
+  assert.equal(requirementsMet(startChoice.requirements, { state }), true);
+  applyEffects(startChoice.effect.effects, {
+    state,
+    quests: { start: (questId) => started.push(questId) }
+  });
+
+  assert.deepEqual(started, ["quest.chapter1.baba_vote"]);
+  assert.equal(startChoice.next, "vote_terms");
+  assert.equal(requirementsMet(startChoice.requirements, { state }), true);
 });
 
 test("apartment bottle, sofa-bed, water, and tripe soup author the intoxication loop", () => {

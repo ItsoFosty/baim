@@ -8,7 +8,9 @@ export const sceneLayerGeometry = {
         "asset": "foregroundTable",
         "zIndex": -1,
         "top": 389,
-        "left": 104
+        "left": 104,
+        "width": 1280,
+        "height": 720
       },
       {
         "id": "layer.apartment.bills_on_table",
@@ -41,6 +43,15 @@ export const sceneLayerGeometry = {
   },
   "scene.chapter1.village_square": {
     "sceneId": "scene.chapter1.village_square",
-    "foregroundLayers": []
+    "foregroundLayers": [
+      {
+        "id": "layer.square.baba_stoyanka_seated",
+        "asset": "babaStoyankaSeated",
+        "zIndex": 90,
+        "top": 299,
+        "left": 315,
+        "height": 153
+      }
+    ]
   }
 };

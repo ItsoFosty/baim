@@ -7,6 +7,8 @@ export function requirementsMet(requirements = {}, context = {}) {
   if ((requirements.flags || []).some((flag) => !flags[flag])) return false;
   if ((requirements.notFlags || []).some((flag) => Boolean(flags[flag]))) return false;
   if (requirements.state && Object.entries(requirements.state).some(([key, value]) => state[key] !== value)) return false;
+  if (requirements.stateMin && Object.entries(requirements.stateMin).some(([key, value]) => Number(state[key]) < Number(value))) return false;
+  if (requirements.stateMax && Object.entries(requirements.stateMax).some(([key, value]) => Number(state[key]) > Number(value))) return false;
   return true;
 }
 

@@ -35,10 +35,12 @@ Production scene resolution:
 - Source paintings in `assets_src/`: keep the available/full generated or edited resolution
 - Optional ultra source for marketing/key art: keep separately under `assets_src/`
 
-The browser renderer draws scene backgrounds and scene layers 1:1. It does not scale a generated
-background down at runtime and does not stretch foreground layers to the canvas. Any new background
-request must include a runtime preparation step that resizes/crops/pads the approved source to
-`1280x720` before placing it under `assets/chapter1/scenes/<scene>/background.png`.
+The browser renderer draws scene backgrounds and full-canvas scene layers 1:1. It does not scale a
+generated background down at runtime or stretch foreground layers to the canvas. Trimmed cutouts can
+use an explicit authored `width` or `height` for scene calibration while preserving their aspect
+ratio. Any new background request must still include a runtime preparation step that
+resizes/crops/pads the approved source to `1280x720` before placing it under
+`assets/chapter1/scenes/<scene>/background.png`.
 
 Each scene should be delivered as:
 

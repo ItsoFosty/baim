@@ -38,6 +38,8 @@ function runtimeLayer(layer, sourcePath) {
   copyNumber(layer, result, "left");
   copyNumber(layer, result, "right");
   copyNumber(layer, result, "bottom");
+  copyNumber(layer, result, "width");
+  copyNumber(layer, result, "height");
   if (layer.visibleWhenFlag) result.visibleWhenFlag = String(layer.visibleWhenFlag);
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);
   if (layer.visibleDuringAction) {

@@ -453,12 +453,18 @@ export class Renderer {
     const image = this.game.assets.getSceneImage(scene.id, layer.asset);
     if (!this.game.assets.isLoaded(image)) return;
     const rect = this.sceneLayerRect(layer, image);
-    this.ctx.drawImage(image, rect.x, rect.y);
+    this.ctx.drawImage(image, rect.x, rect.y, rect.w, rect.h);
   }
 
   sceneLayerRect(layer, image) {
-    const width = image?.naturalWidth || image?.width || 1280;
-    const height = image?.naturalHeight || image?.height || 720;
+    const naturalWidth = image?.naturalWidth || image?.width || 1280;
+    const naturalHeight = image?.naturalHeight || image?.height || 720;
+    const authoredWidth = Number(layer.width);
+    const authoredHeight = Number(layer.height);
+    const hasWidth = Number.isFinite(authoredWidth) && authoredWidth > 0;
+    const hasHeight = Number.isFinite(authoredHeight) && authoredHeight > 0;
+    const width = hasWidth ? authoredWidth : hasHeight ? naturalWidth * (authoredHeight / naturalHeight) : naturalWidth;
+    const height = hasHeight ? authoredHeight : hasWidth ? naturalHeight * (authoredWidth / naturalWidth) : naturalHeight;
     const hasRight = Number.isFinite(Number(layer.right));
     const hasBottom = Number.isFinite(Number(layer.bottom));
     const left = Number.isFinite(Number(layer.left)) ? Number(layer.left) : null;

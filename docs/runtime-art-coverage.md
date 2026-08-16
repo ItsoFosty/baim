@@ -8,6 +8,9 @@
 - Mehana interaction scene: functional seated-table prototype with waiter ordering and Tony dialogue;
   it still uses intentional debug fallback art.
 - Bai Mitko model sheet: locked identity source.
+- Baba Stoyanka: seated painted cutout integrated at the village-square bus stop; the layer is
+  calibrated to `153px`, matching Bai Mitko's calculated height at the bench depth, and its dialogue
+  hotspot is aligned with the visible character.
 - Bai Mitko runtime animation: current source-art direction is model-sheet-preserving east walk
   only, with west mirrored from east. North/south walk, talk/look/use/take remain placeholders or
   deferred.
@@ -42,6 +45,7 @@ The current village square stays as a runtime proof and layout reference, not fi
 - `assets/chapter1/items/accordion.png`
 - `assets/chapter1/items/unpaid_bills.png`
 - `assets/chapter1/items/empty_envelope.png`
+- `assets/chapter1/characters/baba_stoyanka/seated-v1.png`
 
 ## Remaining Placeholders
 

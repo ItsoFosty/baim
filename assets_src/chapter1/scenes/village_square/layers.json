@@ -5,5 +5,16 @@
     "frontmost": 0,
     "horizon": 100
   },
-  "layers": []
+  "layers": [
+    {
+      "id": "layer.square.baba_stoyanka_seated",
+      "enabled": true,
+      "asset": "babaStoyankaSeated",
+      "output": "assets/chapter1/characters/baba_stoyanka/seated-v1.png",
+      "zIndex": 90,
+      "top": 299,
+      "left": 315,
+      "height": 153
+    }
+  ]
 }

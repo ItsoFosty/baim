@@ -1,5 +1,5 @@
 import { DialogueSystem } from "./DialogueSystem.js";
-import { applyEffects, firstMatchingRule } from "./EffectSystem.js";
+import { applyEffects, firstMatchingRule, requirementsMet } from "./EffectSystem.js";
 import { InventorySystem } from "./InventorySystem.js";
 import { Localization } from "./Localization.js";
 import { eastWestFallbackFacing, facingFromDelta, motionMultiplierAtFrame, MovementSystem } from "./MovementSystem.js";
@@ -1184,8 +1184,6 @@ export class Game {
   applyDialogueEffect(effect) {
     this.applyContentEffect(effect, { render: false });
     this.player.speaking = false;
-    this.dialogue.close();
-    this.renderUi();
   }
 
   effectContext() {
@@ -2113,10 +2111,15 @@ node tools/build-external-runtime-staging.js</pre>
       }
       panel.appendChild(entries);
     }
-    for (const choice of node.choices || []) {
+    for (const choice of (node.choices || []).filter((candidate) => this.dialogueChoiceAvailable(candidate))) {
       panel.appendChild(button(this.t(choice.textKey), () => this.dialogue.choose(choice) || this.renderUi()));
     }
     return panel;
+  }
+
+  dialogueChoiceAvailable(choice) {
+    return requirementsMet(choice?.requirements, this.effectContext())
+      && requirementsMet(choice?.effect?.requirements, this.effectContext());
   }
 
   createDroppedItemsPanel() {

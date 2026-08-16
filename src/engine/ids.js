@@ -19,6 +19,7 @@ export const DEFAULT_SAVE = {
   publicMood: 50,
   rakiaGlasses: 0,
   rakiaLastChangedAt: null,
+  babaCheapOfferAttempts: 0,
   inventory: [],
   droppedItems: [],
   hasAccordion: false,

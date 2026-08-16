@@ -243,9 +243,15 @@ Village square roughly aligned in logical `1280x720` scene coordinates:
 - old men bench hotspot
 - election notice hotspot
 - Baba Stoyanka anchor/interaction area
+- seated Baba Stoyanka scene layer at the bus-stop bench
 - Journalist anchor
 - Old Men Chorus anchor
 - Bai Mitko default spawn point
+
+The Baba cutout uses an authored `height` of `153` in the village-square layer source. This matches
+Bai Mitko's perspective-scaled height at `anchors.babaBench`; the renderer derives the cutout width
+from the PNG aspect ratio. Keep character cutout calibration in the authored layer source rather than
+resampling the approved runtime asset for every placement adjustment.
 
 ## Manual Alignment Still Needed
 

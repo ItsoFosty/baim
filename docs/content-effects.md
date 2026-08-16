@@ -71,6 +71,8 @@ All requirement groups are optional:
 | `flags` | Every listed key is truthy in `state.flags`. |
 | `notFlags` | Every listed key is falsy or absent in `state.flags`. |
 | `state` | Every key strictly equals its authored value in the top-level save state. |
+| `stateMin` | Every top-level numeric state value is greater than or equal to its authored threshold. |
+| `stateMax` | Every top-level numeric state value is less than or equal to its authored threshold. |
 
 An omitted or empty `requirements` object always matches. Because only the first matching rule is
 used, place narrow cases before broad fallbacks. If no rule matches, the normal localized
@@ -90,9 +92,10 @@ A dialogue choice uses the same effect definition under its `effect` field:
 }
 ```
 
-The dialogue closes after an effect choice is applied. A choice with `next` and no effect continues
-to that dialogue node. Keep choice labels and effect messages authored naturally in both supported
-languages.
+After an effect is applied, the choice follows normal dialogue navigation: a choice with `next`
+continues to that node, while a choice without `next` closes the dialogue. This allows one choice to
+start a quest and immediately show the NPC's response node. Keep choice labels, response nodes, and
+effect messages authored naturally in both supported languages.
 
 ## Extending The Vocabulary
 

@@ -148,7 +148,7 @@ export class SceneEditor {
         <input data-editor="layer-z" type="number" step="0.1" value="${escapeHtml(selectedLayer?.zIndex ?? 0)}">
       </label>
       <div class="scene-editor-layer-grid">
-        ${["left", "top", "right", "bottom"].map((key) => `<label>${key}<input data-editor="layer-field" data-field="${key}" type="number" step="1" value="${escapeHtml(layerFieldValue(selectedLayer, key))}"></label>`).join("")}
+        ${["left", "top", "right", "bottom", "width", "height"].map((key) => `<label>${key}<input data-editor="layer-field" data-field="${key}" type="number" step="1" value="${escapeHtml(layerFieldValue(selectedLayer, key))}"></label>`).join("")}
       </div>
       <div class="scene-editor-layer-position">${escapeHtml(layerPositionText(selectedLayer))}</div>
       <div class="scene-editor-actions">
@@ -961,7 +961,7 @@ function runtimeLayerFromSource(layer) {
   if (layer.visibleWhenFlag) result.visibleWhenFlag = String(layer.visibleWhenFlag);
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);
   if (layer.visibleDuringAction) result.visibleDuringAction = structuredClone(layer.visibleDuringAction);
-  for (const key of ["top", "left", "right", "bottom"]) {
+  for (const key of ["top", "left", "right", "bottom", "width", "height"]) {
     if (Number.isFinite(Number(layer[key]))) result[key] = Number(layer[key]);
   }
   if (!Number.isFinite(Number(result.top)) && !Number.isFinite(Number(result.bottom))) result.top = 0;

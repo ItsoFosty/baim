@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { Localization } from "../src/engine/Localization.js";
+import { DialogueSystem } from "../src/engine/DialogueSystem.js";
 import { SaveSystem } from "../src/engine/SaveSystem.js";
+import { QuestSystem } from "../src/engine/QuestSystem.js";
 import { pointInPolygon, findTargetAt, findWalkPath, isWalkable, pointInWalkMask, nearestWalkablePointOnLine, nearestReachableWalkablePoint, nearestWalkablePoint, sceneScale, walkPathDistance } from "../src/engine/SceneGeometry.js";
 import { DEFAULT_SAVE, VERBS } from "../src/engine/ids.js";
 import { characterHeight } from "../src/engine/CharacterRenderMath.js";
@@ -37,9 +39,11 @@ test("animation asset discovery includes every raster character slot without man
 });
 
 test("scene preload discovery includes action-timed and persistent raster layers", () => {
-  const paths = imageAssetPaths(assetManifest.scenes["scene.chapter1.apartment"]);
-  assert.ok(paths.includes(assetManifest.scenes["scene.chapter1.apartment"].windowOpenBack));
-  assert.ok(paths.includes(assetManifest.scenes["scene.chapter1.apartment"].windowOpen));
+  const apartmentPaths = imageAssetPaths(assetManifest.scenes["scene.chapter1.apartment"]);
+  assert.ok(apartmentPaths.includes(assetManifest.scenes["scene.chapter1.apartment"].windowOpenBack));
+  assert.ok(apartmentPaths.includes(assetManifest.scenes["scene.chapter1.apartment"].windowOpen));
+  const squarePaths = imageAssetPaths(assetManifest.scenes["scene.chapter1.village_square"]);
+  assert.ok(squarePaths.includes(assetManifest.scenes["scene.chapter1.village_square"].babaStoyankaSeated));
 });
 
 test("inventory preload discovery includes every authored high-resolution item icon", () => {
@@ -125,6 +129,68 @@ test("localization preserves conversational message arrays and applies replaceme
     en: { "msg.sequence": ["First, {name}.", "Then."] }
   }, "bg");
   assert.deepEqual(l10n.t("msg.sequence", { name: "Митко" }), ["Първо, Митко.", "После."]);
+});
+
+test("quest start effects activate a quest once before completion", () => {
+  const state = { activeQuests: [], completedQuests: [] };
+  const quests = new QuestSystem({
+    "quest.chapter1.baba_vote": { id: "quest.chapter1.baba_vote" }
+  }, state);
+
+  quests.start("quest.chapter1.baba_vote");
+  quests.start("quest.chapter1.baba_vote");
+  assert.deepEqual(state.activeQuests, ["quest.chapter1.baba_vote"]);
+  quests.complete("quest.chapter1.baba_vote");
+  assert.deepEqual(state.activeQuests, []);
+  assert.deepEqual(state.completedQuests, ["quest.chapter1.baba_vote"]);
+});
+
+test("dialogue choices honor inventory, flags, and cheap-offer thresholds", () => {
+  const game = Object.create(Game.prototype);
+  const owned = new Set(["item.sunflower_oil"]);
+  game.state = { flags: {}, babaCheapOfferAttempts: 2, babaStoyankaVote: false };
+  game.inventory = { has: (itemId) => owned.has(itemId) };
+  game.quests = null;
+
+  assert.equal(game.dialogueChoiceAvailable({
+    effect: { requirements: { items: ["item.sunflower_oil"], stateMax: { babaCheapOfferAttempts: 2 } } }
+  }), true);
+  game.state.babaCheapOfferAttempts = 3;
+  assert.equal(game.dialogueChoiceAvailable({
+    effect: { requirements: { items: ["item.sunflower_oil"], stateMax: { babaCheapOfferAttempts: 2 } } }
+  }), false);
+  game.state.flags.babaRequiresBetterGift = true;
+  assert.equal(game.dialogueChoiceAvailable({
+    requirements: { items: ["item.village_wine"], flags: ["babaRequiresBetterGift"] }
+  }), false);
+  owned.add("item.village_wine");
+  assert.equal(game.dialogueChoiceAvailable({
+    requirements: { items: ["item.village_wine"], flags: ["babaRequiresBetterGift"] }
+  }), true);
+});
+
+test("dialogue choices can apply an effect and then advance to an answer node", () => {
+  const applied = [];
+  const game = Object.create(Game.prototype);
+  game.player = { speaking: true };
+  game.applyContentEffect = (effect, options) => applied.push({ effect, options });
+  game.dialogue = new DialogueSystem({
+    "dialogue.test": {
+      nodes: {
+        start: {},
+        answer: { lineKey: "dialogue.test.answer" }
+      }
+    }
+  }, null, (effect) => game.applyDialogueEffect(effect));
+  game.dialogue.start("dialogue.test");
+
+  const effect = { effects: [{ type: "startQuest", questId: "quest.test" }] };
+  game.dialogue.choose({ effect, next: "answer" });
+
+  assert.deepEqual(applied, [{ effect, options: { render: false } }]);
+  assert.equal(game.player.speaking, false);
+  assert.equal(game.dialogue.current.nodeId, "answer");
+  assert.equal(game.dialogue.getNode().lineKey, "dialogue.test.answer");
 });
 
 test("dropping an inventory item leaves a saved recoverable record in the current scene", () => {
@@ -259,7 +325,12 @@ test("village square uses the shared raster, object, and layer scene pipeline", 
   assert.equal(scene.walkMask.rows.length, 36);
   assert.equal(scene.walkMask.rows.every((row) => row.length === 64), true);
   assert.equal(scene.walkMask.rows.join("").includes("c"), true);
-  assert.deepEqual(scene.foregroundLayers, []);
+  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.square.baba_stoyanka_seated"
+    && layer.asset === "babaStoyankaSeated"
+    && layer.zIndex === 90
+    && layer.left === 315
+    && layer.top === 299
+    && layer.height === 153));
   for (const object of [...scene.exits, ...scene.interactables, ...scene.npcs]) {
     assert.ok(object.polygon?.length >= 3, `${object.id} needs generated editor geometry`);
   }
@@ -281,7 +352,7 @@ test("village square mehana menu uses the authored editor geometry and bilingual
   assert.equal(typeof strings.bg[menu.lookKey], "string");
   assert.equal(typeof strings.en[menu.lookKey], "string");
   const menuDialogue = chapter1.dialogues.find((dialogue) => dialogue.id === menu.useDialogueId);
-  assert.equal(menuDialogue.nodes.start.entries.length, 8);
+  assert.equal(menuDialogue.nodes.start.entries.length, 9);
 });
 
 test("using a content-authored reading target opens its menu dialogue", () => {
@@ -652,6 +723,25 @@ test("stateful scene layers stay hidden until their save flag is set", () => {
   renderer.game.state.flags.apartmentWindowOpen = true;
   assert.equal(renderer.sceneLayerVisible(layer), true);
   assert.equal(renderer.sceneLayerVisible({}), true);
+});
+
+test("scene raster layers support calibrated height while preserving image aspect ratio", () => {
+  const renderer = Object.create(Renderer.prototype);
+  const rect = renderer.sceneLayerRect(
+    { left: 315, top: 299, height: 153 },
+    { naturalWidth: 101, naturalHeight: 165 }
+  );
+  assert.equal(rect.x, 315);
+  assert.equal(rect.y, 299);
+  assert.equal(rect.h, 153);
+  assert.equal(rect.w, 101 * (153 / 165));
+});
+
+test("Baba's seated layer matches Bai Mitko's height at the bus-stop bench depth", () => {
+  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
+  const babaLayer = square.foregroundLayers.find((layer) => layer.id === "layer.square.baba_stoyanka_seated");
+  const mitkoHeight = characterHeight(characterDefinitions["npc.bai_mitko"], square, square.anchors.babaBench);
+  assert.equal(babaLayer.height, Math.round(mitkoHeight));
 });
 
 test("collectible scene layers hide as soon as their item is owned", () => {

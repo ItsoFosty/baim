@@ -33,7 +33,11 @@ Layer position fields are explicit runtime placement controls:
 - `top`, `left`, `right`, and `bottom` are measured in the `1280x720` logical canvas space.
 - Defaults are `top: 0` and `left: 0`.
 - Use `right` instead of `left`, or `bottom` instead of `top`, when a manually clipped layer should stay aligned to that side of the scene.
-- Layer images are drawn 1:1 at their natural PNG size. Runtime metadata must not scale them.
+- Layer images default to their natural PNG size.
+- Optional positive `width` and `height` fields scale trimmed layers. Supplying only one preserves
+  the PNG aspect ratio; supplying both uses the exact authored dimensions.
+- Reserve runtime scaling for intentional placement calibration, such as a static NPC cutout at a
+  known perspective depth. Prepare backgrounds and full-canvas occlusion layers at final size.
 - Full-canvas layers must be prepared as `1280x720` alpha images before they are put under `assets/`.
 - Trimmed prop layers, such as removable papers on a table, keep their natural trimmed image size and explicit placement.
 
@@ -77,7 +81,7 @@ and asset keys to `layers.json`, then use the `Layer positions` tool to place th
 - select the layer from the layer dropdown;
 - drag the selected layer on the scene;
 - use `x-1`, `x+1`, `y-1`, and `y+1` for one-pixel nudges;
-- edit `Z position` directly;
+- edit `Z position`, `width`, and `height` directly;
 - `Save Layers` writes back only the authored layer source and rebuilds generated runtime metadata.
 
 If a manual black/white mask is provided, `node tools/build-scene-layers.js` can copy original

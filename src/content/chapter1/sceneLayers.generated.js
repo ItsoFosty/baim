@@ -8,9 +8,7 @@ export const sceneLayerGeometry = {
         "asset": "foregroundTable",
         "zIndex": -1,
         "top": 389,
-        "left": 104,
-        "width": 1280,
-        "height": 720
+        "left": 104
       },
       {
         "id": "layer.apartment.bills_on_table",

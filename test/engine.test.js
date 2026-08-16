@@ -296,7 +296,13 @@ test("apartment uses a raster walk mask for walkable floor", () => {
   assert.equal(scene.walkMask.rows.join("").includes("c"), true);
   assert.equal(scene.walkMask.rows.join("").includes("e"), false);
   assert.equal(scene.walkMask.legend.e, undefined);
-  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.table_foreground" && layer.asset === "foregroundTable" && layer.zIndex === -1));
+  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.table_foreground"
+    && layer.asset === "foregroundTable"
+    && layer.zIndex === -1
+    && layer.left === 104
+    && layer.top === 389
+    && layer.width === undefined
+    && layer.height === undefined));
   assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.bills_on_table"
     && layer.asset === "billsOnTable"
     && layer.zIndex === -2
@@ -735,6 +741,15 @@ test("scene raster layers support calibrated height while preserving image aspec
   assert.equal(rect.y, 299);
   assert.equal(rect.h, 153);
   assert.equal(rect.w, 101 * (153 / 165));
+});
+
+test("trimmed scene raster layers render at their natural size", () => {
+  const renderer = Object.create(Renderer.prototype);
+  const rect = renderer.sceneLayerRect(
+    { left: 104, top: 389 },
+    { naturalWidth: 375, naturalHeight: 273 }
+  );
+  assert.deepEqual(rect, { x: 104, y: 389, w: 375, h: 273, width: 375, height: 273 });
 });
 
 test("Baba's seated layer matches Bai Mitko's height at the bus-stop bench depth", () => {

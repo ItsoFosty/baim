@@ -131,6 +131,7 @@ export class Game {
     this.paused = false;
     this.sceneTransitionPending = false;
     this.hoveredTarget = null;
+    this.dialogueChoicePointerLock = null;
     this.lastTime = 0;
     this.inputBound = false;
     this.renderUi();
@@ -199,7 +200,11 @@ export class Game {
         return;
       }
       if (event.button !== 0 || this.menuOpen || this.paused || this.dialogue.current) return;
+      const dialogueWasOpen = Boolean(this.dialogue.current);
       this.handleWorldClick(this.renderer.screenToWorld(event.clientX, event.clientY));
+      if (!dialogueWasOpen && this.dialogue.current) {
+        this.dialogueChoicePointerLock = event.pointerId;
+      }
     });
     this.canvas.addEventListener("pointermove", (event) => {
       const point = this.renderer.screenToWorld(event.clientX, event.clientY);
@@ -213,8 +218,9 @@ export class Game {
       if (this.editMode) this.sceneEditor?.handlePointerLeave();
       else this.updateHoveredTarget(null);
     });
-    window.addEventListener("pointerup", () => {
+    window.addEventListener("pointerup", (event) => {
       if (this.editMode) this.sceneEditor?.handlePointerUp();
+      this.releaseDialogueChoicePointerLock(event.pointerId);
     });
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
@@ -2112,9 +2118,24 @@ node tools/build-external-runtime-staging.js</pre>
       panel.appendChild(entries);
     }
     for (const choice of (node.choices || []).filter((candidate) => this.dialogueChoiceAvailable(candidate))) {
-      panel.appendChild(button(this.t(choice.textKey), () => this.dialogue.choose(choice) || this.renderUi()));
+      panel.appendChild(button(this.t(choice.textKey), (event) => this.chooseDialogueChoice(choice, event)));
     }
     return panel;
+  }
+
+  chooseDialogueChoice(choice, event) {
+    if (this.dialogueChoicePointerLock !== null && event?.detail !== 0) return false;
+    this.dialogue.choose(choice);
+    this.renderUi();
+    return true;
+  }
+
+  releaseDialogueChoicePointerLock(pointerId) {
+    if (this.dialogueChoicePointerLock === null || this.dialogueChoicePointerLock !== pointerId) return;
+    const lockedPointerId = pointerId;
+    setTimeout(() => {
+      if (this.dialogueChoicePointerLock === lockedPointerId) this.dialogueChoicePointerLock = null;
+    }, 0);
   }
 
   dialogueChoiceAvailable(choice) {

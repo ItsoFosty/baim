@@ -46,9 +46,9 @@ export const sceneLayerGeometry = {
         "id": "layer.square.baba_stoyanka_seated",
         "asset": "babaStoyankaSeated",
         "zIndex": 90,
-        "top": 299,
-        "left": 315,
-        "height": 153
+        "top": 330,
+        "left": 325,
+        "height": 122
       }
     ]
   }

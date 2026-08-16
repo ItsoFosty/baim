@@ -248,9 +248,10 @@ Village square roughly aligned in logical `1280x720` scene coordinates:
 - Old Men Chorus anchor
 - Bai Mitko default spawn point
 
-The Baba cutout uses an authored `height` of `153` in the village-square layer source. This matches
-Bai Mitko's perspective-scaled height at `anchors.babaBench`; the renderer derives the cutout width
-from the PNG aspect ratio. Keep character cutout calibration in the authored layer source rather than
+The Baba cutout uses an authored `height` of `122` in the village-square layer source, approximately
+80% of Bai Mitko's perspective-scaled height at `anchors.babaBench`. Its `left` and `top` placement
+preserves the previous visual center and seated baseline; the renderer derives the cutout width from
+the PNG aspect ratio. Keep character cutout calibration in the authored layer source rather than
 resampling the approved runtime asset for every placement adjustment.
 
 ## Manual Alignment Still Needed

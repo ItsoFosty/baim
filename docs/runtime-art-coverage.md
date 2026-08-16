@@ -9,8 +9,8 @@
   it still uses intentional debug fallback art.
 - Bai Mitko model sheet: locked identity source.
 - Baba Stoyanka: seated painted cutout integrated at the village-square bus stop; the layer is
-  calibrated to `153px`, matching Bai Mitko's calculated height at the bench depth, and its dialogue
-  hotspot is aligned with the visible character.
+  calibrated to `122px`, approximately 20% smaller than Bai Mitko's calculated height at the bench
+  depth, and its dialogue hotspot is aligned with the visible character.
 - Bai Mitko runtime animation: current source-art direction is model-sheet-preserving east walk
   only, with west mirrored from east. North/south walk, talk/look/use/take remain placeholders or
   deferred.

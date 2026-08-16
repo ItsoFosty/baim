@@ -12,9 +12,9 @@
       "asset": "babaStoyankaSeated",
       "output": "assets/chapter1/characters/baba_stoyanka/seated-v1.png",
       "zIndex": 90,
-      "top": 299,
-      "left": 315,
-      "height": 153
+      "top": 330,
+      "left": 325,
+      "height": 122
     }
   ]
 }

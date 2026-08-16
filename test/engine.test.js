@@ -334,9 +334,9 @@ test("village square uses the shared raster, object, and layer scene pipeline", 
   assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.square.baba_stoyanka_seated"
     && layer.asset === "babaStoyankaSeated"
     && layer.zIndex === 90
-    && layer.left === 315
-    && layer.top === 299
-    && layer.height === 153));
+    && layer.left === 325
+    && layer.top === 330
+    && layer.height === 122));
   for (const object of [...scene.exits, ...scene.interactables, ...scene.npcs]) {
     assert.ok(object.polygon?.length >= 3, `${object.id} needs generated editor geometry`);
   }
@@ -731,6 +731,24 @@ test("stateful scene layers stay hidden until their save flag is set", () => {
   assert.equal(renderer.sceneLayerVisible({}), true);
 });
 
+test("the pointer gesture that opens a dialogue cannot also choose its first option", () => {
+  const game = Object.create(Game.prototype);
+  let choices = 0;
+  let renders = 0;
+  game.dialogueChoicePointerLock = 7;
+  game.dialogue = { choose: () => { choices += 1; } };
+  game.renderUi = () => { renders += 1; };
+
+  assert.equal(game.chooseDialogueChoice({}, { detail: 1 }), false);
+  assert.equal(choices, 0);
+  assert.equal(renders, 0);
+
+  game.dialogueChoicePointerLock = null;
+  assert.equal(game.chooseDialogueChoice({}, { detail: 1 }), true);
+  assert.equal(choices, 1);
+  assert.equal(renders, 1);
+});
+
 test("scene raster layers support calibrated height while preserving image aspect ratio", () => {
   const renderer = Object.create(Renderer.prototype);
   const rect = renderer.sceneLayerRect(
@@ -752,11 +770,11 @@ test("trimmed scene raster layers render at their natural size", () => {
   assert.deepEqual(rect, { x: 104, y: 389, w: 375, h: 273, width: 375, height: 273 });
 });
 
-test("Baba's seated layer matches Bai Mitko's height at the bus-stop bench depth", () => {
+test("Baba's seated layer is twenty percent smaller than Bai Mitko at the bus-stop bench depth", () => {
   const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
   const babaLayer = square.foregroundLayers.find((layer) => layer.id === "layer.square.baba_stoyanka_seated");
   const mitkoHeight = characterHeight(characterDefinitions["npc.bai_mitko"], square, square.anchors.babaBench);
-  assert.equal(babaLayer.height, Math.round(mitkoHeight));
+  assert.equal(babaLayer.height, Math.round(mitkoHeight * 0.8));
 });
 
 test("collectible scene layers hide as soon as their item is owned", () => {

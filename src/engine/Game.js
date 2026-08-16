@@ -235,9 +235,38 @@ export class Game {
     const params = new URLSearchParams(globalThis.location?.search || "");
     const requestedSceneId = params.get("scene");
     if (requestedSceneId && this.content.scenes[requestedSceneId]) {
-      return this.content.scenes[requestedSceneId];
+      return this.sceneWithDroppedItems(this.content.scenes[requestedSceneId]);
     }
-    return this.content.scenes[this.state.currentSceneId] || this.content.scenes[DEFAULT_SAVE.currentSceneId];
+    const scene = this.content.scenes[this.state.currentSceneId] || this.content.scenes[DEFAULT_SAVE.currentSceneId];
+    return this.sceneWithDroppedItems(scene);
+  }
+
+  droppedItemsInScene(sceneId = this.currentScene?.id) {
+    return (this.state.droppedItems || []).filter((record) => record.sceneId === sceneId);
+  }
+
+  sceneWithDroppedItems(scene) {
+    if (!scene) return scene;
+    const droppedItems = this.droppedItemsInScene(scene.id);
+    if (!droppedItems.length) return scene;
+    const position = droppedItems[0].position || scene.playerStart;
+    const width = 112;
+    const height = 75;
+    const pile = {
+      id: `hotspot.dropped_items.${scene.id}`,
+      kind: "hotspot",
+      nameKey: "hotspot.dropped_items.name",
+      lookKey: "look.dropped_items",
+      droppedItemsPile: true,
+      droppedItemsPileAsset: "droppedBelongingsPile",
+      rect: { x: position.x - width / 2, y: position.y - height, w: width, h: height }
+    };
+    return { ...scene, interactables: [...scene.interactables, pile] };
+  }
+
+  refreshCurrentSceneDroppedItems() {
+    const baseScene = this.content.scenes[this.currentScene.id];
+    this.currentScene = this.sceneWithDroppedItems(baseScene);
   }
 
   readDebugGeometrySetting() {
@@ -1090,6 +1119,17 @@ export class Game {
       this.changeScene(target.targetSceneId, target.targetPosition);
       return;
     }
+    if (target.droppedItemsPile) {
+      if (this.selectedVerb === VERBS.LOOK) {
+        this.setStatusMessage(this.t("look.dropped_items", { count: this.droppedItemsInScene().length }));
+      } else if (this.selectedVerb === VERBS.USE || this.selectedVerb === VERBS.TAKE) {
+        this.droppedItemsOpen = true;
+        this.renderUi();
+      } else {
+        this.setStatusMessage(this.t("msg.need_talk"), { reject: true });
+      }
+      return;
+    }
     const actionSequence = forcedActionSequence || this.actionSequenceForTarget(target, this.selectedVerb);
     if (actionSequence && this.startInteractionActionSequence(target, this.selectedVerb, actionSequence)) return;
     if (this.selectedVerb === VERBS.LOOK) {
@@ -1129,6 +1169,13 @@ export class Game {
   }
 
   useTarget(target) {
+    if (target.useDialogueId) {
+      this.clearStatusMessage();
+      this.dialogue.start(target.useDialogueId);
+      this.player.speaking = false;
+      this.renderUi();
+      return;
+    }
     const rule = firstMatchingRule(target.useRules, this.effectContext());
     if (rule) return this.applyContentEffect(rule);
     this.setStatusMessage(this.t("msg.no_use"), { reject: true });
@@ -1172,7 +1219,8 @@ export class Game {
     try {
       await this.assets.preloadSceneAssets(sceneId);
       if (this.sceneLoadToken !== sceneLoadToken) return;
-      this.currentScene = this.content.scenes[sceneId];
+      this.currentScene = this.sceneWithDroppedItems(this.content.scenes[sceneId]);
+      this.droppedItemsOpen = false;
       this.state.currentSceneId = sceneId;
       this.player.position = { ...(position || this.currentScene.playerStart) };
       this.player.target = null;
@@ -1208,7 +1256,8 @@ export class Game {
   reset() {
     this.state = this.saveSystem.reset();
     this.localization.setLanguage(this.state.language);
-    this.currentScene = this.content.scenes[this.state.currentSceneId];
+    this.currentScene = this.sceneWithDroppedItems(this.content.scenes[this.state.currentSceneId]);
+    this.droppedItemsOpen = false;
     this.inventory = new InventorySystem(this.content.items, this.state);
     this.quests = new QuestSystem(this.content.quests, this.state);
     this.player.position = { ...this.currentScene.playerStart };
@@ -1277,6 +1326,9 @@ export class Game {
     if (dialogueNode) this.uiRoot.appendChild(this.createDialogue(dialogueNode));
     if (this.speechBubble && !this.menuOpen && !this.paused && !dialogueNode) this.uiRoot.appendChild(this.createSpeechBubble());
     if (!this.editMode && !this.devHome && !this.menuOpen && !this.paused && !dialogueNode) this.uiRoot.appendChild(this.createHud());
+    if (this.droppedItemsOpen && !this.menuOpen && !this.paused && !dialogueNode) {
+      this.uiRoot.appendChild(this.createDroppedItemsPanel());
+    }
     this.uiRoot.appendChild(this.createTopBar());
   }
 
@@ -1379,12 +1431,64 @@ export class Game {
       tooltip.setAttribute("role", "tooltip");
       tooltip.textContent = itemName;
       itemButton.appendChild(tooltip);
-      itemButton.addEventListener("click", () => this.setStatusMessage(this.t(item.descriptionKey)));
+      itemButton.classList.toggle("selected", this.selectedInventoryItemId === item.id);
+      itemButton.setAttribute("aria-pressed", String(this.selectedInventoryItemId === item.id));
+      itemButton.addEventListener("click", () => {
+        this.selectedInventoryItemId = this.selectedInventoryItemId === item.id ? null : item.id;
+        this.renderUi();
+      });
       dock.appendChild(itemButton);
     });
     dock.addEventListener("keydown", (event) => this.handleInventoryDockKeydown(event, dock));
     panel.appendChild(dock);
+    const selectedItem = items.find((item) => item.id === this.selectedInventoryItemId);
+    if (selectedItem) {
+      const actions = element("div", "inventory-item-actions");
+      const name = element("span", "inventory-item-actions-name");
+      name.textContent = this.t(selectedItem.nameKey);
+      actions.append(
+        name,
+        button(this.t("ui.inventory.inspect"), () => this.setStatusMessage(this.t(selectedItem.descriptionKey))),
+        button(this.t("ui.inventory.drop"), () => this.dropInventoryItem(selectedItem))
+      );
+      panel.appendChild(actions);
+    }
     return panel;
+  }
+
+  dropInventoryItem(item) {
+    if (!item?.id || !this.inventory.has(item.id)) return false;
+    this.state.droppedItems ||= [];
+    const existingPile = this.droppedItemsInScene()[0];
+    const requestedPosition = { x: this.player.position.x + 54, y: this.player.position.y };
+    const position = existingPile?.position
+      || nearestWalkablePoint(this.currentScene, requestedPosition)
+      || { ...this.player.position };
+    this.state.droppedItems.push({ itemId: item.id, sceneId: this.currentScene.id, position });
+    this.inventory.remove(item.id);
+    this.selectedInventoryItemId = null;
+    this.refreshCurrentSceneDroppedItems();
+    this.droppedItemsOpen = true;
+    this.save();
+    this.setStatusMessage(this.t("msg.inventory.dropped_nearby", { item: this.t(item.nameKey) }));
+    this.renderUi();
+    return true;
+  }
+
+  pickUpDroppedItem(itemId) {
+    const recordIndex = (this.state.droppedItems || []).findIndex((record) => (
+      record.sceneId === this.currentScene.id && record.itemId === itemId
+    ));
+    if (recordIndex < 0 || this.inventory.has(itemId)) return false;
+    const item = this.content.items[itemId];
+    this.state.droppedItems.splice(recordIndex, 1);
+    this.inventory.add(itemId);
+    this.refreshCurrentSceneDroppedItems();
+    if (!this.droppedItemsInScene().length) this.droppedItemsOpen = false;
+    this.save();
+    this.setStatusMessage(this.t("msg.inventory.picked_up_again", { item: this.t(item?.nameKey || itemId) }));
+    this.renderUi();
+    return true;
   }
 
   handleInventoryDockKeydown(event, dock) {
@@ -1995,12 +2099,46 @@ node tools/build-external-runtime-staging.js</pre>
 
   createDialogue(node) {
     const panel = element("section", "dialogue-panel");
-    const line = document.createElement("p");
-    line.textContent = this.t(node.lineKey);
-    panel.appendChild(line);
+    if (node.lineKey) {
+      const line = document.createElement("p");
+      line.textContent = this.t(node.lineKey);
+      panel.appendChild(line);
+    }
+    if (node.entries?.length) {
+      const entries = element("div", "dialogue-menu-entries");
+      for (const entry of node.entries) {
+        const row = document.createElement(entry.kind === "heading" ? "h3" : "p");
+        row.textContent = this.t(entry.textKey);
+        entries.appendChild(row);
+      }
+      panel.appendChild(entries);
+    }
     for (const choice of node.choices || []) {
       panel.appendChild(button(this.t(choice.textKey), () => this.dialogue.choose(choice) || this.renderUi()));
     }
+    return panel;
+  }
+
+  createDroppedItemsPanel() {
+    const panel = element("section", "panel dropped-items-panel");
+    panel.addEventListener("pointerdown", (event) => event.stopPropagation());
+    panel.addEventListener("click", (event) => event.stopPropagation());
+    const title = document.createElement("h2");
+    title.textContent = this.t("ui.dropped_items.title");
+    panel.appendChild(title);
+    for (const record of this.droppedItemsInScene()) {
+      const item = this.content.items[record.itemId];
+      if (!item) continue;
+      const row = element("div", "dropped-item-row");
+      const name = document.createElement("span");
+      name.textContent = this.t(item.nameKey);
+      row.append(name, button(this.t("ui.dropped_items.pick_up"), () => this.pickUpDroppedItem(item.id)));
+      panel.appendChild(row);
+    }
+    panel.appendChild(button(this.t("ui.dropped_items.close"), () => {
+      this.droppedItemsOpen = false;
+      this.renderUi();
+    }));
     return panel;
   }
 }

@@ -188,6 +188,7 @@ const rawScenes = [
         kind: "exit",
         nameKey: "exit.to_mehana",
         rect: { x: 0, y: 120, w: 235, h: 345 },
+        depthY: 590,
         targetSceneId: "scene.chapter1.mehana",
         targetPosition: { x: 430, y: 530 }
       },
@@ -242,6 +243,14 @@ const rawScenes = [
         nameKey: "hotspot.election_notice.name",
         rect: { x: 520, y: 315, w: 120, h: 80 },
         lookKey: "look.square.election_notice"
+      },
+      {
+        id: "hotspot.square.mehana_menu",
+        kind: "hotspot",
+        nameKey: "hotspot.square.mehana_menu.name",
+        rect: { x: 168, y: 332, w: 51, h: 102 },
+        lookKey: "look.square.mehana_menu",
+        useDialogueId: "dialogue.square.mehana_menu"
       }
     ],
     npcs: [

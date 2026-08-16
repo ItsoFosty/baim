@@ -105,22 +105,45 @@ test("Tony vote vertical slice is reachable from authored Chapter 1 data", () =>
   assert.deepEqual(completed, ["quest.chapter1.tony_vote"]);
 });
 
-test("Mehana waiter orders are authored as reusable inventory effects", () => {
+test("Mehana waiter asks for here or to go before serving every order", () => {
   const waiterDialogue = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.mehana_waiter");
   const choices = waiterDialogue.nodes.start.choices;
   const rakiaOrder = choices.find((choice) => choice.textKey === "dialogue.waiter.choice.rakia");
   const shopskaOrder = choices.find((choice) => choice.textKey === "dialogue.waiter.choice.shopska");
+  const soupOrder = choices.find((choice) => choice.textKey === "dialogue.waiter.choice.tripe_soup");
+  assert.equal(rakiaOrder.next, "rakia_serving");
+  assert.equal(shopskaOrder.next, "shopska_serving");
+  assert.equal(soupOrder.next, "tripe_soup_serving");
+
+  const forHere = (nodeId) => waiterDialogue.nodes[nodeId].choices
+    .find((choice) => choice.textKey === "dialogue.waiter.choice.for_here");
+  const toGo = (nodeId) => waiterDialogue.nodes[nodeId].choices
+    .find((choice) => choice.textKey === "dialogue.waiter.choice.to_go");
   const inventory = inventoryWith();
-  const state = { flags: {} };
+  const state = { flags: {}, rakiaGlasses: 4 };
 
-  applyEffects(rakiaOrder.effect.effects, { state, inventory });
-  applyEffects(shopskaOrder.effect.effects, { state, inventory });
+  applyEffects(forHere("rakia_serving").effect.effects, { state, inventory });
+  applyEffects(forHere("shopska_serving").effect.effects, { state, inventory });
+  applyEffects(forHere("tripe_soup_serving").effect.effects, { state, inventory });
 
-  assert.equal(inventory.has("item.rakia"), true);
-  assert.equal(inventory.has("item.shopska_salad"), true);
+  assert.equal(inventory.has("item.rakia"), false);
+  assert.equal(inventory.has("item.shopska_salad"), false);
+  assert.equal(inventory.has("item.tripe_soup"), false);
   assert.equal(state.flags.mehanaOrderedRakia, true);
   assert.equal(state.flags.mehanaOrderedShopska, true);
-  assert.equal(state.rakiaGlasses, 1);
+  assert.equal(state.flags.mehanaOrderedTripeSoup, true);
+  assert.equal(state.rakiaGlasses, 3);
+
+  const takeawayInventory = inventoryWith();
+  const takeawayState = { flags: {}, rakiaGlasses: 0 };
+  applyEffects(toGo("rakia_serving").effect.effects, { state: takeawayState, inventory: takeawayInventory });
+  applyEffects(toGo("shopska_serving").effect.effects, { state: takeawayState, inventory: takeawayInventory });
+  applyEffects(toGo("tripe_soup_serving").effect.effects, { state: takeawayState, inventory: takeawayInventory });
+
+  assert.equal(takeawayInventory.has("item.rakia"), true);
+  assert.equal(takeawayInventory.has("item.shopska_salad"), true);
+  assert.equal(takeawayInventory.has("item.tripe_soup"), true);
+  assert.equal(takeawayState.rakiaGlasses, 0);
 });
 
 test("apartment bottle, sofa-bed, water, and tripe soup author the intoxication loop", () => {
@@ -130,7 +153,8 @@ test("apartment bottle, sofa-bed, water, and tripe soup author the intoxication 
   const bottle = apartment.interactables.find((target) => target.id === "hotspot.apartment.rakia_bottle");
   const bed = apartment.interactables.find((target) => target.id === "hotspot.apartment.bed");
   const water = mehana.interactables.find((target) => target.id === "hotspot.mehana.water_jug");
-  const soup = waiter.nodes.start.choices.find((choice) => choice.textKey === "dialogue.waiter.choice.tripe_soup");
+  const soup = waiter.nodes.tripe_soup_serving.choices
+    .find((choice) => choice.textKey === "dialogue.waiter.choice.for_here");
   const inventory = inventoryWith("item.glass_of_water");
   const state = { rakiaGlasses: 5, tonyVote: false, flags: {} };
   const context = { state, inventory, now: () => 9000 };

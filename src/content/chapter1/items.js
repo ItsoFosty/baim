@@ -5,6 +5,7 @@ export const items = [
   { id: "item.fake_diploma", nameKey: "item.fake_diploma.name", descriptionKey: "item.fake_diploma.desc" },
   { id: "item.rakia", nameKey: "item.rakia.name", descriptionKey: "item.rakia.desc" },
   { id: "item.shopska_salad", nameKey: "item.shopska_salad.name", descriptionKey: "item.shopska_salad.desc" },
+  { id: "item.tripe_soup", nameKey: "item.tripe_soup.name", descriptionKey: "item.tripe_soup.desc" },
   { id: "item.sunflower_oil", nameKey: "item.sunflower_oil.name", descriptionKey: "item.sunflower_oil.desc" },
   { id: "item.glass_of_water", nameKey: "item.glass_of_water.name", descriptionKey: "item.glass_of_water.desc" },
   { id: "item.campaign_pamphlets", nameKey: "item.campaign_pamphlets.name", descriptionKey: "item.campaign_pamphlets.desc" },

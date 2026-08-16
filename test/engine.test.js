@@ -127,6 +127,72 @@ test("localization preserves conversational message arrays and applies replaceme
   assert.deepEqual(l10n.t("msg.sequence", { name: "Митко" }), ["Първо, Митко.", "После."]);
 });
 
+test("dropping an inventory item leaves a saved recoverable record in the current scene", () => {
+  const game = Object.create(Game.prototype);
+  const owned = new Set(["item.accordion"]);
+  let saves = 0;
+  let renders = 0;
+  let sceneRefreshes = 0;
+  let message = null;
+  game.state = { droppedItems: [] };
+  game.currentScene = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.apartment");
+  game.player = { position: { x: 700, y: 540 } };
+  game.inventory = {
+    has: (itemId) => owned.has(itemId),
+    add: (itemId) => owned.add(itemId),
+    remove: (itemId) => owned.delete(itemId)
+  };
+  game.selectedInventoryItemId = "item.accordion";
+  game.t = (key, replacements = {}) => key === "item.accordion.name"
+    ? "Акордеон"
+    : `dropped:${replacements.item}`;
+  game.save = () => { saves += 1; };
+  game.setStatusMessage = (nextMessage) => { message = nextMessage; };
+  game.renderUi = () => { renders += 1; };
+  game.refreshCurrentSceneDroppedItems = () => { sceneRefreshes += 1; };
+
+  assert.equal(game.dropInventoryItem({ id: "item.accordion", nameKey: "item.accordion.name" }), true);
+  assert.equal(owned.has("item.accordion"), false);
+  assert.equal(game.state.droppedItems[0].itemId, "item.accordion");
+  assert.equal(game.state.droppedItems[0].sceneId, "scene.chapter1.apartment");
+  assert.ok(Number.isFinite(game.state.droppedItems[0].position.x));
+  assert.equal(game.selectedInventoryItemId, null);
+  assert.equal(message, "dropped:Акордеон");
+  assert.equal(game.droppedItemsOpen, true);
+  assert.equal(sceneRefreshes, 1);
+  assert.equal(saves, 1);
+  assert.equal(renders, 1);
+
+  game.content = { items: { "item.accordion": { id: "item.accordion", nameKey: "item.accordion.name" } } };
+  assert.equal(game.pickUpDroppedItem("item.accordion"), true);
+  assert.equal(owned.has("item.accordion"), true);
+  assert.deepEqual(game.state.droppedItems, []);
+  assert.equal(game.droppedItemsOpen, false);
+  assert.equal(sceneRefreshes, 2);
+  assert.equal(saves, 2);
+  assert.equal(renders, 2);
+});
+
+test("saved dropped items create one compact interactive pile per scene", () => {
+  const game = Object.create(Game.prototype);
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  game.state = {
+    droppedItems: [
+      { itemId: "item.accordion", sceneId: scene.id, position: { x: 420, y: 530 } },
+      { itemId: "item.empty_envelope", sceneId: scene.id, position: { x: 420, y: 530 } },
+      { itemId: "item.unpaid_bills", sceneId: "scene.chapter1.apartment", position: { x: 700, y: 560 } }
+    ]
+  };
+
+  const decorated = game.sceneWithDroppedItems(scene);
+  const piles = decorated.interactables.filter((target) => target.droppedItemsPile);
+
+  assert.equal(piles.length, 1);
+  assert.equal(piles[0].id, "hotspot.dropped_items.scene.chapter1.village_square");
+  assert.equal(piles[0].droppedItemsPileAsset, "droppedBelongingsPile");
+  assert.deepEqual(piles[0].rect, { x: 364, y: 455, w: 112, h: 75 });
+});
+
 test("scene polygon geometry detects walkable space", () => {
   const square = [
     { x: 0, y: 0 },
@@ -197,6 +263,43 @@ test("village square uses the shared raster, object, and layer scene pipeline", 
   for (const object of [...scene.exits, ...scene.interactables, ...scene.npcs]) {
     assert.ok(object.polygon?.length >= 3, `${object.id} needs generated editor geometry`);
   }
+});
+
+test("village square mehana menu uses the authored editor geometry and bilingual menu copy", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const menu = scene.interactables.find((target) => target.id === "hotspot.square.mehana_menu");
+
+  assert.ok(menu);
+  assert.equal(menu.lookKey, "look.square.mehana_menu");
+  assert.equal(menu.useDialogueId, "dialogue.square.mehana_menu");
+  assert.deepEqual(menu.polygon, [
+    { x: 169, y: 333 },
+    { x: 216, y: 332 },
+    { x: 219, y: 431 },
+    { x: 168, y: 434 }
+  ]);
+  assert.equal(typeof strings.bg[menu.lookKey], "string");
+  assert.equal(typeof strings.en[menu.lookKey], "string");
+  const menuDialogue = chapter1.dialogues.find((dialogue) => dialogue.id === menu.useDialogueId);
+  assert.equal(menuDialogue.nodes.start.entries.length, 8);
+});
+
+test("using a content-authored reading target opens its menu dialogue", () => {
+  const game = Object.create(Game.prototype);
+  let openedDialogue = null;
+  let renders = 0;
+  let clearedMessages = 0;
+  game.dialogue = { start: (dialogueId) => { openedDialogue = dialogueId; } };
+  game.player = { speaking: true };
+  game.clearStatusMessage = () => { clearedMessages += 1; };
+  game.renderUi = () => { renders += 1; };
+
+  game.useTarget({ useDialogueId: "dialogue.square.mehana_menu" });
+
+  assert.equal(openedDialogue, "dialogue.square.mehana_menu");
+  assert.equal(game.player.speaking, false);
+  assert.equal(clearedMessages, 1);
+  assert.equal(renders, 1);
 });
 
 test("village square routes the apartment building home and the Mehana table inside", () => {
@@ -381,10 +484,12 @@ test("save system merges old saves with current defaults", () => {
   assert.equal(save.influence, 10);
   assert.equal(save.currentChapter, DEFAULT_SAVE.currentChapter);
   assert.deepEqual(save.inventory, DEFAULT_SAVE.inventory);
+  assert.deepEqual(save.droppedItems, DEFAULT_SAVE.droppedItems);
 });
 
 test("fresh chapter start has no preloaded inventory items", () => {
   assert.deepEqual(DEFAULT_SAVE.inventory, []);
+  assert.deepEqual(DEFAULT_SAVE.droppedItems, []);
   assert.equal(DEFAULT_SAVE.rakiaGlasses, 0);
   assert.equal(DEFAULT_SAVE.rakiaLastChangedAt, null);
 });

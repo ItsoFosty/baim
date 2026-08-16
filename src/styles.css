@@ -247,7 +247,8 @@ button.active {
 }
 
 .inventory-item:hover,
-.inventory-item:focus-visible {
+.inventory-item:focus-visible,
+.inventory-item.selected {
   z-index: 3;
   border-color: rgba(246, 208, 137, 0.95);
   background: radial-gradient(circle at 50% 28%, rgba(255, 247, 217, 0.24), rgba(55, 42, 27, 0.94));
@@ -289,6 +290,55 @@ button.active {
 .inventory-item:focus-visible .inventory-tooltip {
   opacity: 1;
   transform: translate(-50%, 0) scale(0.78);
+}
+
+.inventory-item-actions {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) auto auto;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(190, 153, 94, 0.42);
+}
+
+.inventory-item-actions-name {
+  overflow: hidden;
+  color: #fff0d0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inventory-item-actions button {
+  min-height: 34px;
+  padding: 6px 10px;
+}
+
+.dropped-items-panel {
+  left: 50%;
+  bottom: 132px;
+  width: min(430px, calc(100vw - 28px));
+  padding: 16px;
+  transform: translateX(-50%);
+}
+
+.dropped-items-panel h2 {
+  margin: 0 0 12px;
+}
+
+.dropped-item-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(190, 153, 94, 0.32);
+}
+
+.dropped-item-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -374,6 +424,26 @@ button.active {
 .dialogue-panel p {
   margin: 0 0 6px;
   line-height: 1.4;
+}
+
+.dialogue-menu-entries {
+  padding: 12px 14px;
+  border: 1px solid rgba(167, 139, 92, 0.45);
+  background: rgba(255, 244, 211, 0.06);
+}
+
+.dialogue-menu-entries h3 {
+  margin: 8px 0 6px;
+  color: #e1c264;
+  letter-spacing: 0.08em;
+}
+
+.dialogue-menu-entries h3:first-child {
+  margin-top: 0;
+}
+
+.dialogue-menu-entries p {
+  margin: 4px 0;
 }
 
 .dialogue-panel button {

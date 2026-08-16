@@ -1,5 +1,24 @@
 export const dialogues = [
   {
+    id: "dialogue.square.mehana_menu",
+    nodes: {
+      start: {
+        lineKey: "dialogue.square.mehana_menu.title",
+        entries: [
+          { kind: "heading", textKey: "dialogue.square.mehana_menu.food_heading" },
+          { textKey: "dialogue.square.mehana_menu.meatballs" },
+          { textKey: "dialogue.square.mehana_menu.shopska" },
+          { textKey: "dialogue.square.mehana_menu.mash" },
+          { kind: "heading", textKey: "dialogue.square.mehana_menu.drinks_heading" },
+          { textKey: "dialogue.square.mehana_menu.rakia" },
+          { textKey: "dialogue.square.mehana_menu.beer" },
+          { textKey: "dialogue.square.mehana_menu.water" }
+        ],
+        choices: [{ textKey: "dialogue.square.mehana_menu.close" }]
+      }
+    }
+  },
+  {
     id: "dialogue.tony_fridge",
     npcId: "npc.tony_fridge",
     nodes: {
@@ -66,9 +85,31 @@ export const dialogues = [
         choices: [
           {
             textKey: "dialogue.waiter.choice.rakia",
+            next: "rakia_serving"
+          },
+          {
+            textKey: "dialogue.waiter.choice.shopska",
+            next: "shopska_serving"
+          },
+          {
+            textKey: "dialogue.waiter.choice.tripe_soup",
+            next: "tripe_soup_serving"
+          },
+          { textKey: "dialogue.waiter.choice.people", next: "people" },
+          { textKey: "dialogue.waiter.choice.leave" }
+        ]
+      },
+      people: {
+        lineKey: "dialogue.waiter.people",
+        choices: [{ textKey: "dialogue.common.back", next: "start" }]
+      },
+      rakia_serving: {
+        lineKey: "dialogue.waiter.serving_question",
+        choices: [
+          {
+            textKey: "dialogue.waiter.choice.for_here",
             effect: {
               effects: [
-                { type: "addItem", itemId: "item.rakia" },
                 { type: "setFlag", key: "mehanaOrderedRakia" },
                 { type: "adjustState", key: "rakiaGlasses", amount: 1, min: 0, max: 10, timestampKey: "rakiaLastChangedAt" }
               ],
@@ -84,31 +125,63 @@ export const dialogues = [
             }
           },
           {
-            textKey: "dialogue.waiter.choice.shopska",
+            textKey: "dialogue.waiter.choice.to_go",
             effect: {
               effects: [
-                { type: "addItem", itemId: "item.shopska_salad" },
-                { type: "setFlag", key: "mehanaOrderedShopska" }
+                { type: "setFlag", key: "mehanaOrderedRakia" },
+                { type: "addItem", itemId: "item.rakia" }
               ],
+              messageKey: "msg.mehana.rakia_to_go"
+            }
+          }
+        ]
+      },
+      shopska_serving: {
+        lineKey: "dialogue.waiter.serving_question",
+        choices: [
+          {
+            textKey: "dialogue.waiter.choice.for_here",
+            effect: {
+              effects: [{ type: "setFlag", key: "mehanaOrderedShopska" }],
               messageKey: "msg.mehana.shopska_ordered"
             }
           },
           {
-            textKey: "dialogue.waiter.choice.tripe_soup",
+            textKey: "dialogue.waiter.choice.to_go",
             effect: {
               effects: [
+                { type: "setFlag", key: "mehanaOrderedShopska" },
+                { type: "addItem", itemId: "item.shopska_salad" }
+              ],
+              messageKey: "msg.mehana.shopska_to_go"
+            }
+          }
+        ]
+      },
+      tripe_soup_serving: {
+        lineKey: "dialogue.waiter.serving_question",
+        choices: [
+          {
+            textKey: "dialogue.waiter.choice.for_here",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "mehanaOrderedTripeSoup" },
                 { type: "adjustState", key: "rakiaGlasses", amount: -2, min: 0, max: 10, timestampKey: "rakiaLastChangedAt" }
               ],
               messageKey: "msg.mehana.tripe_soup"
             }
           },
-          { textKey: "dialogue.waiter.choice.people", next: "people" },
-          { textKey: "dialogue.waiter.choice.leave" }
+          {
+            textKey: "dialogue.waiter.choice.to_go",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "mehanaOrderedTripeSoup" },
+                { type: "addItem", itemId: "item.tripe_soup" }
+              ],
+              messageKey: "msg.mehana.tripe_soup_to_go"
+            }
+          }
         ]
-      },
-      people: {
-        lineKey: "dialogue.waiter.people",
-        choices: [{ textKey: "dialogue.common.back", next: "start" }]
       }
     }
   }

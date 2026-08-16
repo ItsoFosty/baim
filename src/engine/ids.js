@@ -20,6 +20,7 @@ export const DEFAULT_SAVE = {
   rakiaGlasses: 0,
   rakiaLastChangedAt: null,
   inventory: [],
+  droppedItems: [],
   hasAccordion: false,
   hasFakeDiploma: false,
   hasSunflowerOil: false,

@@ -83,6 +83,9 @@ export function sceneZIndexForPoint(scene, point) {
 }
 
 export function targetZIndex(scene, target) {
+  if (Number.isFinite(target?.depthY)) {
+    return sceneZIndexForPoint(scene, { y: target.depthY });
+  }
   const points = target?.polygon?.length
     ? target.polygon
     : target?.rect
@@ -404,6 +407,9 @@ export class Renderer {
   drawSceneZLayers(scene, actors) {
     const entries = [
       ...actors.map((actor) => ({ kind: "actor", actor, zIndex: sceneZIndexForPoint(scene, actor.position) })),
+      ...scene.interactables
+        .filter((target) => target.droppedItemsPileAsset)
+        .map((target) => ({ kind: "droppedItemsPile", target, zIndex: targetZIndex(scene, target) })),
       ...(!this.game.editMode && this.game.hoveredTarget
         ? [{ kind: "hover", target: this.game.hoveredTarget, zIndex: targetZIndex(scene, this.game.hoveredTarget) }]
         : []),
@@ -418,8 +424,15 @@ export class Renderer {
     for (const entry of entries) {
       if (entry.kind === "actor") this.drawPlayer(entry.actor);
       else if (entry.kind === "hover") this.drawHoveredTarget(entry.target);
+      else if (entry.kind === "droppedItemsPile") this.drawDroppedItemsPile(scene, entry.target);
       else this.drawSceneRasterLayer(scene, entry.layer);
     }
+  }
+
+  drawDroppedItemsPile(scene, target) {
+    const image = this.game.assets.getSceneImage(scene.id, target.droppedItemsPileAsset);
+    if (!this.game.assets.isLoaded(image) || !target.rect) return;
+    this.ctx.drawImage(image, target.rect.x, target.rect.y, target.rect.w, target.rect.h);
   }
 
   sceneLayerVisible(layer) {

@@ -29,14 +29,18 @@ export class SaveSystem {
 }
 
 function migrateSave(save) {
+  const normalized = {
+    ...save,
+    inventory: Array.isArray(save.inventory) ? save.inventory : [],
+    droppedItems: Array.isArray(save.droppedItems) ? save.droppedItems : []
+  };
   const oldStarterInventory = ["item.accordion", "item.unpaid_bills", "item.empty_envelope"];
   if (
-    Array.isArray(save.inventory)
-    && save.inventory.length === oldStarterInventory.length
-    && oldStarterInventory.every((itemId) => save.inventory.includes(itemId))
-    && !save.hasUnpaidBills
+    normalized.inventory.length === oldStarterInventory.length
+    && oldStarterInventory.every((itemId) => normalized.inventory.includes(itemId))
+    && !normalized.hasUnpaidBills
   ) {
-    return { ...save, inventory: [] };
+    return { ...normalized, inventory: [] };
   }
-  return save;
+  return normalized;
 }

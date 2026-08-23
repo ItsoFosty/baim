@@ -2,7 +2,9 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 const sources = [
   "assets_src/chapter1/scenes/apartment/layers.json",
-  "assets_src/chapter1/scenes/village_square/layers.json"
+  "assets_src/chapter1/scenes/village_square/layers.json",
+  "assets_src/chapter1/scenes/mehana/layers.json",
+  "assets_src/chapter1/scenes/municipality/layers.json"
 ];
 const outputPath = "src/content/chapter1/sceneLayers.generated.js";
 
@@ -42,6 +44,7 @@ function runtimeLayer(layer, sourcePath) {
   copyNumber(layer, result, "height");
   if (layer.visibleWhenFlag) result.visibleWhenFlag = String(layer.visibleWhenFlag);
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);
+  if (layer.hiddenWhenState) result.hiddenWhenState = String(layer.hiddenWhenState);
   if (layer.visibleDuringAction) {
     result.visibleDuringAction = {
       actionName: String(layer.visibleDuringAction.actionName || ""),

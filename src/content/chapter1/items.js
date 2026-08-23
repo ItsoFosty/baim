@@ -34,7 +34,29 @@ export const items = [
       }
     ]
   },
-  { id: "item.unpaid_bills", nameKey: "item.unpaid_bills.name", descriptionKey: "item.unpaid_bills.desc" },
+  {
+    id: "item.unpaid_bills",
+    nameKey: "item.unpaid_bills.name",
+    descriptionKey: "item.unpaid_bills.desc",
+    itemUseRules: [
+      {
+        itemId: "item.empty_envelope",
+        requirements: {
+          items: ["item.unpaid_bills", "item.empty_envelope"],
+          state: { hasFakeDiploma: false }
+        },
+        effects: [
+          { type: "removeItem", itemId: "item.unpaid_bills" },
+          { type: "removeItem", itemId: "item.empty_envelope" },
+          { type: "addItem", itemId: "item.fake_diploma" },
+          { type: "setState", key: "hasFakeDiploma", value: true },
+          { type: "adjustState", key: "suspicion", amount: 4 },
+          { type: "completeQuest", questId: "quest.chapter1.fake_diploma" }
+        ],
+        messageKey: "msg.fake_diploma.assembled"
+      }
+    ]
+  },
   { id: "item.empty_envelope", nameKey: "item.empty_envelope.name", descriptionKey: "item.empty_envelope.desc" },
   { id: "item.fake_diploma", nameKey: "item.fake_diploma.name", descriptionKey: "item.fake_diploma.desc" },
   {

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "node tools/build-external-runtime-staging.js",
+    "postinstall": "node tools/build-external-runtime-staging.js && node tools/optimize-external-runtime-assets.mjs && node tools/build-runtime-asset-manifest.mjs",
     "dev": "node tools/dev-server.mjs",
     "server:start": "node tools/server-control.mjs start",
     "server:status": "node tools/server-control.mjs status",
@@ -19,6 +19,9 @@
     "build:scene-layers": "node tools/build-scene-layers.js",
     "build:scene-layer-runtime": "node tools/build-scene-layer-runtime.js",
     "build:characters": "node tools/build-character-chroma-assets.js",
+    "build:runtime-animations": "node tools/build-external-runtime-staging.js && node tools/optimize-external-runtime-assets.mjs",
+    "build:runtime-assets": "node tools/build-runtime-asset-manifest.mjs",
+    "build:runtime": "npm run build:runtime-animations && npm run build:runtime-assets",
     "fit:action": "node tools/register-external-action.mjs",
     "verify:action-render": "node tools/verify-action-render.mjs",
     "test": "node --test test/*.test.js"

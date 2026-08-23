@@ -401,8 +401,8 @@ export const villageSquareObjectGeometry = {
           "y": 261
         },
         {
-          "x": 952,
-          "y": 258
+          "x": 949,
+          "y": 251
         },
         {
           "x": 948,
@@ -411,6 +411,27 @@ export const villageSquareObjectGeometry = {
         {
           "x": 865,
           "y": 371
+        }
+      ]
+    },
+    "hotspot.square.empty_envelope": {
+      "id": "hotspot.square.empty_envelope",
+      "polygon": [
+        {
+          "x": 1171,
+          "y": 459
+        },
+        {
+          "x": 1220,
+          "y": 476
+        },
+        {
+          "x": 1205,
+          "y": 509
+        },
+        {
+          "x": 1152,
+          "y": 484
         }
       ]
     },
@@ -612,12 +633,48 @@ export const villageSquareObjectGeometry = {
           "y": 351
         },
         {
-          "x": 386,
-          "y": 345
+          "x": 348,
+          "y": 337
         },
         {
-          "x": 396,
-          "y": 407
+          "x": 361,
+          "y": 329
+        },
+        {
+          "x": 379,
+          "y": 342
+        },
+        {
+          "x": 375,
+          "y": 358
+        },
+        {
+          "x": 389,
+          "y": 372
+        },
+        {
+          "x": 398,
+          "y": 416
+        },
+        {
+          "x": 402,
+          "y": 451
+        },
+        {
+          "x": 366,
+          "y": 459
+        },
+        {
+          "x": 351,
+          "y": 439
+        },
+        {
+          "x": 332,
+          "y": 454
+        },
+        {
+          "x": 326,
+          "y": 436
         },
         {
           "x": 336,
@@ -643,6 +700,395 @@ export const villageSquareObjectGeometry = {
         {
           "x": 168,
           "y": 434
+        }
+      ]
+    },
+    "exit.square.to_election_booth": {
+      "id": "exit.square.to_election_booth",
+      "polygon": [
+        {
+          "x": 268,
+          "y": 308
+        },
+        {
+          "x": 312,
+          "y": 307
+        },
+        {
+          "x": 307,
+          "y": 422
+        },
+        {
+          "x": 272,
+          "y": 384
+        }
+      ]
+    },
+    "npc.journalist": {
+      "id": "npc.journalist",
+      "polygon": [
+        {
+          "x": 1030,
+          "y": 300
+        },
+        {
+          "x": 1135,
+          "y": 300
+        },
+        {
+          "x": 1135,
+          "y": 510
+        },
+        {
+          "x": 1030,
+          "y": 510
+        }
+      ]
+    }
+  }
+};
+
+export const mehanaObjectGeometry = {
+  "id": "objectGeometry.chapter1.mehana.v1",
+  "sceneId": "scene.chapter1.mehana",
+  "sourceBackground": {
+    "path": "assets/chapter1/scenes/mehana/background.png",
+    "width": 1280,
+    "height": 720
+  },
+  "world": {
+    "width": 1280,
+    "height": 720
+  },
+  "objects": {
+    "exit.mehana.to_square": {
+      "id": "exit.mehana.to_square",
+      "polygon": [
+        {
+          "x": 30,
+          "y": 320
+        },
+        {
+          "x": 150,
+          "y": 320
+        },
+        {
+          "x": 150,
+          "y": 510
+        },
+        {
+          "x": 30,
+          "y": 510
+        }
+      ]
+    },
+    "hotspot.mehana.bai_mitko_rakia_glass": {
+      "id": "hotspot.mehana.bai_mitko_rakia_glass",
+      "polygon": [
+        {
+          "x": 410,
+          "y": 388
+        },
+        {
+          "x": 482,
+          "y": 388
+        },
+        {
+          "x": 482,
+          "y": 440
+        },
+        {
+          "x": 410,
+          "y": 440
+        }
+      ]
+    },
+    "hotspot.mehana.tony_rakia_glass": {
+      "id": "hotspot.mehana.tony_rakia_glass",
+      "polygon": [
+        {
+          "x": 850,
+          "y": 390
+        },
+        {
+          "x": 920,
+          "y": 390
+        },
+        {
+          "x": 920,
+          "y": 445
+        },
+        {
+          "x": 850,
+          "y": 445
+        }
+      ]
+    },
+    "hotspot.mehana.table": {
+      "id": "hotspot.mehana.table",
+      "polygon": [
+        {
+          "x": 280,
+          "y": 430
+        },
+        {
+          "x": 640,
+          "y": 430
+        },
+        {
+          "x": 640,
+          "y": 605
+        },
+        {
+          "x": 280,
+          "y": 605
+        }
+      ]
+    },
+    "hotspot.mehana.oil": {
+      "id": "hotspot.mehana.oil",
+      "polygon": [
+        {
+          "x": 540,
+          "y": 405
+        },
+        {
+          "x": 610,
+          "y": 405
+        },
+        {
+          "x": 610,
+          "y": 475
+        },
+        {
+          "x": 540,
+          "y": 475
+        }
+      ]
+    },
+    "hotspot.mehana.water_jug": {
+      "id": "hotspot.mehana.water_jug",
+      "polygon": [
+        {
+          "x": 710,
+          "y": 370
+        },
+        {
+          "x": 800,
+          "y": 370
+        },
+        {
+          "x": 800,
+          "y": 475
+        },
+        {
+          "x": 710,
+          "y": 475
+        }
+      ]
+    },
+    "hotspot.mehana.cellar_hatch": {
+      "id": "hotspot.mehana.cellar_hatch",
+      "polygon": [
+        {
+          "x": 1060,
+          "y": 475
+        },
+        {
+          "x": 1230,
+          "y": 475
+        },
+        {
+          "x": 1230,
+          "y": 580
+        },
+        {
+          "x": 1060,
+          "y": 580
+        }
+      ]
+    },
+    "hotspot.mehana.ballot_box": {
+      "id": "hotspot.mehana.ballot_box",
+      "polygon": [
+        {
+          "x": 1090,
+          "y": 400
+        },
+        {
+          "x": 1215,
+          "y": 400
+        },
+        {
+          "x": 1215,
+          "y": 505
+        },
+        {
+          "x": 1090,
+          "y": 505
+        }
+      ]
+    },
+    "npc.mehana_waiter": {
+      "id": "npc.mehana_waiter",
+      "polygon": [
+        {
+          "x": 600,
+          "y": 275
+        },
+        {
+          "x": 725,
+          "y": 275
+        },
+        {
+          "x": 725,
+          "y": 500
+        },
+        {
+          "x": 600,
+          "y": 500
+        }
+      ]
+    },
+    "npc.tony_fridge": {
+      "id": "npc.tony_fridge",
+      "polygon": [
+        {
+          "x": 930,
+          "y": 305
+        },
+        {
+          "x": 1045,
+          "y": 305
+        },
+        {
+          "x": 1045,
+          "y": 485
+        },
+        {
+          "x": 930,
+          "y": 485
+        }
+      ]
+    }
+  }
+};
+
+export const municipalityObjectGeometry = {
+  "id": "objectGeometry.chapter1.municipality.v1",
+  "sceneId": "scene.chapter1.municipality",
+  "sourceBackground": {
+    "path": "assets/chapter1/scenes/municipality/background.png",
+    "width": 1280,
+    "height": 720
+  },
+  "world": {
+    "width": 1280,
+    "height": 720
+  },
+  "objects": {
+    "exit.municipality.to_square": {
+      "id": "exit.municipality.to_square",
+      "polygon": [
+        {
+          "x": 30,
+          "y": 300
+        },
+        {
+          "x": 200,
+          "y": 300
+        },
+        {
+          "x": 200,
+          "y": 545
+        },
+        {
+          "x": 30,
+          "y": 545
+        }
+      ]
+    },
+    "hotspot.municipality.candidate_register": {
+      "id": "hotspot.municipality.candidate_register",
+      "polygon": [
+        {
+          "x": 930,
+          "y": 315
+        },
+        {
+          "x": 1140,
+          "y": 315
+        },
+        {
+          "x": 1140,
+          "y": 460
+        },
+        {
+          "x": 930,
+          "y": 460
+        }
+      ]
+    },
+    "hotspot.municipality.stamp_desk": {
+      "id": "hotspot.municipality.stamp_desk",
+      "polygon": [
+        {
+          "x": 540,
+          "y": 340
+        },
+        {
+          "x": 710,
+          "y": 340
+        },
+        {
+          "x": 710,
+          "y": 465
+        },
+        {
+          "x": 540,
+          "y": 465
+        }
+      ]
+    },
+    "hotspot.municipality.archive_cabinet": {
+      "id": "hotspot.municipality.archive_cabinet",
+      "polygon": [
+        {
+          "x": 1080,
+          "y": 205
+        },
+        {
+          "x": 1255,
+          "y": 205
+        },
+        {
+          "x": 1255,
+          "y": 490
+        },
+        {
+          "x": 1080,
+          "y": 490
+        }
+      ]
+    },
+    "npc.municipality_clerk": {
+      "id": "npc.municipality_clerk",
+      "polygon": [
+        {
+          "x": 735,
+          "y": 245
+        },
+        {
+          "x": 905,
+          "y": 245
+        },
+        {
+          "x": 905,
+          "y": 490
+        },
+        {
+          "x": 735,
+          "y": 490
         }
       ]
     }

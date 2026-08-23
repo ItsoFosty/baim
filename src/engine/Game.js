@@ -1,5 +1,6 @@
 import { DialogueSystem } from "./DialogueSystem.js";
 import { applyEffects, firstMatchingRule, requirementsMet } from "./EffectSystem.js";
+import { resolveEnding } from "./EndingSystem.js";
 import { InventorySystem } from "./InventorySystem.js";
 import { Localization } from "./Localization.js";
 import { eastWestFallbackFacing, facingFromDelta, motionMultiplierAtFrame, MovementSystem } from "./MovementSystem.js";
@@ -17,7 +18,7 @@ import { strings } from "../content/localization/index.js";
 import { chapter1 } from "../content/chapter1/index.js";
 import { characterDefinitions } from "../content/art/characters.js";
 import { assetManifest } from "../content/art/assetManifest.js";
-import { externalAnimationV1 } from "../content/art/externalAnimationV1.generated.js";
+import { externalAnimationV1 } from "../content/art/externalAnimationRuntime.generated.js";
 import {
   applyTimedSobering,
   intoxicationBandKey,
@@ -145,16 +146,44 @@ export class Game {
   }
 
   async start() {
+    await this.assets.loadRuntimeManifest?.();
+    this.protectCurrentAssetWorkingSet();
     await Promise.all([
-      this.assets.preloadAllCharacterAssets(),
+      this.assets.preloadCharacterSlots(this.player.id, this.bootstrapCharacterSlots()),
       this.assets.preloadSceneAssets(this.currentScene.id),
-      this.assets.preloadAllItemAssets()
+      this.assets.preloadOwnedItemAssets(this.state.inventory || [])
     ]);
     if (!this.inputBound) {
       this.bindInput();
       this.inputBound = true;
     }
     requestAnimationFrame((time) => this.tick(time));
+    this.scheduleAdjacentScenePrefetch(this.currentScene);
+  }
+
+  bootstrapCharacterSlots() {
+    const parts = externalAnimationV1.walkParts?.east || {};
+    return [...new Set([parts.start?.slot, parts.loop?.slot, parts.short?.slot, parts.stop?.slot].filter(Boolean))];
+  }
+
+  protectCurrentAssetWorkingSet() {
+    this.assets.protectWorkingSet?.({
+      sceneIds: [this.currentScene.id],
+      characterId: this.player.id,
+      characterSlots: this.bootstrapCharacterSlots(),
+      itemIds: this.state.inventory || []
+    });
+  }
+
+  scheduleAdjacentScenePrefetch(scene = this.currentScene) {
+    const sceneIds = [...new Set((scene?.exits || []).map((exit) => exit.targetSceneId).filter(Boolean))];
+    if (!sceneIds.length || typeof this.assets?.preloadSceneAssets !== "function") return;
+    const prefetch = () => Promise.all(sceneIds.map((sceneId) => this.assets.preloadSceneAssets(sceneId))).catch(() => {});
+    if (typeof globalThis.requestIdleCallback === "function") {
+      globalThis.requestIdleCallback(prefetch, { timeout: 4000 });
+    } else if (typeof globalThis.window !== "undefined") {
+      globalThis.setTimeout(prefetch, 250);
+    }
   }
 
   tick(time) {
@@ -365,6 +394,7 @@ export class Game {
       return;
     }
     const sequence = this.randomIdleVariantSequence(variants);
+    this.assets?.preloadCharacterSlots?.(this.player.id, sequence.map((variant) => variant.slot));
     this.player.idleVariant = sequence.shift() || null;
     this.player.idleVariantQueue = sequence;
   }
@@ -761,6 +791,7 @@ export class Game {
     if (!this.usesExternalCharacterAnimation() || !message || this.player.target || this.player.animation === "walk" || this.player.animation === "action") return;
     const frame = options.reject ? this.randomRejectAnimation() : this.talkAnimationForMessage(message);
     if (!frame) return;
+    this.assets?.preloadCharacterSlot?.(this.player.id, frame.slot);
     this.player.speechAnimation = frame;
     this.player.idleVariant = null;
     this.player.idleVariantQueue = [];
@@ -858,6 +889,7 @@ export class Game {
       this.completeInteractionActionSequence({ target, verb, sequence, frame: null });
       return true;
     }
+    this.assets?.preloadCharacterSlot?.(this.player.id, frame.slot);
     this.hideSpeechBubble(true);
     this.player.actionSequence = { target, verb, sequence, frame };
     this.player.actionAnimation = frame;
@@ -892,6 +924,9 @@ export class Game {
       this.inventory.add(actionSequence.target.takeItemId);
     }
     if (actionSequence.target.flagOnTake) this.state[actionSequence.target.flagOnTake] = true;
+    if (actionSequence.target.takeEffects?.length) {
+      applyEffects(actionSequence.target.takeEffects, this.effectContext());
+    }
     this.save();
     if (this.uiRoot) this.renderUi();
   }
@@ -1197,11 +1232,13 @@ export class Game {
     }
     this.inventory.add(target.takeItemId);
     if (target.flagOnTake) this.state[target.flagOnTake] = true;
-    this.setStatusMessage(this.t(options.messageKey || "msg.taken"));
+    if (target.takeEffects?.length) applyEffects(target.takeEffects, this.effectContext());
+    this.setStatusMessage(this.t(options.messageKey || target.takeMessageKey || "msg.taken"));
     this.save();
   }
 
   useTarget(target) {
+    if (target.endingTrigger) return this.requestEnding(target.endingTrigger);
     if (target.useDialogueId) {
       this.clearStatusMessage();
       this.dialogue.start(target.useDialogueId);
@@ -1321,6 +1358,31 @@ export class Game {
     return true;
   }
 
+  requestEnding(trigger = {}) {
+    if (this.state.chapter1Completed) return false;
+    this.save();
+    const confirmed = globalThis.confirm?.(this.t(trigger.confirmKey || "ui.election.commit_confirm")) ?? false;
+    if (!confirmed) {
+      this.setStatusMessage(this.t(trigger.cancelledMessageKey || "msg.election.deferred"));
+      return false;
+    }
+    const candidates = (this.content.endings || []).filter((ending) => ending.groupId === trigger.groupId);
+    const ending = resolveEnding(candidates, this.effectContext());
+    if (!ending) {
+      this.setStatusMessage(this.t("msg.election.not_ready"), { reject: true });
+      return false;
+    }
+    this.dialogue.close();
+    this.clearInventoryInteraction();
+    this.state.currentSceneId = this.currentScene.id;
+    this.menuOpen = false;
+    this.paused = false;
+    this.hoveredTarget = null;
+    this.save();
+    this.renderUi();
+    return true;
+  }
+
   async changeScene(sceneId, position) {
     if (!this.content.scenes[sceneId]) {
       this.message = this.t("msg.scene_not_ready");
@@ -1348,7 +1410,9 @@ export class Game {
       this.player.actionAnimation = null;
       this.player.animation = "idle";
       this.player.speed = this.sceneMovementSpeed(this.currentScene);
+      this.protectCurrentAssetWorkingSet();
       this.save();
+      this.scheduleAdjacentScenePrefetch(this.currentScene);
     } finally {
       if (this.sceneLoadToken === sceneLoadToken) this.sceneTransitionPending = false;
     }
@@ -1436,6 +1500,10 @@ export class Game {
     this.uiRoot.innerHTML = "";
     if (this.editMode) {
       if (this.sceneEditor) this.uiRoot.appendChild(this.sceneEditor.createPanel());
+      return;
+    }
+    if (this.state.chapter1Completed && !this.menuOpen && !this.devHome) {
+      this.uiRoot.appendChild(this.createEnding());
       return;
     }
     if (this.devHome) this.uiRoot.appendChild(this.createDevHome());
@@ -1537,7 +1605,7 @@ export class Game {
       itemButton.setAttribute("aria-label", itemName);
       itemButton.setAttribute("aria-describedby", tooltipId);
       itemButton.dataset.itemId = item.id;
-      const iconPath = assetManifest.items?.[item.id]?.icon;
+      const iconPath = this.assets.getItemAssetPath(item.id);
       if (iconPath) {
         const icon = document.createElement("img");
         icon.src = iconPath;
@@ -1843,6 +1911,30 @@ export class Game {
     return menu;
   }
 
+  createEnding() {
+    const ending = this.content.endings.find((candidate) => candidate.id === this.state.endingId)
+      || this.content.endings.find((candidate) => candidate.id === "ending.chapter1.loss");
+    const panel = element("section", "panel ending-panel");
+    panel.dataset.endingId = ending?.id || "ending.chapter1.loss";
+    panel.innerHTML = `
+      <p class="ending-kicker">${escapeHtml(this.t("ending.chapter1.complete"))}</p>
+      <h1>${escapeHtml(this.t(ending?.titleKey || "ending.chapter1.loss.title"))}</h1>
+      <p class="ending-body">${escapeHtml(this.t(ending?.bodyKey || "ending.chapter1.loss.body"))}</p>
+      <dl class="ending-results">
+        <div><dt>${escapeHtml(this.t("ui.meter.influence"))}</dt><dd>${Number(this.state.influence) || 0}</dd></div>
+        <div><dt>${escapeHtml(this.t("ui.meter.suspicion"))}</dt><dd>${Number(this.state.suspicion) || 0}</dd></div>
+        <div><dt>${escapeHtml(this.t("ui.meter.public_mood"))}</dt><dd>${Number(this.state.publicMood) || 0}</dd></div>
+      </dl>
+    `;
+    const actions = element("div", "ending-actions");
+    actions.append(
+      button(this.t("ui.restart"), () => this.restartGame()),
+      button(this.t("ui.main_menu"), () => this.returnToMainMenu())
+    );
+    panel.appendChild(actions);
+    return panel;
+  }
+
   createDevHome() {
     const panel = element("section", "panel dev-home");
     panel.innerHTML = `
@@ -1857,6 +1949,8 @@ export class Game {
           <a href="./?simpleAnimTest=1">Open simple animation test</a>
           <a href="./?edit=1&scene=scene.chapter1.apartment">Edit Bai Mitko's room</a>
           <a href="./?edit=1&scene=scene.chapter1.village_square">Edit village square</a>
+          <a href="./?edit=1&scene=scene.chapter1.mehana">Edit Mehana</a>
+          <a href="./?edit=1&scene=scene.chapter1.municipality">Edit Municipality</a>
           <a href="./?play=1">Play with External Animation v1</a>
         </div>
       </div>
@@ -1869,6 +1963,8 @@ node tools/build-external-runtime-staging.js</pre>
         <a href="./?simpleAnimTest=1">Simple Animation Test</a>
         <a href="./?edit=1&scene=scene.chapter1.apartment">Bai Mitko's Room Editor</a>
         <a href="./?edit=1&scene=scene.chapter1.village_square">Village Square Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.mehana">Mehana Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.municipality">Municipality Editor</a>
         <a href="./?play=1">Play External Animation v1</a>
         <a href="./target/external_animation_v1/previews/walk_east_start.gif">Walk East Start GIF</a>
         <a href="./target/external_animation_v1/previews/walk_east_loop.gif">Walk East Loop GIF</a>
@@ -2373,7 +2469,8 @@ function buildContentIndex(chapter) {
     scenes: Object.fromEntries(chapter.scenes.map((scene) => [scene.id, scene])),
     items: Object.fromEntries(chapter.items.map((item) => [item.id, item])),
     quests: Object.fromEntries(chapter.quests.map((quest) => [quest.id, quest])),
-    dialogues: Object.fromEntries(chapter.dialogues.map((dialogue) => [dialogue.id, dialogue]))
+    dialogues: Object.fromEntries(chapter.dialogues.map((dialogue) => [dialogue.id, dialogue])),
+    endings: chapter.endings || []
   };
 }
 

@@ -24,7 +24,7 @@
       "zIndex": -2,
       "top": 390,
       "left": 199,
-      "hiddenWhenItemOwned": "item.unpaid_bills"
+      "hiddenWhenState": "hasUnpaidBills"
     },
     {
       "id": "layer.apartment.window_open_back",

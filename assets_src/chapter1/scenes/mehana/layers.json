@@ -1,0 +1,9 @@
+{
+  "sceneId": "scene.chapter1.mehana",
+  "sourceBackground": "assets/chapter1/scenes/mehana/background.png",
+  "zScale": {
+    "frontmost": 0,
+    "horizon": 100
+  },
+  "layers": []
+}

@@ -26,6 +26,18 @@ const EDITOR_SCENES = {
     objectGeometryPath: "assets_src/chapter1/scenes/village_square/object-geometry-v1.json",
     layerPath: "assets_src/chapter1/scenes/village_square/layers.json",
     actions: []
+  },
+  "scene.chapter1.mehana": {
+    walkGeometryPath: "assets_src/chapter1/scenes/mehana/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/mehana/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/mehana/layers.json",
+    actions: []
+  },
+  "scene.chapter1.municipality": {
+    walkGeometryPath: "assets_src/chapter1/scenes/municipality/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/municipality/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/municipality/layers.json",
+    actions: []
   }
 };
 
@@ -89,7 +101,7 @@ export class SceneEditor {
           : Promise.resolve(null)
       ]);
       this.walkSource = walkSource;
-      this.objectSource = objectSource;
+      this.objectSource = normalizeEditorObjectSource(objectSource);
       this.layerSource = layerSource;
       this.actionAnimationSource = actionAnimationSource;
       this.rows = walkSource.raster.rows.slice();
@@ -123,7 +135,10 @@ export class SceneEditor {
     const selectedAction = this.selectedActionDefinition();
     const selectedActionConfig = this.selectedActionAnimationConfig();
     panel.innerHTML = `
-      <div class="scene-editor-title">Scene Edit Mode</div>
+      <div class="scene-editor-header">
+        <div class="scene-editor-title">Scene Edit Mode</div>
+        <button type="button" data-editor="home">Back to Main</button>
+      </div>
       <label>Tool
         <select data-editor="mode">
           <option value="walk"${this.mode === "walk" ? " selected" : ""}>Walkable raster</option>
@@ -187,6 +202,9 @@ export class SceneEditor {
       <div class="scene-editor-status">${escapeHtml(this.status)}</div>
     `;
     stopPanelEvents(panel);
+    panel.querySelector('[data-editor="home"]')?.addEventListener("click", () => {
+      globalThis.location.href = "./";
+    });
     panel.querySelector('[data-editor="mode"]').addEventListener("change", (event) => {
       this.mode = event.target.value;
       if (this.mode === "objects" && !this.selectedObjectId) this.selectedObjectId = this.objects[0]?.id || null;
@@ -795,6 +813,16 @@ function rectToPolygon(rect) {
   ];
 }
 
+export function normalizeEditorObjectSource(source) {
+  return {
+    ...source,
+    objects: (source?.objects || []).map((entry) => {
+      const polygon = entry.polygon || rectToPolygon(entry.rect);
+      return polygon?.length ? { ...entry, polygon: polygon.map(roundPoint) } : { ...entry };
+    })
+  };
+}
+
 function roundPoint(point) {
   return { x: Math.round(point.x), y: Math.round(point.y) };
 }
@@ -960,6 +988,7 @@ function runtimeLayerFromSource(layer) {
   };
   if (layer.visibleWhenFlag) result.visibleWhenFlag = String(layer.visibleWhenFlag);
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);
+  if (layer.hiddenWhenState) result.hiddenWhenState = String(layer.hiddenWhenState);
   if (layer.visibleDuringAction) result.visibleDuringAction = structuredClone(layer.visibleDuringAction);
   for (const key of ["top", "left", "right", "bottom", "width", "height"]) {
     if (Number.isFinite(Number(layer[key]))) result[key] = Number(layer[key]);

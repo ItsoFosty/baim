@@ -7,6 +7,10 @@
 - Village square art direction: usable for layout/runtime proof, but still too realistic and text-heavy for final style.
 - Mehana interaction scene: functional seated-table prototype with waiter ordering and Tony dialogue;
   it still uses intentional debug fallback art.
+- Municipality and election booth: their complete Chapter 1 interactions are functional as geometry
+  grayboxes; both still need final painted backgrounds and foreground treatment.
+- Journalist: complete bilingual interview and square interaction are functional with an intentional
+  labelled debug silhouette pending final character art and animation.
 - Bai Mitko model sheet: locked identity source.
 - Baba Stoyanka: seated painted cutout integrated at the village-square bus stop; the layer is
   calibrated to `122px`, approximately 20% smaller than Bai Mitko's calculated height at the bench
@@ -51,7 +55,8 @@ The current village square stays as a runtime proof and layout reference, not fi
 
 - Bai Mitko talk/look/use/take animations
 - Mehana background
-- Municipality background and scene implementation
-- Election booth background and scene implementation
+- Municipality background
+- Election booth background
+- Journalist final character art and animation
 - UI skin
 - Remaining inventory item icons

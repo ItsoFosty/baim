@@ -7,6 +7,16 @@
   },
   "layers": [
     {
+      "id": "layer.square.kiosk_papers_pile",
+      "enabled": true,
+      "asset": "kioskPapersPile",
+      "output": "assets/chapter1/scenes/village_square/kiosk-papers-pile-v1.png",
+      "zIndex": 40,
+      "top": 427,
+      "left": 1095,
+      "width": 165
+    },
+    {
       "id": "layer.square.baba_stoyanka_seated",
       "enabled": true,
       "asset": "babaStoyankaSeated",

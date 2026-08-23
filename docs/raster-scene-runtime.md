@@ -72,6 +72,8 @@ Open a scene editor with its stable scene ID, for example:
 
 - `?edit=1&scene=scene.chapter1.apartment`
 - `?edit=1&scene=scene.chapter1.village_square`
+- `?edit=1&scene=scene.chapter1.mehana`
+- `?edit=1&scene=scene.chapter1.municipality`
 
 Each registered scene uses the same editor/save/build pipeline. Its authored inputs live together at
 `assets_src/chapter1/scenes/<scene>/walk-geometry-v1.json`, `object-geometry-v1.json`, and

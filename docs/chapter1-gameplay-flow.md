@@ -2,9 +2,12 @@
 
 ## Status
 
-This document is the canonical graybox progression contract for Chapter 1. It locks the order of
-story gates, the role of each quest, recoverable failure rules, and the election outcomes before the
-remaining scenes and puzzles are implemented.
+This document is the canonical implemented graybox progression contract for Chapter 1. All story
+gates, quests, recoverable failure routes, and election outcomes described here are playable.
+
+Implementation checkpoint: completed and confirmed through an end-to-end public-server playthrough on
+2026-08-23. The next production phase is replacing remaining graybox and debug presentation with reviewed
+high-resolution artwork and animation; Chapter 2 remains out of scope.
 
 It does not lock final dialogue, joke wording, puzzle props, or art. Major new player-facing content
 still requires the Bulgarian satire intake pass before it is authored.
@@ -87,6 +90,30 @@ hard story gate.
 The accordion remains usable outside this solution. Bai Mitko, Baba, Kiro, generic NPCs, and future
 targets tagged `animal` receive authored non-consuming reactions. Tony's challenge-specific reaction
 takes priority over the generic NPC response only after the challenge has started.
+
+### Fake Diploma Route
+
+1. The outstanding objective first directs the player to official-looking paper. Bai Mitko takes the
+   unpaid bills from the apartment table.
+2. The objective advances to an envelope with administrative potential. A one-time empty-envelope
+   hotspot is available among the papers at the village news kiosk.
+3. With both components in inventory, the objective explicitly says to combine them. The player may
+   select either component, choose Use, and click the other inventory item.
+4. Assembly consumes both components, creates `item.fake_diploma`, adds four Suspicion, and completes
+   `quest.chapter1.fake_diploma`.
+5. Wrong combinations and dropped components do not consume either unique component. The normal dropped-
+   item recovery system remains available until assembly succeeds.
+
+This route and the remaining Step 2 sequence are playable end to end. The municipality credential check
+runs in the graybox `scene.chapter1.municipality`: arriving without the diploma gives a clear,
+repeatable hint, while presenting it through dialogue or directly to the clerk persistently records
+acceptance without consuming the diploma. The player then takes the self-service municipality stamp,
+uses it on the candidate register, and may inspect the archive cabinet. The archive starts
+`quest.chapter1.ballot_box` and persistently directs the player to the Mehana cellar. Recovering the
+ballot box is also playable: the clue makes the cellar hatch relevant, opening it reveals the box,
+and taking it completes `quest.chapter1.ballot_box` without affecting either support route. The recovered
+box reveals Ralitsa Microphonova on the square. Her three-question interview opens the graybox polling
+station, where the player confirms the point of no return and receives one of three persisted outcomes.
 
 ## Quest Roles
 
@@ -221,6 +248,7 @@ the outcome.
 
 After resolution:
 
+- the ballot box is transferred out of inventory and `ballotBoxDelivered` is persisted;
 - the ending ID is persisted;
 - the main quest and Chapter 1 completion state are persisted before the ending UI appears;
 - reload returns to the resolved ending or post-result state instead of rerunning effects;
@@ -235,9 +263,8 @@ After resolution:
 - a large topical-joke or final-art batch;
 - changing the 1280x720 resolution or custom canvas renderer.
 
-## Acceptance Criteria
+## Acceptance Status
 
-Chapter 1 flow is considered implemented when a fresh save can reach all three outcomes, every failure
-route above is recoverable, Bulgarian and English playthroughs contain no missing keys, save/reload
-works at every stage, and automated browser tests cover at least one convincing win, one narrow win,
-and one loss.
+The graybox gameplay milestone is complete. The automated test suite covers all three election outcomes,
+recoverable puzzle routes, bilingual finale keys, and ending persistence. A public-server playthrough has
+also reached and completed the Chapter 1 finale. Final-art acceptance remains a separate milestone.

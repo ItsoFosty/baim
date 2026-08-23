@@ -24,6 +24,16 @@ const editorScenes = {
     walkGeometryPath: "assets_src/chapter1/scenes/village_square/walk-geometry-v1.json",
     objectGeometryPath: "assets_src/chapter1/scenes/village_square/object-geometry-v1.json",
     layerPath: "assets_src/chapter1/scenes/village_square/layers.json"
+  },
+  "scene.chapter1.mehana": {
+    walkGeometryPath: "assets_src/chapter1/scenes/mehana/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/mehana/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/mehana/layers.json"
+  },
+  "scene.chapter1.municipality": {
+    walkGeometryPath: "assets_src/chapter1/scenes/municipality/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/municipality/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/municipality/layers.json"
   }
 };
 
@@ -71,11 +81,19 @@ function handleRequest(req, res) {
   }
 
   const extension = extname(path);
+  const fileSize = statSync(path).size;
   res.writeHead(200, {
     "Content-Type": types[extension] || "application/octet-stream",
-    "Cache-Control": "no-cache"
+    "Content-Length": fileSize,
+    "Cache-Control": cacheControlFor(url.pathname)
   });
   createReadStream(path).pipe(res);
+}
+
+function cacheControlFor(pathname) {
+  if (pathname.startsWith("/target/runtime-assets/assets/")) return "public, max-age=31536000, immutable";
+  if (pathname === "/target/runtime-assets/manifest.json") return "no-cache, must-revalidate";
+  return "no-cache";
 }
 
 function handleEditorSave(req, res) {

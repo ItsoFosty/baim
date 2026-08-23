@@ -1,5 +1,65 @@
 export const dialogues = [
   {
+    id: "dialogue.municipality_clerk",
+    npcId: "npc.municipality_clerk",
+    nodes: {
+      start: {
+        lineKey: "dialogue.municipality_clerk.start",
+        choices: [
+          {
+            textKey: "dialogue.municipality_clerk.choice.present_credentials",
+            requirements: {
+              items: ["item.fake_diploma"],
+              notFlags: ["municipalityCredentialsAccepted"]
+            },
+            next: "credentials_accepted",
+            effect: {
+              effects: [{ type: "setFlag", key: "municipalityCredentialsAccepted" }]
+            }
+          },
+          {
+            textKey: "dialogue.municipality_clerk.choice.ask_registration",
+            requirements: { notFlags: ["municipalityCredentialsAccepted"] },
+            next: "credentials_missing",
+            effect: {
+              effects: [{ type: "setFlag", key: "municipalityCredentialsHinted" }]
+            }
+          },
+          {
+            textKey: "dialogue.municipality_clerk.choice.registration_status",
+            requirements: {
+              flags: ["municipalityCredentialsAccepted"],
+              notFlags: ["candidateRegistrationStamped"]
+            },
+            next: "credentials_registered"
+          },
+          {
+            textKey: "dialogue.municipality_clerk.choice.registration_status",
+            requirements: { flags: ["candidateRegistrationStamped"] },
+            next: "registration_stamped"
+          },
+          { textKey: "dialogue.municipality_clerk.choice.leave" }
+        ]
+      },
+      credentials_missing: {
+        lineKey: "dialogue.municipality_clerk.credentials_missing",
+        choicesFrom: "start"
+      },
+      credentials_accepted: {
+        lineKey: "dialogue.municipality_clerk.credentials_accepted",
+        choices: [{ textKey: "dialogue.municipality_clerk.choice.leave" }]
+      },
+      credentials_registered: {
+        lineKey: "dialogue.municipality_clerk.credentials_registered",
+        choicesFrom: "start"
+      },
+      registration_stamped: {
+        lineKey: "dialogue.municipality_clerk.registration_stamped",
+        choicesFrom: "start"
+      }
+    }
+  },
+  {
     id: "dialogue.square.mehana_menu",
     nodes: {
       start: {
@@ -477,6 +537,167 @@ export const dialogues = [
             }
           }
         ]
+      }
+    }
+  },
+  {
+    id: "dialogue.journalist",
+    npcId: "npc.journalist",
+    nodes: {
+      start: {
+        lineKey: "dialogue.journalist.start",
+        choices: [
+          {
+            textKey: "dialogue.journalist.choice.begin",
+            requirements: { notFlags: ["journalistRoadsAnswered"] },
+            next: "roads",
+            effect: { effects: [{ type: "startQuest", questId: "quest.chapter1.journalist" }] }
+          },
+          {
+            textKey: "dialogue.journalist.choice.continue",
+            requirements: { flags: ["journalistRoadsAnswered"], notFlags: ["journalistComplaintsAnswered"] },
+            next: "complaints"
+          },
+          {
+            textKey: "dialogue.journalist.choice.continue",
+            requirements: { flags: ["journalistComplaintsAnswered"], state: { journalistInterviewCompleted: false } },
+            next: "ballot_box"
+          },
+          {
+            textKey: "dialogue.journalist.choice.result",
+            requirements: { state: { journalistInterviewCompleted: true } },
+            next: "complete"
+          },
+          { textKey: "dialogue.journalist.choice.leave" }
+        ]
+      },
+      roads: {
+        lineKey: "dialogue.journalist.roads",
+        choices: [
+          {
+            textKey: "dialogue.journalist.roads.choice.heritage",
+            next: "complaints",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "journalistRoadsAnswered" },
+                { type: "adjustState", key: "publicMood", amount: 8, min: 0, max: 100 },
+                { type: "adjustState", key: "suspicion", amount: 6, min: 0, max: 100 }
+              ]
+            }
+          },
+          {
+            textKey: "dialogue.journalist.roads.choice.inventory",
+            next: "complaints",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "journalistRoadsAnswered" },
+                { type: "adjustState", key: "influence", amount: 2, min: 0, max: 100 },
+                { type: "adjustState", key: "publicMood", amount: -2, min: 0, max: 100 },
+                { type: "adjustState", key: "suspicion", amount: 2, min: 0, max: 100 }
+              ]
+            }
+          },
+          {
+            textKey: "dialogue.journalist.roads.choice.drive_around",
+            next: "complaints",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "journalistRoadsAnswered" },
+                { type: "adjustState", key: "publicMood", amount: 3, min: 0, max: 100 },
+                { type: "adjustState", key: "suspicion", amount: 1, min: 0, max: 100 }
+              ]
+            }
+          }
+        ]
+      },
+      complaints: {
+        lineKey: "dialogue.journalist.complaints",
+        choices: [
+          {
+            textKey: "dialogue.journalist.complaints.choice.counted",
+            next: "ballot_box",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "journalistComplaintsAnswered" },
+                { type: "adjustState", key: "publicMood", amount: 5, min: 0, max: 100 },
+                { type: "adjustState", key: "suspicion", amount: 4, min: 0, max: 100 }
+              ]
+            }
+          },
+          {
+            textKey: "dialogue.journalist.complaints.choice.one_stop",
+            next: "ballot_box",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "journalistComplaintsAnswered" },
+                { type: "adjustState", key: "publicMood", amount: 4, min: 0, max: 100 },
+                { type: "adjustState", key: "suspicion", amount: 3, min: 0, max: 100 }
+              ]
+            }
+          },
+          {
+            textKey: "dialogue.journalist.complaints.choice.not_ours",
+            next: "ballot_box",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "journalistComplaintsAnswered" },
+                { type: "adjustState", key: "publicMood", amount: -4, min: 0, max: 100 },
+                { type: "adjustState", key: "suspicion", amount: 1, min: 0, max: 100 }
+              ]
+            }
+          }
+        ]
+      },
+      ballot_box: {
+        lineKey: "dialogue.journalist.ballot_box",
+        choices: [
+          {
+            textKey: "dialogue.journalist.ballot_box.choice.pickles",
+            next: "complete",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "journalistBallotAnswered" },
+                { type: "setState", key: "journalistSuspicionLevel", value: "medium" },
+                { type: "setState", key: "journalistInterviewCompleted", value: true },
+                { type: "adjustState", key: "publicMood", amount: 8, min: 0, max: 100 },
+                { type: "adjustState", key: "suspicion", amount: 6, min: 0, max: 100 },
+                { type: "completeQuest", questId: "quest.chapter1.journalist" }
+              ]
+            }
+          },
+          {
+            textKey: "dialogue.journalist.ballot_box.choice.responsibility",
+            next: "complete",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "journalistBallotAnswered" },
+                { type: "setState", key: "journalistSuspicionLevel", value: "low" },
+                { type: "setState", key: "journalistInterviewCompleted", value: true },
+                { type: "adjustState", key: "publicMood", amount: 4, min: 0, max: 100 },
+                { type: "adjustState", key: "suspicion", amount: 3, min: 0, max: 100 },
+                { type: "completeQuest", questId: "quest.chapter1.journalist" }
+              ]
+            }
+          },
+          {
+            textKey: "dialogue.journalist.ballot_box.choice.training",
+            next: "complete",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "journalistBallotAnswered" },
+                { type: "setState", key: "journalistSuspicionLevel", value: "high" },
+                { type: "setState", key: "journalistInterviewCompleted", value: true },
+                { type: "adjustState", key: "publicMood", amount: 2, min: 0, max: 100 },
+                { type: "adjustState", key: "suspicion", amount: 8, min: 0, max: 100 },
+                { type: "completeQuest", questId: "quest.chapter1.journalist" }
+              ]
+            }
+          }
+        ]
+      },
+      complete: {
+        lineKey: "dialogue.journalist.complete",
+        choices: [{ textKey: "dialogue.journalist.choice.leave" }]
       }
     }
   }

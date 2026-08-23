@@ -1,0 +1,9 @@
+{
+  "sceneId": "scene.chapter1.municipality",
+  "sourceBackground": "assets/chapter1/scenes/municipality/background.png",
+  "zScale": {
+    "frontmost": 0,
+    "horizon": 100
+  },
+  "layers": []
+}

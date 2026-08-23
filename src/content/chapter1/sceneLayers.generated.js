@@ -16,7 +16,7 @@ export const sceneLayerGeometry = {
         "zIndex": -2,
         "top": 390,
         "left": 199,
-        "hiddenWhenItemOwned": "item.unpaid_bills"
+        "hiddenWhenState": "hasUnpaidBills"
       },
       {
         "id": "layer.apartment.window_open_back",
@@ -43,6 +43,14 @@ export const sceneLayerGeometry = {
     "sceneId": "scene.chapter1.village_square",
     "foregroundLayers": [
       {
+        "id": "layer.square.kiosk_papers_pile",
+        "asset": "kioskPapersPile",
+        "zIndex": 40,
+        "top": 427,
+        "left": 1095,
+        "width": 165
+      },
+      {
         "id": "layer.square.baba_stoyanka_seated",
         "asset": "babaStoyankaSeated",
         "zIndex": 90,
@@ -51,5 +59,13 @@ export const sceneLayerGeometry = {
         "height": 122
       }
     ]
+  },
+  "scene.chapter1.mehana": {
+    "sceneId": "scene.chapter1.mehana",
+    "foregroundLayers": []
+  },
+  "scene.chapter1.municipality": {
+    "sceneId": "scene.chapter1.municipality",
+    "foregroundLayers": []
   }
 };

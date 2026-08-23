@@ -1,5 +1,5 @@
-import { apartmentWalkGeometry, villageSquareWalkGeometry } from "./walkMasks.generated.js";
-import { apartmentObjectGeometry, villageSquareObjectGeometry } from "./sceneObjectGeometry.generated.js";
+import { apartmentWalkGeometry, mehanaWalkGeometry, municipalityWalkGeometry, villageSquareWalkGeometry } from "./walkMasks.generated.js";
+import { apartmentObjectGeometry, mehanaObjectGeometry, municipalityObjectGeometry, villageSquareObjectGeometry } from "./sceneObjectGeometry.generated.js";
 import { sceneLayerGeometry } from "./sceneLayers.generated.js";
 
 const rawScenes = [
@@ -105,6 +105,7 @@ const rawScenes = [
         lookKey: "item.unpaid_bills.desc",
         takeItemId: "item.unpaid_bills",
         hiddenWhenItemOwned: "item.unpaid_bills",
+        requirements: { state: { hasUnpaidBills: false } },
         flagOnTake: "hasUnpaidBills",
         actions: {
           take: {
@@ -199,9 +200,30 @@ const rawScenes = [
         rect: { x: 900, y: 165, w: 230, h: 285 },
         targetSceneId: "scene.chapter1.municipality",
         targetPosition: { x: 220, y: 505 }
+      },
+      {
+        id: "exit.square.to_election_booth",
+        kind: "exit",
+        nameKey: "exit.to_election_booth",
+        rect: { x: 230, y: 290, w: 140, h: 120 },
+        requirements: { state: { journalistInterviewCompleted: true, chapter1Completed: false } },
+        debugVisual: { kind: "sign", fill: "#efe0bd", accent: "#9b302f", labelKey: "exit.to_election_booth" },
+        targetSceneId: "scene.chapter1.election_booth",
+        targetPosition: { x: 230, y: 525 }
       }
     ],
     interactables: [
+      {
+        id: "hotspot.square.empty_envelope",
+        kind: "hotspot",
+        nameKey: "item.empty_envelope.name",
+        rect: { x: 1160, y: 430, w: 70, h: 55 },
+        lookKey: "look.square.empty_envelope",
+        takeItemId: "item.empty_envelope",
+        hiddenWhenItemOwned: "item.empty_envelope",
+        requirements: { state: { hasEmptyEnvelope: false } },
+        flagOnTake: "hasEmptyEnvelope"
+      },
       {
         id: "hotspot.square.poster_board",
         kind: "hotspot",
@@ -242,7 +264,8 @@ const rawScenes = [
         kind: "hotspot",
         nameKey: "hotspot.election_notice.name",
         rect: { x: 520, y: 315, w: 120, h: 80 },
-        lookKey: "look.square.election_notice"
+        lookKey: "look.square.election_notice",
+        requirements: { state: { journalistInterviewCompleted: false } }
       },
       {
         id: "hotspot.square.mehana_menu",
@@ -382,6 +405,19 @@ const rawScenes = [
             messageKey: "msg.baba.accept_wine"
           }
         ]
+      },
+      {
+        id: "npc.journalist",
+        kind: "npc",
+        nameKey: "npc.journalist.name",
+        rect: { x: 1030, y: 300, w: 105, h: 210 },
+        dialogueId: "dialogue.journalist",
+        lookKey: "look.npc.journalist",
+        debugVisual: { fill: "#6b263d", accent: "#d7b35f", labelKey: "npc.journalist.name" },
+        requirements: {
+          flags: ["ballotBoxRecovered"],
+          state: { chapter1Completed: false }
+        }
       }
     ]
   },
@@ -395,17 +431,8 @@ const rawScenes = [
     seatedPresentation: {
       tableRect: { x: 285, y: 455, w: 365, h: 150 }
     },
-    walkPolygons: [
-      {
-        id: "walk.chapter1.mehana.main",
-        points: [
-          { x: 105, y: 430 },
-          { x: 1100, y: 430 },
-          { x: 1180, y: 575 },
-          { x: 65, y: 585 }
-        ]
-      }
-    ],
+    walkPolygons: mehanaWalkGeometry.walkPolygons,
+    walkMask: mehanaWalkGeometry.walkMask,
     perspectiveScale: { horizonY: 415, bottomY: 590, far: 0.8, near: 1.12 },
     anchors: {
       baiMitkoSeat: { x: 430, y: 530 },
@@ -414,6 +441,7 @@ const rawScenes = [
       waiter: { x: 650, y: 465 },
       exit: { x: 170, y: 505 }
     },
+    foregroundLayers: sceneLayerGeometry["scene.chapter1.mehana"]?.foregroundLayers || [],
     exits: [
       {
         id: "exit.mehana.to_square",
@@ -527,6 +555,54 @@ const rawScenes = [
             messageKey: "msg.water_recovery"
           }
         ]
+      },
+      {
+        id: "hotspot.mehana.cellar_hatch",
+        kind: "hotspot",
+        nameKey: "hotspot.mehana.cellar_hatch.name",
+        rect: { x: 1060, y: 475, w: 170, h: 105 },
+        lookKey: "look.mehana.cellar_hatch",
+        useRules: [
+          {
+            requirements: { notFlags: ["ballotBoxArchiveClue"] },
+            effects: [],
+            messageKey: "msg.mehana.cellar_no_reason",
+            reject: true
+          },
+          {
+            requirements: {
+              flags: ["ballotBoxArchiveClue"],
+              notFlags: ["mehanaCellarOpened"]
+            },
+            effects: [{ type: "setFlag", key: "mehanaCellarOpened" }],
+            messageKey: "msg.mehana.cellar_opened"
+          },
+          {
+            requirements: { flags: ["mehanaCellarOpened"] },
+            effects: [],
+            messageKey: "msg.mehana.cellar_already_open"
+          }
+        ]
+      },
+      {
+        id: "hotspot.mehana.ballot_box",
+        kind: "hotspot",
+        nameKey: "item.ballot_box.name",
+        rect: { x: 1090, y: 400, w: 125, h: 105 },
+        lookKey: "look.mehana.ballot_box",
+        takeItemId: "item.ballot_box",
+        hiddenWhenItemOwned: "item.ballot_box",
+        flagOnTake: "hasBallotBox",
+        takeMessageKey: "msg.mehana.ballot_box_recovered",
+        requirements: {
+          flags: ["mehanaCellarOpened"],
+          state: { hasBallotBox: false }
+        },
+        takeEffects: [
+          { type: "setFlag", key: "ballotBoxRecovered" },
+          { type: "completeQuest", questId: "quest.chapter1.ballot_box" },
+          { type: "startQuest", questId: "quest.chapter1.journalist" }
+        ]
       }
     ],
     npcs: [
@@ -585,12 +661,213 @@ const rawScenes = [
         ]
       }
     ]
+  },
+  {
+    id: "scene.chapter1.municipality",
+    titleKey: "scene.chapter1.municipality.title",
+    palette: { sky: "#68747a", wall: "#817866", floor: "#3f413c" },
+    movementSpeed: 70,
+    playerStart: { x: 220, y: 505 },
+    walkPolygons: municipalityWalkGeometry.walkPolygons,
+    walkMask: municipalityWalkGeometry.walkMask,
+    perspectiveScale: { horizonY: 415, bottomY: 590, far: 0.8, near: 1.1 },
+    anchors: {
+      baiMitkoSpawn: { x: 220, y: 505 },
+      clerkCounter: { x: 820, y: 475 },
+      candidateRegister: { x: 1000, y: 455 },
+      stampDesk: { x: 620, y: 475 },
+      archiveCabinet: { x: 1120, y: 465 },
+      exit: { x: 135, y: 505 }
+    },
+    foregroundLayers: sceneLayerGeometry["scene.chapter1.municipality"]?.foregroundLayers || [],
+    exits: [
+      {
+        id: "exit.municipality.to_square",
+        kind: "exit",
+        nameKey: "exit.to_village_square",
+        rect: { x: 30, y: 300, w: 170, h: 245 },
+        targetSceneId: "scene.chapter1.village_square",
+        targetPosition: { x: 850, y: 505 }
+      }
+    ],
+    interactables: [
+      {
+        id: "hotspot.municipality.candidate_register",
+        kind: "hotspot",
+        nameKey: "hotspot.municipality.candidate_register.name",
+        rect: { x: 930, y: 315, w: 210, h: 145 },
+        lookKey: "look.municipality.candidate_register",
+        itemUseRules: [
+          {
+            itemId: "item.municipality_stamp",
+            requirements: {
+              items: ["item.municipality_stamp"],
+              flags: ["municipalityCredentialsAccepted"],
+              notFlags: ["candidateRegistrationStamped"]
+            },
+            effects: [
+              { type: "removeItem", itemId: "item.municipality_stamp" },
+              { type: "setState", key: "hasMunicipalityStamp", value: false },
+              { type: "setFlag", key: "candidateRegistrationStamped" }
+            ],
+            messageKey: "msg.municipality.register_stamped"
+          }
+        ],
+        useRules: [
+          {
+            requirements: {
+              flags: ["municipalityCredentialsAccepted"],
+              notFlags: ["candidateRegistrationStamped"]
+            },
+            effects: [],
+            messageKey: "msg.municipality.register_needs_stamp",
+            reject: true
+          },
+          {
+            requirements: { flags: ["candidateRegistrationStamped"] },
+            effects: [],
+            messageKey: "msg.municipality.register_ready"
+          }
+        ]
+      },
+      {
+        id: "hotspot.municipality.stamp_desk",
+        kind: "hotspot",
+        nameKey: "hotspot.municipality.stamp_desk.name",
+        rect: { x: 540, y: 340, w: 170, h: 125 },
+        lookKey: "look.municipality.stamp_desk",
+        takeItemId: "item.municipality_stamp",
+        flagOnTake: "hasMunicipalityStamp",
+        requirements: {
+          flags: ["municipalityCredentialsAccepted"],
+          notFlags: ["candidateRegistrationStamped"],
+          state: { hasMunicipalityStamp: false }
+        }
+      },
+      {
+        id: "hotspot.municipality.archive_cabinet",
+        kind: "hotspot",
+        nameKey: "hotspot.municipality.archive_cabinet.name",
+        rect: { x: 1080, y: 205, w: 175, h: 285 },
+        lookKey: "look.municipality.archive_cabinet",
+        useRules: [
+          {
+            requirements: { notFlags: ["municipalityCredentialsAccepted"] },
+            effects: [],
+            messageKey: "msg.municipality.archive_credentials_first",
+            reject: true
+          },
+          {
+            requirements: {
+              flags: ["municipalityCredentialsAccepted"],
+              notFlags: ["candidateRegistrationStamped"]
+            },
+            effects: [],
+            messageKey: "msg.municipality.archive_stamp_first",
+            reject: true
+          },
+          {
+            requirements: {
+              flags: ["candidateRegistrationStamped"],
+              notFlags: ["ballotBoxArchiveClue"]
+            },
+            effects: [
+              { type: "setFlag", key: "ballotBoxArchiveClue" },
+              { type: "startQuest", questId: "quest.chapter1.ballot_box" }
+            ],
+            messageKey: "msg.municipality.ballot_box_clue"
+          },
+          {
+            requirements: { flags: ["ballotBoxArchiveClue"] },
+            effects: [],
+            messageKey: "msg.municipality.ballot_box_clue_repeat"
+          }
+        ]
+      }
+    ],
+    npcs: [
+      {
+        id: "npc.municipality_clerk",
+        kind: "npc",
+        nameKey: "npc.municipality_clerk.name",
+        rect: { x: 735, y: 245, w: 170, h: 245 },
+        dialogueId: "dialogue.municipality_clerk",
+        lookKey: "look.npc.municipality_clerk",
+        itemUseRules: [
+          {
+            itemId: "item.fake_diploma",
+            requirements: { notFlags: ["municipalityCredentialsAccepted"] },
+            effects: [{ type: "setFlag", key: "municipalityCredentialsAccepted" }],
+            messageKey: "msg.municipality.credentials_accepted"
+          },
+          {
+            itemId: "item.fake_diploma",
+            requirements: { flags: ["municipalityCredentialsAccepted"] },
+            effects: [],
+            messageKey: "msg.municipality.credentials_already_accepted"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "scene.chapter1.election_booth",
+    titleKey: "scene.chapter1.election_booth.title",
+    palette: { sky: "#59656a", wall: "#726b5e", floor: "#373934" },
+    movementSpeed: 70,
+    playerStart: { x: 230, y: 525 },
+    walkPolygons: [
+      {
+        id: "walk.chapter1.election_booth.main",
+        points: [
+          { x: 80, y: 425 },
+          { x: 1190, y: 425 },
+          { x: 1220, y: 590 },
+          { x: 55, y: 590 }
+        ]
+      }
+    ],
+    perspectiveScale: { horizonY: 415, bottomY: 590, far: 0.82, near: 1.1 },
+    anchors: {
+      baiMitkoSpawn: { x: 230, y: 525 },
+      commissionTable: { x: 850, y: 485 },
+      exit: { x: 135, y: 515 }
+    },
+    foregroundLayers: [],
+    exits: [
+      {
+        id: "exit.election_booth.to_square",
+        kind: "exit",
+        nameKey: "exit.to_village_square",
+        rect: { x: 25, y: 300, w: 180, h: 255 },
+        requirements: { state: { chapter1Completed: false } },
+        targetSceneId: "scene.chapter1.village_square",
+        targetPosition: { x: 650, y: 535 }
+      }
+    ],
+    interactables: [
+      {
+        id: "hotspot.election_booth.commission_table",
+        kind: "hotspot",
+        nameKey: "hotspot.election_booth.commission_table.name",
+        rect: { x: 650, y: 300, w: 430, h: 245 },
+        lookKey: "look.election_booth.commission_table",
+        endingTrigger: {
+          groupId: "ending.chapter1",
+          confirmKey: "ui.election.commit_confirm",
+          cancelledMessageKey: "msg.election.deferred"
+        }
+      }
+    ],
+    npcs: []
   }
 ];
 
 export const scenes = applySceneObjectGeometry(rawScenes, {
   [apartmentObjectGeometry.sceneId]: apartmentObjectGeometry,
-  [villageSquareObjectGeometry.sceneId]: villageSquareObjectGeometry
+  [villageSquareObjectGeometry.sceneId]: villageSquareObjectGeometry,
+  [mehanaObjectGeometry.sceneId]: mehanaObjectGeometry,
+  [municipalityObjectGeometry.sceneId]: municipalityObjectGeometry
 });
 
 function applySceneObjectGeometry(scenes, geometryBySceneId) {

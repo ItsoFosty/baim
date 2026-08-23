@@ -2,6 +2,31 @@
 
 This is a placeholder seed bank for fictionalized Bulgarian satire. All examples are fictional. Do not use real politician names, real party logos, copied headlines, copied jokes, or direct real-person accusations.
 
+## 2026-08-23 intake: journalist and election finale
+
+Recent source mechanisms reviewed:
+
+- The Bulgarian Ombudsman's 2025 annual report describes recurring complaints about administrative
+  services, infrastructure, and delayed or ineffective institutional responses.
+- A 2026 BTA report describes election-device logistics being assigned to municipalities, providing an
+  evergreen comic mechanism in which responsibility travels between institutions more efficiently than
+  the equipment itself.
+
+Sources:
+
+- [Bulgarian Ombudsman — 2025 annual report](https://www.ombudsman.bg/en/p/annual-reports-38)
+- [BTA — municipalities and polling-device logistics](https://www.bta.bg/en/news/bulgaria/1051979-central-election-commission-tasks-municipalities-with-storing-video-surveillance)
+
+Fictionalized seeds used:
+
+- Complaints are counted with great precision while resolving them belongs to a future procurement.
+- A one-stop service desk redirects a citizen back to itself, eliminating unnecessary walking but not delay.
+- Responsibility for a misplaced ballot box completes a full institutional circuit and returns to its first
+  owner.
+- Election equipment is described as attending field training in local tradition.
+
+These are system-level jokes detached from real people, parties, municipalities, and individual cases.
+
 ## scene.chapter1.apartment
 
 Recent-news-inspired jokes can enter through:
@@ -112,6 +137,35 @@ Evergreen
 
 Risk:
 Safe. Fictional campaign joke.
+
+### Implemented Seed: Degree In Overdue Administration
+
+Placement:
+Apartment unpaid bills, village-kiosk envelope, `quest.chapter1.fake_diploma`
+
+Mechanism:
+
+- Bai Mitko needs candidate credentials before the municipality will take him seriously.
+- An overdue household bill supplies official formatting and a red mark; an empty envelope supplies
+  administrative confidence.
+- Combining the two creates a fictional diploma in Local Government and Applied Persuasion.
+- The joke targets faith in forms, templates, and official appearance. It does not imitate a real diploma,
+  institution, graduate, or document-fraud case.
+
+Intake sources:
+
+- [Bulgarian Ministry of Education administrative services and application forms](https://www.mon.bg/mon/administrativno-obsluzhvane/administrativni-uslugi-i-obraztsi-na-zayavleniya/)
+- [Bulgarian Ministry of Education page for standardized diploma forms](https://www.mon.bg/dokumentatsiya/normativni-aktove/zapovedi/zapoved-za-edinni-obrazczi-na-diplomi/)
+
+Transformation:
+Only the general mechanisms of standardized forms, supporting documents, certification, and administrative
+recognition are retained. The puzzle, qualification, paper components, institution, and result are fictional.
+
+Freshness:
+Evergreen.
+
+Risk:
+Safe. No real credential or verification method is reproduced.
 
 ## scene.chapter1.village_square
 
@@ -457,6 +511,35 @@ Risk:
 Safe. No real venue, price, person, or copied complaint is referenced.
 
 ## scene.chapter1.municipality
+
+### Implemented Intake: Self-Service Obstruction
+
+Placement:
+Clerk Penka, stamp desk, candidate register, and archive cabinet
+
+Mechanism:
+
+- The clerk asks the citizen for a credential instead of consulting another municipal record.
+- Once accepted, a reform has made stamping self-service: the citizen now performs one part of the
+  obstruction personally.
+- The stamped register grants the archive permission to reveal a transfer note for the missing ballot
+  box, fictionalized as temporary transparent storage near pickle jars in the Mehana cellar.
+
+Intake sources:
+
+- [Bulgarian Ombudsman 2025 annual report](https://www.ombudsman.bg/storage/pub/files/20260401144356_%D0%9E%D0%BC%D0%B1%D1%83%D0%B4%D1%81%D0%BC%D0%B0%D0%BD%20%D0%B4%D0%BE%D0%BA%D0%BB%D0%B0%D0%B4%202026%20%D0%BF%D1%80%D0%B5%D0%B3%D0%BB%D0%B5%D0%B4%20%D1%81%D0%BB%D0%B5%D0%B4%20%D0%BF%D0%B5%D1%87%D0%B0%D1%82_5a7a004f-f47a-41c1-8c9a-4618e96971e7.pdf)
+- [Sega overview of delayed anti-bureaucracy measures](https://www.segabg.com/hot/category-bulgaria/samo-14-235-merki-sreshtu-izlishnata-byurokraciya-sa-izpulneni)
+
+Transformation:
+Only the broad mechanisms—slow service, duplicated document demands, reform lag, and ritual trust in
+paper—are retained. Penka, the candidate system, stamp sequence, archive entry, and ballot-box transfer
+are fictional and evergreen.
+
+Freshness:
+Evergreen core with replaceable contemporary inspiration.
+
+Risk:
+Safe. No real official, municipality, credential, complaint, or administrative case is represented.
 
 Recent-news-inspired jokes can enter through:
 

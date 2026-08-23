@@ -1,4 +1,4 @@
-import { externalAnimationV1 } from "./externalAnimationV1.generated.js";
+import { externalAnimationV1 } from "./externalAnimationRuntime.generated.js";
 
 export const characterDefinitions = {
   "npc.bai_mitko": {

@@ -1,0 +1,20 @@
+{
+  "id": "objectGeometry.chapter1.municipality.v1",
+  "sceneId": "scene.chapter1.municipality",
+  "sourceBackground": {
+    "path": "assets/chapter1/scenes/municipality/background.png",
+    "width": 1280,
+    "height": 720
+  },
+  "world": {
+    "width": 1280,
+    "height": 720
+  },
+  "objects": [
+    { "id": "exit.municipality.to_square", "polygon": [{ "x": 30, "y": 300 }, { "x": 200, "y": 300 }, { "x": 200, "y": 545 }, { "x": 30, "y": 545 }] },
+    { "id": "hotspot.municipality.candidate_register", "polygon": [{ "x": 930, "y": 315 }, { "x": 1140, "y": 315 }, { "x": 1140, "y": 460 }, { "x": 930, "y": 460 }] },
+    { "id": "hotspot.municipality.stamp_desk", "polygon": [{ "x": 540, "y": 340 }, { "x": 710, "y": 340 }, { "x": 710, "y": 465 }, { "x": 540, "y": 465 }] },
+    { "id": "hotspot.municipality.archive_cabinet", "polygon": [{ "x": 1080, "y": 205 }, { "x": 1255, "y": 205 }, { "x": 1255, "y": 490 }, { "x": 1080, "y": 490 }] },
+    { "id": "npc.municipality_clerk", "polygon": [{ "x": 735, "y": 245 }, { "x": 905, "y": 245 }, { "x": 905, "y": 490 }, { "x": 735, "y": 490 }] }
+  ]
+}

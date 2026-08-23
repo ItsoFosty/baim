@@ -1,7 +1,7 @@
 import { clamp } from "./geometry.js";
 import { characterHeight } from "./CharacterRenderMath.js";
 import { canExitToStop, eastWestFallbackFacing, stopExitFrameForPlayer } from "./MovementSystem.js";
-import { externalAnimationV1 } from "../content/art/externalAnimationV1.generated.js";
+import { externalAnimationV1 } from "../content/art/externalAnimationRuntime.generated.js";
 import { intoxicationSway } from "./IntoxicationSystem.js";
 
 const PLAYER_SHADOW_FULL_SIZE_Y_OFFSET = -4;
@@ -146,7 +146,7 @@ export class Renderer {
     ctx.strokeStyle = "rgba(225, 194, 100, 0.26)";
     ctx.lineWidth = 2;
     ctx.shadowColor = "rgba(225, 194, 100, 0.68)";
-    ctx.shadowBlur = 14;
+    ctx.shadowBlur = 16;
     ctx.beginPath();
     if (target.polygon?.length) {
       target.polygon.forEach((point, index) => {
@@ -410,6 +410,9 @@ export class Renderer {
       ...scene.interactables
         .filter((target) => target.droppedItemsPileAsset)
         .map((target) => ({ kind: "droppedItemsPile", target, zIndex: targetZIndex(scene, target) })),
+      ...[...scene.npcs, ...scene.interactables, ...scene.exits]
+        .filter((target) => target.debugVisual && this.game.targetAvailable?.(target))
+        .map((target) => ({ kind: "debugTarget", target, zIndex: targetZIndex(scene, target) })),
       ...(!this.game.editMode && this.game.hoveredTarget
         ? [{ kind: "hover", target: this.game.hoveredTarget, zIndex: targetZIndex(scene, this.game.hoveredTarget) }]
         : []),
@@ -425,8 +428,61 @@ export class Renderer {
       if (entry.kind === "actor") this.drawPlayer(entry.actor);
       else if (entry.kind === "hover") this.drawHoveredTarget(entry.target);
       else if (entry.kind === "droppedItemsPile") this.drawDroppedItemsPile(scene, entry.target);
+      else if (entry.kind === "debugTarget") this.drawDebugTarget(entry.target);
       else this.drawSceneRasterLayer(scene, entry.layer);
     }
+  }
+
+  drawDebugTarget(target) {
+    const bounds = this.targetBounds(target);
+    if (!bounds) return;
+    const { ctx } = this;
+    const visual = target.debugVisual;
+    const centerX = bounds.x + bounds.w / 2;
+    ctx.save();
+    if (visual.kind === "sign") {
+      ctx.fillStyle = visual.fill || "#efe0bd";
+      ctx.strokeStyle = visual.accent || "#9b302f";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.roundRect(bounds.x, bounds.y, bounds.w, bounds.h, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = visual.accent || "#9b302f";
+      ctx.font = "700 14px Arial";
+      ctx.textAlign = "center";
+      const label = this.game.t(visual.labelKey || target.nameKey);
+      const words = label.split(/\s+/);
+      const midpoint = Math.ceil(words.length / 2);
+      ctx.fillText(words.slice(0, midpoint).join(" "), centerX, bounds.y + bounds.h / 2 - 3);
+      ctx.fillText(words.slice(midpoint).join(" "), centerX, bounds.y + bounds.h / 2 + 16);
+      ctx.restore();
+      return;
+    }
+    ctx.fillStyle = visual.fill || "#714052";
+    ctx.beginPath();
+    ctx.ellipse(centerX, bounds.y + 37, 25, 31, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(bounds.x + 18, bounds.y + 65, bounds.w - 36, bounds.h - 65, 18);
+    ctx.fill();
+    ctx.strokeStyle = visual.accent || "#d7b35f";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(centerX + 20, bounds.y + 86);
+    ctx.lineTo(centerX + 45, bounds.y + 47);
+    ctx.stroke();
+    ctx.fillStyle = visual.accent || "#d7b35f";
+    ctx.beginPath();
+    ctx.arc(centerX + 48, bounds.y + 42, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(22, 17, 16, 0.82)";
+    ctx.fillRect(bounds.x - 12, bounds.y - 25, bounds.w + 24, 23);
+    ctx.fillStyle = "#fff3cf";
+    ctx.font = "700 13px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(this.game.t(visual.labelKey || target.nameKey), centerX, bounds.y - 9);
+    ctx.restore();
   }
 
   drawDroppedItemsPile(scene, target) {
@@ -438,6 +494,7 @@ export class Renderer {
   sceneLayerVisible(layer) {
     if (layer?.visibleWhenFlag && !this.game.state?.flags?.[layer.visibleWhenFlag]) return false;
     if (layer?.hiddenWhenItemOwned && this.game.inventory?.has(layer.hiddenWhenItemOwned)) return false;
+    if (layer?.hiddenWhenState && this.game.state?.[layer.hiddenWhenState]) return false;
     if (layer?.visibleDuringAction) {
       const condition = layer.visibleDuringAction;
       const action = this.game.player?.actionAnimation;
@@ -648,7 +705,14 @@ export class Renderer {
     const { ctx } = this;
     const p = actor;
     const definition = this.game.player.animator.definition;
-    const spriteInfo = this.resolveCharacterSprite(p, definition);
+    let spriteInfo = this.resolveCharacterSprite(p, definition);
+    if (!this.game.assets.isLoaded(spriteInfo.image) && usesExternalWalkPose(p, definition)) {
+      const fallback = this.resolveExternalWalkStartFrame(p, definition, p.facing || definition.render.defaultFacing);
+      const fallbackImage = fallback?.slot ? this.game.assets.getCharacterImage(p.id, fallback.slot) : null;
+      if (this.game.assets.isLoaded(fallbackImage)) {
+        spriteInfo = { image: fallbackImage, slot: fallback.slot, frame: fallback.frame, mirrored: Boolean(fallback.mirrored), staticFrameIndex: 0 };
+      }
+    }
     const sprite = spriteInfo.image;
     const walkBob = p.animation === "walk" ? Math.sin(p.animationTime * 16) * 5 : 0;
     if (!this.game.assets.isLoaded(sprite)) return;

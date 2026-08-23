@@ -34,8 +34,19 @@ function migrateSave(save) {
     inventory: Array.isArray(save.inventory) ? save.inventory : [],
     droppedItems: Array.isArray(save.droppedItems) ? save.droppedItems : [],
     activeQuests: Array.isArray(save.activeQuests) ? save.activeQuests : [],
-    completedQuests: Array.isArray(save.completedQuests) ? save.completedQuests : []
+    completedQuests: Array.isArray(save.completedQuests) ? save.completedQuests : [],
+    expiredQuests: Array.isArray(save.expiredQuests) ? save.expiredQuests : []
   };
+  const journalistQuestId = "quest.chapter1.journalist";
+  if (
+    normalized.hasBallotBox
+    && !normalized.chapter1Completed
+    && !normalized.journalistInterviewCompleted
+    && !normalized.activeQuests.includes(journalistQuestId)
+    && !normalized.completedQuests.includes(journalistQuestId)
+  ) {
+    normalized.activeQuests.push(journalistQuestId);
+  }
   const babaQuestId = "quest.chapter1.baba_vote";
   if (
     !normalized.babaStoyankaVote

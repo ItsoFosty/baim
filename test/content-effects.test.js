@@ -131,6 +131,171 @@ test("Tony vote vertical slice is reachable from authored Chapter 1 data", () =>
   assert.deepEqual(completed, ["quest.chapter1.tony_vote"]);
 });
 
+test("fake diploma vertical slice combines recoverable authored inventory components", () => {
+  const bills = chapter1.items.find((item) => item.id === "item.unpaid_bills");
+  const inventory = inventoryWith("item.unpaid_bills", "item.empty_envelope");
+  const state = {
+    hasUnpaidBills: true,
+    hasEmptyEnvelope: true,
+    hasFakeDiploma: false,
+    suspicion: 0,
+    flags: {}
+  };
+  const completed = [];
+  const context = {
+    state,
+    inventory,
+    quests: { complete: (questId) => completed.push(questId) }
+  };
+  const assembly = firstMatchingRule(
+    bills.itemUseRules.filter((rule) => rule.itemId === "item.empty_envelope"),
+    context
+  );
+
+  assert.ok(assembly);
+  applyEffects(assembly.effects, context);
+  assert.equal(inventory.has("item.unpaid_bills"), false);
+  assert.equal(inventory.has("item.empty_envelope"), false);
+  assert.equal(inventory.has("item.fake_diploma"), true);
+  assert.equal(state.hasFakeDiploma, true);
+  assert.equal(state.suspicion, 4);
+  assert.deepEqual(completed, ["quest.chapter1.fake_diploma"]);
+});
+
+test("fake diploma quest exposes its collection and assembly stages in order", () => {
+  const quest = chapter1.quests.find((candidate) => candidate.id === "quest.chapter1.fake_diploma");
+  const objectiveFor = (state, ...items) => firstMatchingRule(quest.stages, {
+    state: { flags: {}, hasFakeDiploma: false, ...state },
+    inventory: inventoryWith(...items)
+  });
+
+  assert.equal(objectiveFor({ hasUnpaidBills: false, hasEmptyEnvelope: false }).id,
+    "stage.fake_diploma.collect_official_paper");
+  assert.equal(objectiveFor({ hasUnpaidBills: true, hasEmptyEnvelope: false }, "item.unpaid_bills").id,
+    "stage.fake_diploma.collect_envelope");
+  assert.equal(objectiveFor(
+    { hasUnpaidBills: true, hasEmptyEnvelope: true }, "item.unpaid_bills", "item.empty_envelope"
+  ).id, "stage.fake_diploma.assemble");
+});
+
+test("the village-square envelope is a one-time recoverable diploma component", () => {
+  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
+  const envelope = square.interactables.find((target) => target.id === "hotspot.square.empty_envelope");
+
+  assert.equal(envelope.takeItemId, "item.empty_envelope");
+  assert.equal(envelope.flagOnTake, "hasEmptyEnvelope");
+  assert.deepEqual(envelope.requirements, { state: { hasEmptyEnvelope: false } });
+});
+
+test("apartment bills cannot respawn after diploma assembly consumes the inventory item", () => {
+  const apartment = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.apartment");
+  const bills = apartment.interactables.find((target) => target.id === "hotspot.apartment.unpaid_bills");
+
+  assert.deepEqual(bills.requirements, { state: { hasUnpaidBills: false } });
+  assert.equal(requirementsMet(bills.requirements, {
+    state: { hasUnpaidBills: true, flags: {} },
+    inventory: inventoryWith()
+  }), false);
+});
+
+test("the municipality clerk accepts but does not consume the fake diploma", () => {
+  const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
+  const clerk = municipality.npcs.find((npc) => npc.id === "npc.municipality_clerk");
+  const inventory = inventoryWith("item.fake_diploma");
+  const state = { flags: {} };
+  const context = { state, inventory };
+  const credentialRule = firstMatchingRule(
+    clerk.itemUseRules.filter((rule) => rule.itemId === "item.fake_diploma"),
+    context
+  );
+
+  assert.equal(credentialRule.messageKey, "msg.municipality.credentials_accepted");
+  applyEffects(credentialRule.effects, context);
+  assert.equal(state.flags.municipalityCredentialsAccepted, true);
+  assert.equal(inventory.has("item.fake_diploma"), true);
+  assert.equal(firstMatchingRule(
+    clerk.itemUseRules.filter((rule) => rule.itemId === "item.fake_diploma"),
+    context
+  ).messageKey, "msg.municipality.credentials_already_accepted");
+});
+
+test("municipality dialogue exposes a recoverable credentials check", () => {
+  const dialogue = chapter1.dialogues.find((candidate) => candidate.id === "dialogue.municipality_clerk");
+  const choices = dialogue.nodes.start.choices;
+  const withoutDiploma = { state: { flags: {} }, inventory: inventoryWith() };
+  const withDiploma = { state: { flags: {} }, inventory: inventoryWith("item.fake_diploma") };
+  const missingChoice = choices.find((choice) => choice.textKey === "dialogue.municipality_clerk.choice.ask_registration");
+  const presentChoice = choices.find((choice) => choice.textKey === "dialogue.municipality_clerk.choice.present_credentials");
+
+  assert.equal(requirementsMet(missingChoice.requirements, withoutDiploma), true);
+  assert.equal(requirementsMet(presentChoice.requirements, withoutDiploma), false);
+  assert.equal(requirementsMet(presentChoice.requirements, withDiploma), true);
+  applyEffects(presentChoice.effect.effects, withDiploma);
+  assert.equal(withDiploma.state.flags.municipalityCredentialsAccepted, true);
+});
+
+test("municipality stamp and archive sequence starts the ballot-box quest", () => {
+  const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
+  const register = municipality.interactables.find(
+    (target) => target.id === "hotspot.municipality.candidate_register"
+  );
+  const archive = municipality.interactables.find(
+    (target) => target.id === "hotspot.municipality.archive_cabinet"
+  );
+  const inventory = inventoryWith("item.municipality_stamp");
+  const state = {
+    hasMunicipalityStamp: true,
+    hasBallotBox: false,
+    flags: { municipalityCredentialsAccepted: true }
+  };
+  const started = [];
+  const context = {
+    state,
+    inventory,
+    quests: { start: (questId) => started.push(questId) }
+  };
+
+  const stamp = firstMatchingRule(register.itemUseRules, context);
+  assert.equal(stamp.itemId, "item.municipality_stamp");
+  applyEffects(stamp.effects, context);
+  assert.equal(inventory.has("item.municipality_stamp"), false);
+  assert.equal(state.hasMunicipalityStamp, false);
+  assert.equal(state.flags.candidateRegistrationStamped, true);
+
+  const clue = firstMatchingRule(archive.useRules, context);
+  assert.equal(clue.messageKey, "msg.municipality.ballot_box_clue");
+  applyEffects(clue.effects, context);
+  assert.equal(state.flags.ballotBoxArchiveClue, true);
+  assert.deepEqual(started, ["quest.chapter1.ballot_box"]);
+
+  const quest = chapter1.quests.find((candidate) => candidate.id === "quest.chapter1.ballot_box");
+  assert.equal(firstMatchingRule(quest.stages, context).id, "stage.ballot_box.follow_archive_clue");
+});
+
+test("the archive clue reveals a recoverable ballot box in the Mehana", () => {
+  const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
+  const hatch = mehana.interactables.find((target) => target.id === "hotspot.mehana.cellar_hatch");
+  const ballotBox = mehana.interactables.find((target) => target.id === "hotspot.mehana.ballot_box");
+  const state = {
+    hasBallotBox: false,
+    flags: { ballotBoxArchiveClue: true }
+  };
+  const completed = [];
+  const context = {
+    state,
+    inventory: inventoryWith(),
+    quests: { complete: (questId) => completed.push(questId) }
+  };
+
+  const openHatch = firstMatchingRule(hatch.useRules, context);
+  assert.equal(openHatch.messageKey, "msg.mehana.cellar_opened");
+  applyEffects(openHatch.effects, context);
+  assert.equal(requirementsMet(ballotBox.requirements, context), true);
+  applyEffects(ballotBox.takeEffects, context);
+  assert.equal(state.flags.ballotBoxRecovered, true);
+  assert.deepEqual(completed, ["quest.chapter1.ballot_box"]);
+});
+
 test("Tony quest exposes one outstanding objective for each unresolved puzzle stage", () => {
   const quest = chapter1.quests.find((candidate) => candidate.id === "quest.chapter1.tony_vote");
   const objectiveFor = (flags, state = {}) => firstMatchingRule(quest.stages, {

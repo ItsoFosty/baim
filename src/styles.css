@@ -400,11 +400,17 @@ button.active {
 .main-menu {
   left: 50%;
   top: 50%;
-  width: min(480px, calc(100vw - 32px));
+  width: min(480px, calc(100% - 32px));
   transform: translate(-50%, -50%);
   padding: 28px;
   display: grid;
   gap: 12px;
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-color: #96784f rgba(17, 14, 10, 0.65);
+  scrollbar-width: thin;
 }
 
 .main-menu h1,
@@ -418,13 +424,84 @@ button.active {
   font-size: 34px;
 }
 
+.ending-panel {
+  left: 50%;
+  top: 50%;
+  width: min(720px, calc(100% - 40px));
+  max-height: calc(100% - 40px);
+  padding: 32px;
+  overflow-y: auto;
+  transform: translate(-50%, -50%);
+}
+
+.ending-panel h1,
+.ending-panel p {
+  margin: 0;
+}
+
+.ending-kicker {
+  color: #d9b86e;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ending-panel h1 {
+  margin-top: 8px;
+  font-size: 34px;
+}
+
+.ending-body {
+  margin-top: 16px !important;
+  color: #e2d7c5;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.ending-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.ending-results div {
+  padding: 12px;
+  border: 1px solid rgba(167, 139, 92, 0.45);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ending-results dt {
+  color: #cdbd9f;
+  font-size: 13px;
+}
+
+.ending-results dd {
+  margin: 5px 0 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.ending-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .pause-menu {
   right: 18px;
   top: 68px;
-  width: min(430px, calc(100vw - 36px));
+  width: min(430px, calc(100% - 36px));
   padding: 18px;
   display: grid;
   gap: 10px;
+  max-height: calc(100% - 86px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-color: #96784f rgba(17, 14, 10, 0.65);
+  scrollbar-width: thin;
 }
 
 .quest-list {
@@ -735,9 +812,13 @@ button.active {
 .dev-home {
   left: 50%;
   top: 50%;
-  width: min(760px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
-  overflow: auto;
+  width: min(760px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-color: #96784f rgba(17, 14, 10, 0.65);
+  scrollbar-width: thin;
   transform: translate(-50%, -50%);
   padding: 28px;
   display: grid;
@@ -868,6 +949,12 @@ button.active {
   gap: 8px;
   pointer-events: auto;
   background: rgba(20, 18, 14, 0.9);
+  max-height: calc(100% - 28px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-color: #96784f rgba(17, 14, 10, 0.65);
+  scrollbar-width: thin;
 }
 
 .scene-editor.right {
@@ -877,6 +964,19 @@ button.active {
 
 .scene-editor-title {
   font-weight: 700;
+}
+
+.scene-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.scene-editor-header button {
+  min-height: 30px;
+  padding: 4px 9px;
+  white-space: nowrap;
 }
 
 .scene-editor label {

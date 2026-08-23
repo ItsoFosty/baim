@@ -9,6 +9,14 @@ const SOURCES = [
   {
     name: "villageSquareObjectGeometry",
     path: "assets_src/chapter1/scenes/village_square/object-geometry-v1.json"
+  },
+  {
+    name: "mehanaObjectGeometry",
+    path: "assets_src/chapter1/scenes/mehana/object-geometry-v1.json"
+  },
+  {
+    name: "municipalityObjectGeometry",
+    path: "assets_src/chapter1/scenes/municipality/object-geometry-v1.json"
   }
 ];
 

@@ -18,9 +18,10 @@ import { chapter1 } from "../src/content/chapter1/index.js";
 import { assetManifest } from "../src/content/art/assetManifest.js";
 import { CHARACTER_CUTOUT_MARGIN_RATIO, CHARACTER_SOURCE_SCALE } from "../src/content/art/characterAssetConfig.js";
 import { characterDefinitions } from "../src/content/art/characters.js";
-import { externalAnimationV1 } from "../src/content/art/externalAnimationV1.generated.js";
+import { externalAnimationV1 } from "../src/content/art/externalAnimationRuntime.generated.js";
 import { distance } from "../src/engine/geometry.js";
-import { imageAssetPaths } from "../src/engine/AssetLoader.js";
+import { AssetLoader, imageAssetPaths } from "../src/engine/AssetLoader.js";
+import { normalizeEditorObjectSource } from "../src/engine/SceneEditor.js";
 import { makePng } from "../tools/character-frame-utils.mjs";
 import {
   EXTERNAL_WALK_LOOP_MOTION_MAX,
@@ -55,24 +56,48 @@ test("inventory preload discovery includes every authored high-resolution item i
   ].sort());
 });
 
-test("game start waits for character sprites, scene layers, and item icons before input and rendering", async () => {
+test("decoded image cache evicts old optional sheets but preserves the active working set", () => {
+  const loader = new AssetLoader({ scenes: {}, characters: {}, items: {} });
+  const image = (src) => ({ src, dataset: { loaded: "true" }, naturalWidth: 10, naturalHeight: 10 });
+  loader.images.set("old", image("old"));
+  loader.images.set("active", image("active"));
+  loader.imageReady.set("old", Promise.resolve());
+  loader.imageReady.set("active", Promise.resolve());
+  loader.imageLastUsed.set("old", 1);
+  loader.imageLastUsed.set("active", 2);
+  loader.protectedPaths.add("active");
+
+  assert.equal(loader.trimDecodedCache(400), 1);
+  assert.equal(loader.images.has("old"), false);
+  assert.equal(loader.images.has("active"), true);
+});
+
+test("game start waits only for bootstrap character, current scene, and owned item assets", async () => {
   const game = Object.create(Game.prototype);
   let releaseCharacterAssets;
   let releaseSceneAssets;
   let releaseItemAssets;
   let inputBindings = 0;
   let animationFrames = 0;
+  let requestedCharacterSlots;
+  let requestedSceneId;
+  let requestedItemIds;
   game.player = { id: "npc.bai_mitko" };
   game.currentScene = { id: "scene.chapter1.apartment" };
+  game.state = { inventory: ["item.unpaid_bills"] };
   game.inputBound = false;
   game.assets = {
-    preloadAllCharacterAssets() {
+    loadRuntimeManifest() { return Promise.resolve(false); },
+    preloadCharacterSlots(_characterId, slots) {
+      requestedCharacterSlots = slots;
       return new Promise((resolve) => { releaseCharacterAssets = resolve; });
     },
-    preloadSceneAssets() {
+    preloadSceneAssets(sceneId) {
+      requestedSceneId = sceneId;
       return new Promise((resolve) => { releaseSceneAssets = resolve; });
     },
-    preloadAllItemAssets() {
+    preloadOwnedItemAssets(itemIds) {
+      requestedItemIds = itemIds;
       return new Promise((resolve) => { releaseItemAssets = resolve; });
     }
   };
@@ -83,6 +108,14 @@ test("game start waits for character sprites, scene layers, and item icons befor
   try {
     const starting = game.start();
     await Promise.resolve();
+    assert.deepEqual(requestedCharacterSlots, [
+      "external_walk_east_start",
+      "external_walk_east_loop",
+      "external_walk_east_short",
+      "external_walk_east_stop"
+    ]);
+    assert.equal(requestedSceneId, "scene.chapter1.apartment");
+    assert.deepEqual(requestedItemIds, ["item.unpaid_bills"]);
     assert.equal(inputBindings, 0);
     assert.equal(animationFrames, 0);
     releaseCharacterAssets([]);
@@ -260,6 +293,39 @@ test("saved dropped items create one compact interactive pile per scene", () => 
   assert.deepEqual(piles[0].rect, { x: 364, y: 455, w: 112, h: 75 });
 });
 
+test("data-authored take effects update quest state after adding the item", () => {
+  const game = Object.create(Game.prototype);
+  const owned = new Set();
+  const completed = [];
+  let message = null;
+  game.state = { hasBallotBox: false, flags: {} };
+  game.inventory = {
+    has: (itemId) => owned.has(itemId),
+    add: (itemId) => owned.add(itemId),
+    remove: (itemId) => owned.delete(itemId)
+  };
+  game.quests = { complete: (questId) => completed.push(questId) };
+  game.t = (key) => key;
+  game.setStatusMessage = (value) => { message = value; };
+  game.save = () => {};
+
+  game.takeTarget({
+    takeItemId: "item.ballot_box",
+    flagOnTake: "hasBallotBox",
+    takeMessageKey: "msg.mehana.ballot_box_recovered",
+    takeEffects: [
+      { type: "setFlag", key: "ballotBoxRecovered" },
+      { type: "completeQuest", questId: "quest.chapter1.ballot_box" }
+    ]
+  });
+
+  assert.equal(owned.has("item.ballot_box"), true);
+  assert.equal(game.state.hasBallotBox, true);
+  assert.equal(game.state.flags.ballotBoxRecovered, true);
+  assert.deepEqual(completed, ["quest.chapter1.ballot_box"]);
+  assert.equal(message, "msg.mehana.ballot_box_recovered");
+});
+
 test("scene polygon geometry detects walkable space", () => {
   const square = [
     { x: 0, y: 0 },
@@ -309,7 +375,7 @@ test("apartment uses a raster walk mask for walkable floor", () => {
     && layer.zIndex === -2
     && Number.isFinite(layer.top)
     && Number.isFinite(layer.left)
-    && layer.hiddenWhenItemOwned === "item.unpaid_bills"));
+    && layer.hiddenWhenState === "hasUnpaidBills"));
   assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.window_open"
     && layer.asset === "windowOpen"
     && layer.zIndex === 100
@@ -338,6 +404,12 @@ test("village square uses the shared raster, object, and layer scene pipeline", 
     && layer.left === 325
     && layer.top === 330
     && layer.height === 122));
+  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.square.kiosk_papers_pile"
+    && layer.asset === "kioskPapersPile"
+    && layer.zIndex === 40
+    && layer.left === 1095
+    && layer.top === 427
+    && layer.width === 165));
   for (const object of [...scene.exits, ...scene.interactables, ...scene.npcs]) {
     assert.ok(object.polygon?.length >= 3, `${object.id} needs generated editor geometry`);
   }
@@ -469,6 +541,24 @@ test("inventory self-use applies the item's authored rule and clears the expande
   assert.equal(game.selectedInventoryItemId, null);
 });
 
+test("inventory item combination finds the fake-diploma rule in either selection order", () => {
+  const game = Object.create(Game.prototype);
+  const owned = new Set(["item.unpaid_bills", "item.empty_envelope"]);
+  const applied = [];
+  game.state = { hasFakeDiploma: false, flags: {} };
+  game.inventory = { has: (itemId) => owned.has(itemId) };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.content = { items: Object.fromEntries(chapter1.items.map((item) => [item.id, item])) };
+  game.applyContentEffect = (rule) => { applied.push(rule.messageKey); return true; };
+  game.selectedInventoryItemId = null;
+  game.inventoryUseItemId = "item.empty_envelope";
+
+  assert.equal(game.useInventoryItemOnItem("item.empty_envelope", "item.unpaid_bills"), true);
+  assert.deepEqual(applied, ["msg.fake_diploma.assembled"]);
+  assert.equal(game.inventoryUseItemId, null);
+});
+
 test("Tony's completed vote is removed from the outstanding quest list", () => {
   const state = {
     activeQuests: ["quest.chapter1.main", "quest.chapter1.tony_vote"],
@@ -494,6 +584,18 @@ test("village square routes the apartment building home and the Mehana table ins
   assert.equal(mehanaExit.targetSceneId, "scene.chapter1.mehana");
 });
 
+test("village square and municipality form a playable round trip", () => {
+  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
+  const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
+  const enter = square.exits.find((exit) => exit.id === "exit.square.to_municipality");
+  const leave = municipality.exits.find((exit) => exit.id === "exit.municipality.to_square");
+
+  assert.equal(enter.targetSceneId, municipality.id);
+  assert.equal(leave.targetSceneId, square.id);
+  assert.equal(municipality.walkPolygons[0].id, "walk.chapter1.municipality.main");
+  assert.equal(municipality.npcs[0].dialogueId, "dialogue.municipality_clerk");
+});
+
 test("Mehana starts Bai Mitko seated with waiter and table interactions", () => {
   const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.mehana");
   const waiter = scene.npcs.find((npc) => npc.id === "npc.mehana_waiter");
@@ -503,6 +605,37 @@ test("Mehana starts Bai Mitko seated with waiter and table interactions", () => 
   assert.equal(scene.interactables.some((target) => target.id === "hotspot.mehana.table"), true);
   assert.equal(waiter.dialogueId, "dialogue.mehana_waiter");
   assert.equal(scene.npcs.some((npc) => npc.id === "npc.tony_fridge"), true);
+});
+
+test("Mehana and municipality use authored raster, object, and layer editor sources", () => {
+  for (const sceneName of ["mehana", "municipality"]) {
+    const sceneId = `scene.chapter1.${sceneName}`;
+    const scene = chapter1.scenes.find((candidate) => candidate.id === sceneId);
+    const walkSource = JSON.parse(readFileSync(`assets_src/chapter1/scenes/${sceneName}/walk-geometry-v1.json`, "utf8"));
+    const objectSource = JSON.parse(readFileSync(`assets_src/chapter1/scenes/${sceneName}/object-geometry-v1.json`, "utf8"));
+    const layerSource = JSON.parse(readFileSync(`assets_src/chapter1/scenes/${sceneName}/layers.json`, "utf8"));
+    const runtimeObjectIds = [...scene.exits, ...scene.interactables, ...scene.npcs].map((entry) => entry.id).sort();
+
+    assert.equal(walkSource.sceneId, sceneId);
+    assert.equal(scene.walkMask.id, walkSource.id);
+    assert.equal(scene.walkMask.rows.length, walkSource.raster.height);
+    assert.ok(scene.walkMask.rows.every((row) => row.length === walkSource.raster.width));
+    assert.deepEqual(objectSource.objects.map((entry) => entry.id).sort(), runtimeObjectIds);
+    assert.equal(layerSource.sceneId, sceneId);
+    assert.ok(Array.isArray(scene.foregroundLayers));
+  }
+});
+
+test("scene editor normalizes rectangle shorthand into visible, saveable polygons", () => {
+  const source = normalizeEditorObjectSource({
+    objects: [{ id: "hotspot.test", rect: { x: 10, y: 20, w: 30, h: 40 } }]
+  });
+  assert.deepEqual(source.objects[0].polygon, [
+    { x: 10, y: 20 },
+    { x: 40, y: 20 },
+    { x: 40, y: 60 },
+    { x: 10, y: 60 }
+  ]);
 });
 
 test("village square depth scaling shrinks Bai Mitko at the distant bench without changing foreground size", () => {
@@ -726,9 +859,9 @@ test("Bai Mitko render height is canonical across idle and walk assets", () => {
 test("Bai Mitko external renderer uses stable visual bounds across walk phases", () => {
   const definition = characterDefinitions["npc.bai_mitko"];
   const bounds = stableExternalVisualBounds(definition);
-  assert.equal(bounds.h, 884);
-  assert.equal(bounds.w, 427);
-  assert.equal(bounds.baselineY, 990);
+  assert.equal(bounds.h, 442);
+  assert.equal(bounds.w, 214);
+  assert.equal(bounds.baselineY, 476);
 });
 
 test("Bai Mitko idle directions use walk-start animation frames instead of static images", () => {
@@ -859,6 +992,18 @@ test("stateful scene layers stay hidden until their save flag is set", () => {
   renderer.game.state.flags.apartmentWindowOpen = true;
   assert.equal(renderer.sceneLayerVisible(layer), true);
   assert.equal(renderer.sceneLayerVisible({}), true);
+});
+
+test("collected scene layers stay hidden after their inventory item is consumed", () => {
+  const renderer = Object.create(Renderer.prototype);
+  renderer.game = {
+    state: { hasUnpaidBills: true, flags: {} },
+    inventory: { has: () => false }
+  };
+
+  assert.equal(renderer.sceneLayerVisible({ hiddenWhenState: "hasUnpaidBills" }), false);
+  renderer.game.state.hasUnpaidBills = false;
+  assert.equal(renderer.sceneLayerVisible({ hiddenWhenState: "hasUnpaidBills" }), true);
 });
 
 test("the pointer gesture that opens a dialogue cannot also choose its first option", () => {
@@ -1917,7 +2062,7 @@ test("hovered actionable geometry uses a transparent yellow outer glow", () => {
   renderer.drawHoveredTarget();
 
   assert.deepEqual(calls[0], ["rect", 10, 20, 30, 40]);
-  assert.deepEqual(calls[1], ["stroke", "rgba(225, 194, 100, 0.26)", 2, "rgba(225, 194, 100, 0.68)", 14]);
+  assert.deepEqual(calls[1], ["stroke", "rgba(225, 194, 100, 0.26)", 2, "rgba(225, 194, 100, 0.68)", 16]);
 });
 
 test("hover outline uses scene depth so Bai covers objects behind him", () => {

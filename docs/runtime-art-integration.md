@@ -1,5 +1,50 @@
 # Runtime Art Integration
 
+## Scalable Runtime Delivery
+
+The browser no longer downloads the whole art library before play. Startup waits only for:
+
+- the current scene's raster layers;
+- Bai Mitko's east/west walk start, loop, short, and stop sheets;
+- icons for items already present in the loaded save.
+
+Optional idle, speech, rejection, and action sheets load when first requested. After the first frame,
+the game uses browser idle time to prefetch scenes reachable through the current scene's exits. A
+scene transition still waits for its required scene assets, so a missed prefetch cannot expose an
+unfinished scene.
+
+Run the complete runtime build with:
+
+```bash
+npm run build:runtime
+```
+
+The build preserves the reviewed Ludo.ai PNG exports as source material, generates half-size alpha
+WebP animation sheets, and writes `target/runtime-assets/manifest.json`. Every raster URL in that
+manifest contains a content hash. The manifest is checked on every reload; unchanged hashed files
+stay cached for one year, while changed files receive new URLs and are fetched automatically.
+
+The service worker keeps at most 96 hashed runtime responses and 64 shell responses. Independently,
+the in-memory decoded-image cache targets 256 MiB and evicts the least-recently-used optional images
+while protecting the active scene, core walking sheets, and owned inventory icons.
+
+Current measured build (2026-08-23):
+
+| Payload | Transfer size | Approximate decoded size |
+| --- | ---: | ---: |
+| Playable apartment bootstrap art | 3.44 MiB | 63.58 MiB |
+| Complete current runtime art library | 20.39 MiB | 405.10 MiB |
+| Generated animation metadata module | 0.85 MiB | n/a |
+
+At a sustained 10 Mbit/s, the bootstrap art is about 2.9 seconds of ideal wire time, before latency
+and the metadata/module requests. The former eager 151.35 MiB animation-sheet transfer alone was
+about two minutes at that speed. Future chapters increase the manifest and cache population, not
+the reload payload: only the current working set and newly encountered content are transferred.
+
+Deployment must publish `target/runtime-assets/manifest.json` and its `assets/` directory together.
+The development server already sends the manifest with revalidation headers and hashed assets as
+immutable. Production hosting must apply the same policy.
+
 ## Current Visual State
 
 The game starts normally in:
@@ -19,8 +64,8 @@ The village square background is also integrated and proves runtime background l
 | `scene.chapter1.apartment` | `assets/chapter1/scenes/apartment/background.png` | integrated |
 | `scene.chapter1.village_square` | `assets/chapter1/scenes/village_square/background.png` | integrated; runtime proof, not final locked style |
 | `scene.chapter1.mehana` | `assets/chapter1/scenes/mehana/background.png` | missing |
-| `scene.chapter1.municipality` | `assets/chapter1/scenes/municipality/background.png` | missing/not implemented |
-| `scene.chapter1.election_booth` | `assets/chapter1/scenes/election_booth/background.png` | missing/not implemented |
+| `scene.chapter1.municipality` | `assets/chapter1/scenes/municipality/background.png` | playable graybox; runtime background missing |
+| `scene.chapter1.election_booth` | `assets/chapter1/scenes/election_booth/background.png` | playable graybox; runtime background missing |
 
 ## Apartment Runtime Target
 
@@ -60,15 +105,20 @@ Runtime asset:
 assets/chapter1/scenes/village_square/background.png
 ```
 
-PNG is temporary. WebP is still preferred for final runtime delivery, but no WebP conversion tool is currently available in the project tooling.
+The approved scene source remains PNG. Scene WebP conversion can be added to the same runtime build
+later; the current optimizer already uses the project's Sharp dependency for animation sheets.
 
 ## Character Runtime Animation
 
-Bai Mitko no longer uses static runtime pose images. The runtime uses the external animation sheets generated under:
+Bai Mitko no longer uses static runtime pose images. The runtime uses optimized external animation
+sheets generated under:
 
 ```text
 target/external_animation_v1/runtime/
 ```
+
+These are delivery derivatives only. The approved external PNG sheets and JSON metadata remain the
+source-of-truth import path under `assets_src/characters/bai_mitko/external_animation_v1/`.
 
 When Bai Mitko has no active authored animation for the current state, the renderer holds frame 0 of the current-direction walk-start animation.
 
@@ -258,6 +308,11 @@ resampling the approved runtime asset for every placement adjustment.
 
 - Fine hotspot tuning should be done with `Shift+G` in browser.
 - Apartment foreground occlusion is not split yet; later split objects such as the table/chairs, accordion chair, and door frame if needed.
-- The municipality entrance geometry exists, but `scene.chapter1.municipality` is not implemented in the current runtime scene list yet. Clicking it is safely guarded and shows a not-ready message.
+- The municipality is playable as a geometry graybox with the clerk, stamp desk, candidate register,
+  archive cabinet, and square return route. It still needs a reviewed runtime background and tuned
+  object geometry once that art exists.
+- The election booth is playable as a geometry graybox with a final-commitment interaction and three
+  persistent outcomes. It still needs its reviewed background, commission presentation, and tuned
+  geometry once that art exists.
 - Village square foreground occlusion is not split yet. Later, export foreground elements such as the mehana doorway, kiosk edge, fountain rim, and foreground plants as separate layers if needed.
 - Topical poster text should eventually be moved to replaceable layers where possible.

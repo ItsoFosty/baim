@@ -1,4 +1,4 @@
-import { externalAnimationV1 } from "./externalAnimationV1.generated.js";
+import { externalAnimationV1 } from "./externalAnimationRuntime.generated.js";
 
 export const assetManifest = {
   baseResolution: { width: 1280, height: 720 },
@@ -15,9 +15,16 @@ export const assetManifest = {
     "scene.chapter1.village_square": {
       background: "assets/chapter1/scenes/village_square/background.png",
       babaStoyankaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v1.png",
+      kioskPapersPile: "assets/chapter1/scenes/village_square/kiosk-papers-pile-v1.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.mehana": {
+      droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
+    },
+    "scene.chapter1.municipality": {
+      droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
+    },
+    "scene.chapter1.election_booth": {
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     }
   },

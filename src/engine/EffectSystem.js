@@ -6,6 +6,7 @@ export function requirementsMet(requirements = {}, context = {}) {
   if ((requirements.items || []).some((itemId) => !inventory?.has(itemId))) return false;
   if ((requirements.flags || []).some((flag) => !flags[flag])) return false;
   if ((requirements.notFlags || []).some((flag) => Boolean(flags[flag]))) return false;
+  if (requirements.anyStateTrue?.length && !requirements.anyStateTrue.some((key) => Boolean(state[key]))) return false;
   if (requirements.state && Object.entries(requirements.state).some(([key, value]) => state[key] !== value)) return false;
   if (requirements.stateMin && Object.entries(requirements.stateMin).some(([key, value]) => Number(state[key]) < Number(value))) return false;
   if (requirements.stateMax && Object.entries(requirements.stateMax).some(([key, value]) => Number(state[key]) > Number(value))) return false;
@@ -36,9 +37,11 @@ export function applyEffects(effects = [], context = {}) {
     } else if (effect.type === "removeItem") {
       context.inventory?.remove(effect.itemId);
     } else if (effect.type === "startQuest") {
-      context.quests?.start(effect.questId);
+      context.quests?.start?.(effect.questId);
     } else if (effect.type === "completeQuest") {
-      context.quests?.complete(effect.questId);
+      context.quests?.complete?.(effect.questId);
+    } else if (effect.type === "expireQuest") {
+      context.quests?.expire?.(effect.questId);
     } else {
       throw new Error(`Unknown content effect type: ${effect.type}`);
     }

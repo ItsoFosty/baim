@@ -143,6 +143,7 @@ test("quest start effects activate a quest once before completion", () => {
   quests.complete("quest.chapter1.baba_vote");
   assert.deepEqual(state.activeQuests, []);
   assert.deepEqual(state.completedQuests, ["quest.chapter1.baba_vote"]);
+  assert.deepEqual(quests.completed().map((quest) => quest.id), ["quest.chapter1.baba_vote"]);
 });
 
 test("dialogue choices honor inventory, flags, and cheap-offer thresholds", () => {
@@ -379,6 +380,108 @@ test("using a content-authored reading target opens its menu dialogue", () => {
   assert.equal(renders, 1);
 });
 
+test("inventory Use enters explicit item-target mode and can be cancelled", () => {
+  const game = Object.create(Game.prototype);
+  let renders = 0;
+  let clearedMessages = 0;
+  game.inventory = { has: (itemId) => itemId === "item.accordion" };
+  game.player = { pendingInteraction: null };
+  game.selectedVerb = VERBS.LOOK;
+  game.selectedInventoryItemId = "item.accordion";
+  game.inventoryUseItemId = null;
+  game.clearStatusMessage = () => { clearedMessages += 1; };
+  game.renderUi = () => { renders += 1; };
+
+  assert.equal(game.beginInventoryItemUse("item.accordion"), true);
+  assert.equal(game.selectedInventoryItemId, null);
+  assert.equal(game.inventoryUseItemId, "item.accordion");
+  assert.equal(game.selectedVerb, VERBS.USE);
+  assert.equal(clearedMessages, 1);
+
+  game.clearInventoryInteraction();
+  assert.equal(game.inventoryUseItemId, null);
+  assert.equal(renders, 1);
+});
+
+test("explicit accordion use applies Tony's item-authored rule and clears held state", () => {
+  const game = Object.create(Game.prototype);
+  const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
+  const tony = mehana.npcs.find((target) => target.id === "npc.tony_fridge");
+  let applied = null;
+  game.state = { tonyVote: false, flags: { tonyChallengeStarted: true } };
+  game.inventory = { has: (itemId) => itemId === "item.accordion" };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.content = { items: Object.fromEntries(chapter1.items.map((item) => [item.id, item])) };
+  game.inventoryUseItemId = "item.accordion";
+  game.selectedInventoryItemId = null;
+  game.applyContentEffect = (rule) => { applied = rule; return true; };
+
+  assert.equal(game.useInventoryItemOnTarget("item.accordion", tony), true);
+  assert.equal(applied.messageKey, "msg.accordion_tony");
+  assert.equal(game.inventoryUseItemId, null);
+});
+
+test("accordion uses character reactions and future animal fallbacks without overriding Tony's puzzle rule", () => {
+  const game = Object.create(Game.prototype);
+  const accordion = chapter1.items.find((item) => item.id === "item.accordion");
+  const applied = [];
+  game.state = { babaStoyankaVote: false, tonyVote: false, flags: {} };
+  game.inventory = { has: (itemId) => itemId === "item.accordion" };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.content = { items: { "item.accordion": accordion } };
+  game.applyContentEffect = (rule) => { applied.push(rule.messageKey); return true; };
+
+  const useOn = (target) => {
+    game.inventoryUseItemId = "item.accordion";
+    game.useInventoryItemOnTarget("item.accordion", target);
+  };
+  useOn({ id: "npc.baba_stoyanka", kind: "npc", itemUseRules: [] });
+  game.state.babaStoyankaVote = true;
+  useOn({ id: "npc.baba_stoyanka", kind: "npc", itemUseRules: [] });
+  useOn({ id: "npc.future_villager", kind: "npc", itemUseRules: [] });
+  useOn({ id: "npc.future_stray_dog", kind: "npc", tags: ["animal"], itemUseRules: [] });
+
+  assert.deepEqual(applied, [
+    "msg.accordion_baba_before_vote",
+    "msg.accordion_baba_after_vote",
+    "msg.accordion_generic_npc",
+    "msg.accordion_animal"
+  ]);
+});
+
+test("inventory self-use applies the item's authored rule and clears the expanded item state", () => {
+  const game = Object.create(Game.prototype);
+  const rakia = chapter1.items.find((item) => item.id === "item.rakia");
+  let applied = null;
+  game.state = { rakiaGlasses: 2, flags: {} };
+  game.inventory = { has: (itemId) => itemId === "item.rakia" };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.content = { items: { "item.rakia": rakia } };
+  game.inventoryUseItemId = null;
+  game.selectedInventoryItemId = "item.rakia";
+  game.applyContentEffect = (rule) => { applied = rule; return true; };
+
+  assert.equal(game.useInventoryItemOnSelf("item.rakia"), true);
+  assert.equal(applied.messageKey, "msg.self.rakia");
+  assert.equal(game.selectedInventoryItemId, null);
+});
+
+test("Tony's completed vote is removed from the outstanding quest list", () => {
+  const state = {
+    activeQuests: ["quest.chapter1.main", "quest.chapter1.tony_vote"],
+    completedQuests: []
+  };
+  const quests = new QuestSystem(Object.fromEntries(chapter1.quests.map((quest) => [quest.id, quest])), state);
+
+  quests.complete("quest.chapter1.tony_vote");
+
+  assert.deepEqual(quests.active().map((quest) => quest.id), ["quest.chapter1.main"]);
+  assert.deepEqual(state.completedQuests, ["quest.chapter1.tony_vote"]);
+});
+
 test("village square routes the apartment building home and the Mehana table inside", () => {
   const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
   const apartmentExit = scene.exits.find((exit) => exit.id === "exit.square.to_apartment");
@@ -569,6 +672,33 @@ test("fresh chapter start has no preloaded inventory items", () => {
   assert.deepEqual(DEFAULT_SAVE.droppedItems, []);
   assert.equal(DEFAULT_SAVE.rakiaGlasses, 0);
   assert.equal(DEFAULT_SAVE.rakiaLastChangedAt, null);
+  assert.equal(DEFAULT_SAVE.activeQuests.includes("quest.chapter1.baba_vote"), true);
+});
+
+test("save migration adds Baba's known vote quest without resurrecting completed work", () => {
+  const oldStorage = new MemoryStorage({
+    test: JSON.stringify({
+      activeQuests: ["quest.chapter1.main", "quest.chapter1.tony_vote"],
+      completedQuests: []
+    })
+  });
+  const migrated = new SaveSystem(oldStorage, "test").load();
+  assert.deepEqual(migrated.activeQuests, [
+    "quest.chapter1.main",
+    "quest.chapter1.tony_vote",
+    "quest.chapter1.baba_vote"
+  ]);
+
+  const completedStorage = new MemoryStorage({
+    test: JSON.stringify({
+      activeQuests: ["quest.chapter1.main"],
+      completedQuests: ["quest.chapter1.baba_vote"],
+      babaStoyankaVote: true
+    })
+  });
+  const completed = new SaveSystem(completedStorage, "test").load();
+  assert.deepEqual(completed.activeQuests, ["quest.chapter1.main"]);
+  assert.deepEqual(completed.completedQuests, ["quest.chapter1.baba_vote"]);
 });
 
 test("save migration removes the old prototype starter inventory", () => {

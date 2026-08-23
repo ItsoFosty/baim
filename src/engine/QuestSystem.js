@@ -22,4 +22,8 @@ export class QuestSystem {
   active() {
     return this.state.activeQuests.map((id) => this.questsById[id]).filter(Boolean);
   }
+
+  completed() {
+    return this.state.completedQuests.map((id) => this.questsById[id]).filter(Boolean);
+  }
 }

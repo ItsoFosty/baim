@@ -75,6 +75,9 @@ export class Game {
     this.devHome = this.shouldShowDevHome();
     this.walkSpeedMultiplier = this.readNumberParam("walkSpeed", 1);
     this.selectedVerb = VERBS.LOOK;
+    this.selectedInventoryItemId = null;
+    this.inventoryUseItemId = null;
+    this.questListTab = "outstanding";
     this.message = this.t("ui.hint");
     this.speechBubble = null;
     this.pendingSpeechBubble = null;
@@ -224,6 +227,11 @@ export class Game {
     });
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
+        if (this.selectedInventoryItemId || this.inventoryUseItemId) {
+          this.clearInventoryInteraction();
+          this.renderUi();
+          return;
+        }
         this.paused = !this.paused;
         this.menuOpen = false;
         this.hoveredTarget = null;
@@ -534,6 +542,7 @@ export class Game {
   }
 
   cycleVerb() {
+    this.clearInventoryInteraction();
     const index = verbs.indexOf(this.selectedVerb);
     this.selectedVerb = verbs[(index + 1) % verbs.length];
     this.renderUi();
@@ -926,10 +935,18 @@ export class Game {
 
   handleWorldClick(point) {
     if (this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action") return;
+    if (this.selectedInventoryItemId && !this.inventoryUseItemId) {
+      this.selectedInventoryItemId = null;
+      this.renderUi();
+    }
     const target = findTargetAt(this.currentScene, point, (candidate) => this.targetAvailable(candidate));
     if (target) {
       this.handleTarget(target, point);
       return;
+    }
+    if (this.inventoryUseItemId) {
+      this.clearInventoryInteraction();
+      this.renderUi();
     }
     this.player.pendingInteraction = null;
     const destination = isWalkable(this.currentScene, point)
@@ -951,15 +968,18 @@ export class Game {
   updateHoveredTarget(point) {
     const blocked = this.menuOpen || this.paused || this.dialogue.current
       || this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action";
+    const previousTargetId = this.hoveredTarget?.id || null;
     this.hoveredTarget = !blocked && point
       ? findTargetAt(this.currentScene, point, (candidate) => this.targetAvailable(candidate))
       : null;
     if (this.canvas?.style) this.canvas.style.cursor = this.hoveredTarget ? "pointer" : "default";
+    if (this.inventoryUseItemId && previousTargetId !== (this.hoveredTarget?.id || null)) this.renderUi();
     return this.hoveredTarget;
   }
 
   targetAvailable(target) {
     if (target?.hiddenWhenItemOwned && this.inventory?.has(target.hiddenWhenItemOwned)) return false;
+    if (target?.requirements && !requirementsMet(target.requirements, this.effectContext())) return false;
     return true;
   }
 
@@ -1004,7 +1024,8 @@ export class Game {
         verb: this.selectedVerb,
         hand: reachPoint,
         approach,
-        actionSequence
+        actionSequence,
+        inventoryUseItemId: this.inventoryUseItemId
       };
       this.walkToPoint(approach, reachPoint);
       this.clearStatusMessage();
@@ -1040,7 +1061,8 @@ export class Game {
       target,
       verb: this.selectedVerb,
       hand: reachPoint,
-      approach
+      approach,
+      inventoryUseItemId: this.inventoryUseItemId
     };
     this.walkToPoint(approach, reachPoint);
     this.clearStatusMessage();
@@ -1061,6 +1083,7 @@ export class Game {
     if (pending.hand) this.facePoint(pending.hand);
     const previousVerb = this.selectedVerb;
     this.selectedVerb = pending.verb;
+    if (pending.inventoryUseItemId) this.inventoryUseItemId = pending.inventoryUseItemId;
     this.performTargetAction(pending.target, pending.actionSequence);
     this.selectedVerb = previousVerb;
   }
@@ -1121,6 +1144,10 @@ export class Game {
   }
 
   performTargetAction(target, forcedActionSequence = null) {
+    if (this.inventoryUseItemId) {
+      this.useInventoryItemOnTarget(this.inventoryUseItemId, target);
+      return;
+    }
     if (target.kind === "exit") {
       this.changeScene(target.targetSceneId, target.targetPosition);
       return;
@@ -1187,6 +1214,88 @@ export class Game {
     this.setStatusMessage(this.t("msg.no_use"), { reject: true });
   }
 
+  beginInventoryItemUse(itemId) {
+    if (!itemId || !this.inventory.has(itemId)) return false;
+    this.selectedInventoryItemId = null;
+    this.inventoryUseItemId = itemId;
+    this.selectedVerb = VERBS.USE;
+    this.clearStatusMessage();
+    this.renderUi();
+    return true;
+  }
+
+  clearInventoryInteraction() {
+    if (this.player?.pendingInteraction?.inventoryUseItemId) this.player.pendingInteraction = null;
+    this.selectedInventoryItemId = null;
+    this.inventoryUseItemId = null;
+  }
+
+  useInventoryItemOnTarget(itemId, target) {
+    const item = this.content.items[itemId];
+    const explicitRule = firstMatchingRule(
+      (target.itemUseRules || []).filter((candidate) => candidate.itemId === itemId),
+      this.effectContext()
+    );
+    const fallbackRule = firstMatchingRule(
+      (item?.targetUseRules || []).filter((candidate) => this.itemTargetRuleMatches(candidate, target)),
+      this.effectContext()
+    );
+    const rule = explicitRule || fallbackRule;
+    this.clearInventoryInteraction();
+    if (rule) return this.applyContentEffect(rule);
+    this.setStatusMessage(this.t("msg.inventory.cannot_use_with", {
+      item: this.t(item?.nameKey || itemId),
+      target: this.t(target.nameKey || target.lookKey || target.id)
+    }), { reject: true });
+    this.renderUi();
+    return false;
+  }
+
+  itemTargetRuleMatches(rule, target) {
+    if (rule.targetIds?.length && !rule.targetIds.includes(target?.id)) return false;
+    if (rule.targetKinds?.length && !rule.targetKinds.includes(target?.kind)) return false;
+    if (rule.targetTags?.length && !rule.targetTags.some((tag) => target?.tags?.includes(tag))) return false;
+    return Boolean(rule.targetIds?.length || rule.targetKinds?.length || rule.targetTags?.length);
+  }
+
+  useInventoryItemOnSelf(itemId) {
+    const item = this.content.items[itemId];
+    const rule = firstMatchingRule(item?.selfUseRules, this.effectContext());
+    this.clearInventoryInteraction();
+    if (rule) return this.applyContentEffect(rule);
+    this.setStatusMessage(this.t("msg.inventory.cannot_use_on_self", {
+      item: this.t(item?.nameKey || itemId)
+    }), { reject: true });
+    this.renderUi();
+    return false;
+  }
+
+  useInventoryItemOnItem(sourceItemId, targetItemId) {
+    if (sourceItemId === targetItemId) {
+      this.clearInventoryInteraction();
+      this.renderUi();
+      return false;
+    }
+    const source = this.content.items[sourceItemId];
+    const target = this.content.items[targetItemId];
+    const directRule = firstMatchingRule(
+      (source?.itemUseRules || []).filter((candidate) => candidate.itemId === targetItemId),
+      this.effectContext()
+    );
+    const reverseRule = firstMatchingRule(
+      (target?.itemUseRules || []).filter((candidate) => candidate.itemId === sourceItemId),
+      this.effectContext()
+    );
+    this.clearInventoryInteraction();
+    if (directRule || reverseRule) return this.applyContentEffect(directRule || reverseRule);
+    this.setStatusMessage(this.t("msg.inventory.cannot_combine", {
+      item: this.t(source?.nameKey || sourceItemId),
+      target: this.t(target?.nameKey || targetItemId)
+    }), { reject: true });
+    this.renderUi();
+    return false;
+  }
+
   applyDialogueEffect(effect) {
     this.applyContentEffect(effect, { render: false });
     this.player.speaking = false;
@@ -1225,6 +1334,7 @@ export class Game {
       if (this.sceneLoadToken !== sceneLoadToken) return;
       this.currentScene = this.sceneWithDroppedItems(this.content.scenes[sceneId]);
       this.droppedItemsOpen = false;
+      this.clearInventoryInteraction();
       this.state.currentSceneId = sceneId;
       this.player.position = { ...(position || this.currentScene.playerStart) };
       this.player.target = null;
@@ -1246,6 +1356,7 @@ export class Game {
 
   setLanguage(language) {
     if (!LANGUAGES.includes(language)) return;
+    this.clearInventoryInteraction();
     this.state.language = language;
     this.localization.setLanguage(language);
     this.message = this.t("ui.hint");
@@ -1262,6 +1373,8 @@ export class Game {
     this.localization.setLanguage(this.state.language);
     this.currentScene = this.sceneWithDroppedItems(this.content.scenes[this.state.currentSceneId]);
     this.droppedItemsOpen = false;
+    this.clearInventoryInteraction();
+    this.questListTab = "outstanding";
     this.inventory = new InventorySystem(this.content.items, this.state);
     this.quests = new QuestSystem(this.content.quests, this.state);
     this.player.position = { ...this.currentScene.playerStart };
@@ -1303,6 +1416,7 @@ export class Game {
 
   returnToMainMenu() {
     this.save();
+    this.clearInventoryInteraction();
     this.menuOpen = true;
     this.paused = false;
     this.hoveredTarget = null;
@@ -1366,6 +1480,7 @@ export class Game {
     hud.append(meters, verb);
     const items = this.inventory.list();
     if (items.length) hud.appendChild(this.createInventoryDock(items));
+    if (this.inventoryUseItemId) hud.appendChild(this.createInventoryUseIndicator());
     return hud;
   }
 
@@ -1435,9 +1550,16 @@ export class Game {
       tooltip.setAttribute("role", "tooltip");
       tooltip.textContent = itemName;
       itemButton.appendChild(tooltip);
-      itemButton.classList.toggle("selected", this.selectedInventoryItemId === item.id);
-      itemButton.setAttribute("aria-pressed", String(this.selectedInventoryItemId === item.id));
+      const selected = this.selectedInventoryItemId === item.id;
+      const using = this.inventoryUseItemId === item.id;
+      itemButton.classList.toggle("selected", selected);
+      itemButton.classList.toggle("using", using);
+      itemButton.setAttribute("aria-pressed", String(selected || using));
       itemButton.addEventListener("click", () => {
+        if (this.inventoryUseItemId) {
+          this.useInventoryItemOnItem(this.inventoryUseItemId, item.id);
+          return;
+        }
         this.selectedInventoryItemId = this.selectedInventoryItemId === item.id ? null : item.id;
         this.renderUi();
       });
@@ -1452,12 +1574,44 @@ export class Game {
       name.textContent = this.t(selectedItem.nameKey);
       actions.append(
         name,
-        button(this.t("ui.inventory.inspect"), () => this.setStatusMessage(this.t(selectedItem.descriptionKey))),
-        button(this.t("ui.inventory.drop"), () => this.dropInventoryItem(selectedItem))
+        button(this.t("ui.inventory.use"), () => this.beginInventoryItemUse(selectedItem.id)),
+        ...(selectedItem.selfUseRules?.length
+          ? [button(this.t("ui.inventory.use_on_self"), () => this.useInventoryItemOnSelf(selectedItem.id))]
+          : []),
+        button(this.t("ui.inventory.inspect"), () => {
+          this.clearInventoryInteraction();
+          this.setStatusMessage(this.t(selectedItem.descriptionKey));
+        }),
+        button(this.t("ui.inventory.drop"), () => this.dropInventoryItem(selectedItem)),
+        button(this.t("ui.inventory.close"), () => {
+          this.clearInventoryInteraction();
+          this.renderUi();
+        })
       );
       panel.appendChild(actions);
     }
     return panel;
+  }
+
+  createInventoryUseIndicator() {
+    const item = this.content.items[this.inventoryUseItemId];
+    const target = this.hoveredTarget;
+    const indicator = element("div", "inventory-use-indicator");
+    const instruction = element("span", "inventory-use-instruction");
+    instruction.textContent = target
+      ? this.t("ui.inventory.use_with_target", {
+          item: this.t(item?.nameKey || this.inventoryUseItemId),
+          target: this.t(target.nameKey || target.lookKey || target.id)
+        })
+      : this.t("ui.inventory.use_prompt", { item: this.t(item?.nameKey || this.inventoryUseItemId) });
+    indicator.append(
+      instruction,
+      button(this.t("ui.inventory.cancel"), () => {
+        this.clearInventoryInteraction();
+        this.renderUi();
+      })
+    );
+    return indicator;
   }
 
   dropInventoryItem(item) {
@@ -1514,6 +1668,7 @@ export class Game {
     const left = element("div", "top-bar-left");
     const right = element("div", "top-bar-right");
     const menuButton = button(this.t("ui.menu"), () => {
+        this.clearInventoryInteraction();
         this.paused = !this.paused;
         this.hoveredTarget = null;
         this.renderUi();
@@ -1522,15 +1677,21 @@ export class Game {
     menuButton.setAttribute("aria-pressed", String(this.paused));
     left.append(menuButton);
     right.append(
-      button(this.t("verb.look"), () => { this.selectedVerb = VERBS.LOOK; this.renderUi(); }),
-      button(this.t("verb.talk"), () => { this.selectedVerb = VERBS.TALK; this.renderUi(); }),
-      button(this.t("verb.use"), () => { this.selectedVerb = VERBS.USE; this.renderUi(); }),
-      button(this.t("verb.take"), () => { this.selectedVerb = VERBS.TAKE; this.renderUi(); }),
+      button(this.t("verb.look"), () => this.selectVerb(VERBS.LOOK)),
+      button(this.t("verb.talk"), () => this.selectVerb(VERBS.TALK)),
+      button(this.t("verb.use"), () => this.selectVerb(VERBS.USE)),
+      button(this.t("verb.take"), () => this.selectVerb(VERBS.TAKE)),
       button("BG", () => this.setLanguage("bg")),
       button("EN", () => this.setLanguage("en"))
     );
     bar.append(left, right);
     return bar;
+  }
+
+  selectVerb(verb) {
+    this.clearInventoryInteraction();
+    this.selectedVerb = verb;
+    this.renderUi();
   }
 
   createSpeechBubble() {
@@ -2090,13 +2251,51 @@ node tools/build-external-runtime-staging.js</pre>
       button(this.t("ui.restart"), () => this.restartGame()),
       button(this.t("ui.main_menu"), () => this.returnToMainMenu())
     );
-    const quests = element("div", "quest-list");
-    quests.innerHTML = `<h3>${this.t("ui.quests")}</h3>`;
-    for (const quest of this.quests.active()) {
-      const p = document.createElement("p");
-      p.textContent = this.t(quest.titleKey);
-      quests.appendChild(p);
+    const questViews = {
+      outstanding: this.quests.active(),
+      completed: this.quests.completed()
+    };
+    if (!questViews[this.questListTab]) this.questListTab = "outstanding";
+    const quests = element("section", "quest-list");
+    quests.setAttribute("aria-label", this.t("ui.quests"));
+    quests.innerHTML = `<h3>${escapeHtml(this.t("ui.quests"))}</h3>`;
+    const tabs = element("div", "quest-list-tabs");
+    for (const tabId of ["outstanding", "completed"]) {
+      const tab = button(this.t(`ui.quests.tab.${tabId}`), () => {
+        this.questListTab = tabId;
+        this.renderUi();
+      });
+      tab.classList.add("quest-list-tab");
+      tab.classList.toggle("active", this.questListTab === tabId);
+      tab.setAttribute("aria-pressed", String(this.questListTab === tabId));
+      tab.setAttribute("aria-label", this.t("ui.quests.tab_with_count", {
+        tab: this.t(`ui.quests.tab.${tabId}`),
+        count: questViews[tabId].length
+      }));
+      tabs.appendChild(tab);
     }
+    quests.appendChild(tabs);
+    const scroll = element("div", "quest-list-scroll");
+    const visibleQuests = questViews[this.questListTab];
+    const list = document.createElement("ol");
+    list.className = "quest-list-items";
+    for (const quest of visibleQuests) {
+      const entry = document.createElement("li");
+      const stage = this.questListTab === "outstanding"
+        ? firstMatchingRule(quest.stages, this.effectContext())
+        : null;
+      entry.textContent = this.t(stage?.titleKey || quest.titleKey);
+      entry.dataset.questId = quest.id;
+      if (stage?.id) entry.dataset.questStageId = stage.id;
+      list.appendChild(entry);
+    }
+    if (visibleQuests.length) scroll.appendChild(list);
+    else {
+      const empty = element("p", "quest-list-empty");
+      empty.textContent = this.t(`ui.quests.${this.questListTab}.none`);
+      scroll.appendChild(empty);
+    }
+    quests.appendChild(scroll);
     pause.appendChild(quests);
     return pause;
   }
@@ -2117,7 +2316,9 @@ node tools/build-external-runtime-staging.js</pre>
       }
       panel.appendChild(entries);
     }
-    for (const choice of (node.choices || []).filter((candidate) => this.dialogueChoiceAvailable(candidate))) {
+    const dialogue = this.content.dialogues[this.dialogue.current?.id];
+    const choiceNode = node.choicesFrom ? dialogue?.nodes?.[node.choicesFrom] : node;
+    for (const choice of (choiceNode?.choices || []).filter((candidate) => this.dialogueChoiceAvailable(candidate))) {
       panel.appendChild(button(this.t(choice.textKey), (event) => this.chooseDialogueChoice(choice, event)));
     }
     return panel;

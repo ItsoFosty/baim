@@ -43,6 +43,7 @@ export const DEFAULT_SAVE = {
   activeQuests: [
     "quest.chapter1.main",
     "quest.chapter1.fake_diploma",
+    "quest.chapter1.baba_vote",
     "quest.chapter1.tony_vote"
   ],
   flags: {},

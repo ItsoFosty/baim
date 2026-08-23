@@ -26,32 +26,92 @@ export const dialogues = [
       start: {
         lineKey: "dialogue.tony.start",
         choices: [
-          { textKey: "dialogue.tony.choice.challenge", next: "challenge" },
+          {
+            textKey: "dialogue.tony.choice.challenge",
+            requirements: {
+              notFlags: ["tonyChallengeStarted"],
+              state: { tonyVote: false }
+            },
+            next: "challenge"
+          },
+          {
+            textKey: "dialogue.tony.choice.challenge_status",
+            requirements: {
+              flags: ["tonyChallengeStarted"],
+              state: { swappedOwnRakiaWithWater: false, tonyVote: false }
+            },
+            next: "challenge_waiting"
+          },
+          {
+            textKey: "dialogue.tony.choice.finish_challenge",
+            requirements: { state: { swappedOwnRakiaWithWater: true, tonyVote: false } },
+            next: "contest_result",
+            effect: {
+              effects: [
+                { type: "setFlag", key: "tonyChallengeResolved" },
+                { type: "setState", key: "tonyVote", value: true },
+                { type: "setState", key: "tonyFavorOwed", value: true },
+                { type: "adjustState", key: "influence", amount: 25 },
+                { type: "adjustState", key: "suspicion", amount: 10 },
+                { type: "adjustState", key: "publicMood", amount: 5 },
+                { type: "completeQuest", questId: "quest.chapter1.tony_vote" }
+              ]
+            }
+          },
+          {
+            textKey: "dialogue.tony.choice.confirm_support",
+            requirements: { state: { tonyVote: true } },
+            next: "support_confirmed"
+          },
           { textKey: "dialogue.tony.choice.politics", next: "politics" },
           { textKey: "dialogue.tony.choice.leave" }
         ]
       },
       politics: {
         lineKey: "dialogue.tony.politics",
-        choices: [{ textKey: "dialogue.common.back", next: "start" }]
+        choicesFrom: "start"
       },
       challenge: {
         lineKey: "dialogue.tony.challenge",
         choices: [
           {
             textKey: "dialogue.tony.choice.accept",
+            next: "challenge_accepted",
             effect: {
-              effects: [{ type: "setFlag", key: "tonyChallengeStarted" }],
-              messageKey: "dialogue.tony.challenge"
+              effects: [
+                { type: "setFlag", key: "tonyChallengeStarted" },
+                { type: "setFlag", key: "tonyChallengeDeferred", value: false }
+              ]
             }
           },
           {
             textKey: "dialogue.tony.choice.refuse",
+            next: "challenge_deferred",
             effect: {
-              effects: [{ type: "adjustState", key: "suspicion", amount: 3 }]
+              effects: [{ type: "setFlag", key: "tonyChallengeDeferred" }]
             }
           }
         ]
+      },
+      challenge_accepted: {
+        lineKey: "dialogue.tony.challenge_accepted",
+        choices: [{ textKey: "dialogue.tony.choice.prepare" }]
+      },
+      challenge_deferred: {
+        lineKey: "dialogue.tony.challenge_deferred",
+        choices: [{ textKey: "dialogue.tony.choice.prepare" }]
+      },
+      challenge_waiting: {
+        lineKey: "dialogue.tony.challenge_waiting",
+        choicesFrom: "start"
+      },
+      contest_result: {
+        lineKey: "dialogue.tony.contest_result",
+        choices: [{ textKey: "dialogue.tony.choice.leave" }]
+      },
+      support_confirmed: {
+        lineKey: "dialogue.tony.support_confirmed",
+        choicesFrom: "start"
       }
     }
   },
@@ -245,19 +305,19 @@ export const dialogues = [
       },
       tradition: {
         lineKey: "dialogue.baba.tradition",
-        choices: [{ textKey: "dialogue.common.back", next: "start" }]
+        choicesFrom: "start"
       },
       vote_terms: {
         lineKey: "dialogue.baba.vote_terms",
-        choices: [{ textKey: "dialogue.common.back", next: "start" }]
+        choicesFrom: "start"
       },
       promise: {
         lineKey: "dialogue.baba.promise",
-        choices: [{ textKey: "dialogue.common.back", next: "start" }]
+        choicesFrom: "start"
       },
       vote_confirmed: {
         lineKey: "dialogue.baba.vote_confirmed",
-        choices: [{ textKey: "dialogue.common.back", next: "start" }]
+        choicesFrom: "start"
       }
     }
   },
@@ -284,13 +344,34 @@ export const dialogues = [
             textKey: "dialogue.waiter.choice.village_wine",
             next: "village_wine_serving"
           },
+          {
+            textKey: "dialogue.waiter.choice.tony_weakness",
+            requirements: {
+              flags: ["tonyChallengeDeferred"],
+              notFlags: ["tonyChallengeStarted"],
+              state: { tonyVote: false }
+            },
+            next: "tony_weakness"
+          },
+          {
+            textKey: "dialogue.waiter.choice.tony_weakness",
+            requirements: {
+              flags: ["tonyChallengeStarted"],
+              state: { tonyVote: false }
+            },
+            next: "tony_weakness"
+          },
           { textKey: "dialogue.waiter.choice.people", next: "people" },
           { textKey: "dialogue.waiter.choice.leave" }
         ]
       },
       people: {
         lineKey: "dialogue.waiter.people",
-        choices: [{ textKey: "dialogue.common.back", next: "start" }]
+        choicesFrom: "start"
+      },
+      tony_weakness: {
+        lineKey: "dialogue.waiter.tony_weakness",
+        choicesFrom: "start"
       },
       rakia_serving: {
         lineKey: "dialogue.waiter.serving_question",

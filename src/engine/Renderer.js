@@ -522,6 +522,7 @@ export class Renderer {
     }
     if (!this.game.editMode) {
       for (const hotspot of [...scene.exits, ...scene.interactables, ...scene.npcs]) {
+        if (!this.game.targetAvailable?.(hotspot)) continue;
         const bounds = this.targetBounds(hotspot);
         if (!bounds) continue;
         ctx.strokeStyle = hotspot.kind === "exit" ? "rgba(114, 188, 255, 0.85)" : "rgba(255, 214, 102, 0.8)";

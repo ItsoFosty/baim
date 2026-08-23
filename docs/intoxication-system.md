@@ -31,6 +31,10 @@ default trait and does not copy a real person or incident.
   is approved.
 - `hotspot.mehana.water_jug`: consumes a carried glass of water outside the Tony puzzle rules.
 - `dialogue.mehana_waiter`: rakia raises the counter; tripe soup lowers it.
+- Inventory self-use consumes takeaway refreshments and adjusts the counter: rakia `+2`, village wine
+  `+1`, water `-1`, Shopska salad `-1`, and tripe soup `-2`.
+- The direct Use on Bai Mitko action is authored through item `selfUseRules`; it is not special-cased in
+  the intoxication engine. Playing the accordion on himself is non-consuming and does not change the meter.
 
 ## Reference Notes
 

@@ -260,7 +260,128 @@ const rawScenes = [
         nameKey: "npc.baba_stoyanka.name",
         rect: { x: 480, y: 345, w: 70, h: 115 },
         dialogueId: "dialogue.baba_stoyanka",
-        lookKey: "look.npc.baba_stoyanka"
+        lookKey: "look.npc.baba_stoyanka",
+        itemUseRules: [
+          {
+            itemId: "item.glass_of_water",
+            requirements: {
+              notFlags: ["babaRejectedWater"],
+              state: { babaStoyankaVote: false }
+            },
+            effects: [
+              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
+              { type: "setFlag", key: "babaRejectedWater" },
+              { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
+              { type: "adjustState", key: "suspicion", amount: 1 }
+            ],
+            messageKey: "msg.baba.reject_water",
+            reject: true
+          },
+          {
+            itemId: "item.shopska_salad",
+            requirements: {
+              notFlags: ["babaRejectedShopska"],
+              state: { babaStoyankaVote: false }
+            },
+            effects: [
+              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
+              { type: "setFlag", key: "babaRejectedShopska" },
+              { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
+              { type: "adjustState", key: "suspicion", amount: 1 }
+            ],
+            messageKey: "msg.baba.reject_shopska",
+            reject: true
+          },
+          {
+            itemId: "item.tripe_soup",
+            requirements: {
+              notFlags: ["babaRejectedTripeSoup"],
+              state: { babaStoyankaVote: false }
+            },
+            effects: [
+              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
+              { type: "setFlag", key: "babaRejectedTripeSoup" },
+              { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
+              { type: "adjustState", key: "suspicion", amount: 1 }
+            ],
+            messageKey: "msg.baba.reject_tripe_soup",
+            reject: true
+          },
+          {
+            itemId: "item.rakia",
+            requirements: {
+              notFlags: ["babaRejectedRakia"],
+              state: { babaStoyankaVote: false }
+            },
+            effects: [
+              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
+              { type: "setFlag", key: "babaRejectedRakia" },
+              { type: "adjustState", key: "suspicion", amount: 1 }
+            ],
+            messageKey: "msg.baba.reject_rakia",
+            reject: true
+          },
+          {
+            itemId: "item.sunflower_oil",
+            requirements: {
+              state: { babaStoyankaVote: false },
+              stateMax: { babaCheapOfferAttempts: 2 }
+            },
+            effects: [
+              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
+              { type: "removeItem", itemId: "item.sunflower_oil" },
+              { type: "setState", key: "babaStoyankaVote", value: true },
+              { type: "setState", key: "babaTrust", value: "traditional" },
+              { type: "adjustState", key: "influence", amount: 15 },
+              { type: "adjustState", key: "suspicion", amount: 4 },
+              { type: "adjustState", key: "publicMood", amount: 3 },
+              { type: "completeQuest", questId: "quest.chapter1.baba_vote" }
+            ],
+            messageKey: "msg.baba.accept_oil"
+          },
+          {
+            itemId: "item.sunflower_oil",
+            requirements: {
+              notFlags: ["babaRequiresBetterGift"],
+              state: { babaStoyankaVote: false },
+              stateMin: { babaCheapOfferAttempts: 3 }
+            },
+            effects: [
+              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
+              { type: "setFlag", key: "babaRequiresBetterGift" },
+              { type: "adjustState", key: "suspicion", amount: 2 }
+            ],
+            messageKey: "msg.baba.reject_late_oil",
+            reject: true
+          },
+          {
+            itemId: "item.village_wine",
+            requirements: {
+              notFlags: ["babaRequiresBetterGift"],
+              state: { babaStoyankaVote: false }
+            },
+            effects: [{ type: "startQuest", questId: "quest.chapter1.baba_vote" }],
+            messageKey: "msg.baba.reject_early_wine",
+            reject: true
+          },
+          {
+            itemId: "item.village_wine",
+            requirements: {
+              flags: ["babaRequiresBetterGift"],
+              state: { babaStoyankaVote: false }
+            },
+            effects: [
+              { type: "removeItem", itemId: "item.village_wine" },
+              { type: "setState", key: "babaStoyankaVote", value: true },
+              { type: "setState", key: "babaTrust", value: "transactional" },
+              { type: "adjustState", key: "influence", amount: 15 },
+              { type: "adjustState", key: "suspicion", amount: 4 },
+              { type: "adjustState", key: "publicMood", amount: 2 },
+              { type: "completeQuest", questId: "quest.chapter1.baba_vote" }
+            ],
+            messageKey: "msg.baba.accept_wine"
+          }
+        ]
       }
     ]
   },
@@ -305,6 +426,67 @@ const rawScenes = [
     ],
     interactables: [
       {
+        id: "hotspot.mehana.bai_mitko_rakia_glass",
+        kind: "hotspot",
+        nameKey: "hotspot.mehana.bai_mitko_rakia_glass.name",
+        rect: { x: 410, y: 388, w: 72, h: 52 },
+        lookKey: "look.mehana.bai_mitko_rakia_glass",
+        requirements: {
+          flags: ["tonyChallengeStarted"],
+          state: { tonyVote: false }
+        },
+        itemUseRules: [
+          {
+            itemId: "item.glass_of_water",
+            requirements: {
+              flags: ["tonyChallengeStarted", "tonyDistracted"],
+              state: { swappedOwnRakiaWithWater: false, tonyVote: false }
+            },
+            effects: [
+              { type: "removeItem", itemId: "item.glass_of_water" },
+              { type: "setState", key: "swappedOwnRakiaWithWater", value: true }
+            ],
+            messageKey: "msg.water_swap_ready"
+          },
+          {
+            itemId: "item.glass_of_water",
+            requirements: {
+              flags: ["tonyChallengeStarted"],
+              notFlags: ["tonyDistracted", "tonyCaughtWaterAttempt"],
+              state: { swappedOwnRakiaWithWater: false, tonyVote: false }
+            },
+            effects: [
+              { type: "setFlag", key: "tonyCaughtWaterAttempt" },
+              { type: "adjustState", key: "suspicion", amount: 3 }
+            ],
+            messageKey: "msg.water_swap_watched",
+            reject: true
+          },
+          {
+            itemId: "item.glass_of_water",
+            requirements: {
+              flags: ["tonyChallengeStarted", "tonyCaughtWaterAttempt"],
+              notFlags: ["tonyDistracted"],
+              state: { swappedOwnRakiaWithWater: false, tonyVote: false }
+            },
+            effects: [],
+            messageKey: "msg.water_swap_still_watched",
+            reject: true
+          }
+        ]
+      },
+      {
+        id: "hotspot.mehana.tony_rakia_glass",
+        kind: "hotspot",
+        nameKey: "hotspot.mehana.tony_rakia_glass.name",
+        rect: { x: 850, y: 390, w: 70, h: 55 },
+        lookKey: "look.mehana.tony_rakia_glass",
+        requirements: {
+          flags: ["tonyChallengeStarted"],
+          state: { tonyVote: false }
+        }
+      },
+      {
         id: "hotspot.mehana.table",
         kind: "hotspot",
         nameKey: "hotspot.mehana_table.name",
@@ -337,32 +519,6 @@ const rawScenes = [
         flagOnTake: "hasGlassOfWater",
         useRules: [
           {
-            requirements: {
-              flags: ["tonyChallengeStarted", "tonyDistracted"],
-              state: { tonyVote: false }
-            },
-            effects: [
-              { type: "setState", key: "swappedOwnRakiaWithWater", value: true },
-              { type: "setState", key: "tonyVote", value: true },
-              { type: "setState", key: "tonyFavorOwed", value: true },
-              { type: "adjustState", key: "influence", amount: 25 },
-              { type: "adjustState", key: "suspicion", amount: 10 },
-              { type: "adjustState", key: "publicMood", amount: 5 },
-              { type: "completeQuest", questId: "quest.chapter1.tony_vote" }
-            ],
-            messageKey: "msg.water_swap_success"
-          },
-          {
-            requirements: {
-              flags: ["tonyChallengeStarted"],
-              notFlags: ["tonyDistracted"],
-              state: { tonyVote: false }
-            },
-            effects: [{ type: "adjustState", key: "suspicion", amount: 8 }],
-            messageKey: "msg.water_swap_missing",
-            reject: true
-          },
-          {
             requirements: { items: ["item.glass_of_water"] },
             effects: [
               { type: "removeItem", itemId: "item.glass_of_water" },
@@ -380,7 +536,15 @@ const rawScenes = [
         nameKey: "npc.mehana_waiter.name",
         rect: { x: 600, y: 275, w: 125, h: 225 },
         dialogueId: "dialogue.mehana_waiter",
-        lookKey: "look.npc.mehana_waiter"
+        lookKey: "look.npc.mehana_waiter",
+        itemUseRules: ["item.rakia", "item.shopska_salad", "item.tripe_soup", "item.village_wine"].map(
+          (itemId) => ({
+            itemId,
+            effects: [],
+            messageKey: "msg.kiro.return_purchase",
+            reject: true
+          })
+        )
       },
       {
         id: "npc.tony_fridge",
@@ -389,11 +553,34 @@ const rawScenes = [
         rect: { x: 930, y: 305, w: 115, h: 180 },
         dialogueId: "dialogue.tony_fridge",
         lookKey: "look.npc.tony_fridge",
-        useRules: [
+        itemUseRules: [
+          ...["item.rakia", "item.shopska_salad", "item.tripe_soup", "item.village_wine"].map(
+            (itemId) => ({
+              itemId,
+              effects: [],
+              messageKey: "msg.tony.gift_not_vote",
+              reject: true
+            })
+          ),
           {
-            requirements: { items: ["item.accordion"] },
+            itemId: "item.accordion",
+            requirements: {
+              flags: ["tonyChallengeStarted"],
+              notFlags: ["tonyDistracted"],
+              state: { tonyVote: false }
+            },
             effects: [{ type: "setFlag", key: "tonyDistracted" }],
             messageKey: "msg.accordion_tony"
+          },
+          {
+            itemId: "item.glass_of_water",
+            requirements: {
+              flags: ["tonyChallengeStarted"],
+              state: { tonyVote: false }
+            },
+            effects: [],
+            messageKey: "msg.water_tony_wrong_glass",
+            reject: true
           }
         ]
       }

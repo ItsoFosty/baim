@@ -348,6 +348,68 @@ Evergreen
 Risk:
 Safe. Fictional character logic.
 
+### Implemented Seed: Capacity Under Musical Oversight
+
+Placement:
+Tony challenge, Kiro clue, Bai Mitko's glass / `quest.chapter1.tony_vote`
+
+Mechanism:
+
+- Tony treats a glass-for-glass drinking contest as proof that a candidate has governing capacity.
+- He watches Bai Mitko's own glass as a self-appointed election observer, making the obstacle visible
+  before the player attempts the trick.
+- Refusing is a consequence-free strategic delay. It exposes Kiro's optional preparation clue and the
+  same challenge remains available later.
+- Kiro explains that an old wedding tune makes Tony close his eyes and sing. The accordion therefore
+  suspends Tony's supervision long enough to replace the rakia in Mitko's glass with water.
+- The swap prepares the result but does not award the vote. A final conversation with Tony completes
+  the contest and secures his support.
+
+Intake sources:
+
+- [BTA report describing expert selection, implementation control, and insufficient contractor capacity](https://www.bta.bg/bg/news/1124431-bta-obyavi-obshtestvena-porachka-po-krasiva-balgariya-za-remont-na-obshtite-pr)
+- [BTA report describing technical control, construction oversight, and compliance requirements](https://www.bta.bg/bg/news/bulgaria/oficial-messages/1066889-api-obyavi-obshtestvena-porachka-za-stroitelen-nadzor-pri-izgrazhdaneto-na-1-km-)
+
+Transformation:
+Only the language mechanisms of capacity, oversight, control, and procedural compliance are retained.
+They are transformed into an impossible tavern qualification administered by fictional characters.
+No real project, person, locality, allegation, or reported outcome appears in the puzzle.
+
+Freshness:
+Evergreen. The contemporary source material informs the bureaucratic rhythm, not the puzzle facts.
+
+Risk:
+Safe. Fictional, character-driven, and not dependent on a current headline.
+
+### Implemented Seed: One Accordion, Many Memories
+
+Placement:
+Accordion inventory targeting / Baba, Kiro, generic NPC, and future animal reactions
+
+Mechanism:
+
+- The accordion remains a quest tool for Tony, but it is also a reusable social verb.
+- Baba briefly remembers dancing in her youth, then returns to her practical demand for a useful household
+  item. Music adds character without bypassing her vote puzzle.
+- Kiro hears a new opportunity to add a fee.
+- Other people receive an evergreen memory response, while future targets tagged `animal` react through a
+  separate non-verbal joke.
+- All non-Tony reactions keep the accordion and do not alter quest progress.
+
+Intake source:
+
+- [BTA coverage of Bulgarian community amateur groups preserving music and dance traditions](https://www.bta.bg/bg/news/lik/1145484-nad-750-samodeytsi-ot-razgradska-oblast-shte-pokazhat-traditsii-i-tvorchestvo-na)
+
+Transformation:
+Only the broad association between community music, shared memory, and living local tradition is retained.
+Every character, memory, joke, and gameplay consequence is fictional and evergreen.
+
+Freshness:
+Evergreen.
+
+Risk:
+Safe. No real participant, performance, locality, or reported event is represented.
+
 ### Seed: Neutral Mehana
 
 Placement:

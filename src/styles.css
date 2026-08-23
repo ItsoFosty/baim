@@ -248,7 +248,8 @@ button.active {
 
 .inventory-item:hover,
 .inventory-item:focus-visible,
-.inventory-item.selected {
+.inventory-item.selected,
+.inventory-item.using {
   z-index: 3;
   border-color: rgba(246, 208, 137, 0.95);
   background: radial-gradient(circle at 50% 28%, rgba(255, 247, 217, 0.24), rgba(55, 42, 27, 0.94));
@@ -294,7 +295,7 @@ button.active {
 
 .inventory-item-actions {
   display: grid;
-  grid-template-columns: minmax(120px, 1fr) auto auto;
+  grid-template-columns: minmax(120px, 1fr) repeat(4, auto);
   align-items: center;
   gap: 7px;
   margin-top: 8px;
@@ -312,6 +313,36 @@ button.active {
 .inventory-item-actions button {
   min-height: 34px;
   padding: 6px 10px;
+}
+
+.inventory-use-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: 72px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 520px;
+  padding: 8px 10px 8px 14px;
+  border: 1px solid rgba(231, 192, 121, 0.82);
+  border-radius: 999px;
+  background: rgba(30, 23, 16, 0.94);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42), 0 0 12px rgba(222, 181, 106, 0.2);
+  color: #fff0d0;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.inventory-use-instruction {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inventory-use-indicator button {
+  min-height: 32px;
+  padding: 5px 10px;
+  border-radius: 999px;
 }
 
 .dropped-items-panel {
@@ -402,8 +433,43 @@ button.active {
   border-top: 1px solid rgba(167, 139, 92, 0.45);
 }
 
-.quest-list p {
-  margin: 8px 0 0;
+.quest-list-tabs {
+  display: flex;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.quest-list-tab {
+  width: auto;
+  min-height: 30px;
+  padding: 4px 9px;
+  font-size: 13px;
+}
+
+.quest-list-scroll {
+  max-height: 245px;
+  margin-top: 8px;
+  padding-right: 6px;
+  overflow-y: auto;
+  scrollbar-color: #96784f rgba(17, 14, 10, 0.65);
+  scrollbar-width: thin;
+}
+
+.quest-list-empty {
+  margin: 7px 0;
+  color: #cdbd9f;
+  font-size: 14px;
+}
+
+.quest-list-items {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 24px;
+}
+
+.quest-list-items li {
+  padding-left: 3px;
   line-height: 1.35;
 }
 

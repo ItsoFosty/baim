@@ -46,7 +46,9 @@ checks follow the same distinction.
 
 ## Requirements And Use Rules
 
-Scene hotspots and NPCs may define `useRules`. The first rule whose requirements all pass is applied:
+Scene hotspots and NPCs may define `useRules` for the selected Use verb. Explicit inventory targeting
+uses `itemUseRules`, where each rule also declares its stable `itemId`. The first rule whose requirements
+all pass is applied:
 
 ```js
 useRules: [
@@ -78,6 +80,17 @@ An omitted or empty `requirements` object always matches. Because only the first
 used, place narrow cases before broad fallbacks. If no rule matches, the normal localized
 `msg.no_use` rejection is shown.
 
+Inventory items may additionally define:
+
+- `selfUseRules`: effects applied by the direct Use on Bai Mitko inventory action;
+- `targetUseRules`: reusable fallbacks selected by `targetIds`, `targetKinds`, or `targetTags`.
+
+Target-authored `itemUseRules` are evaluated before item-authored `targetUseRules`. This allows Tony's
+accordion puzzle effect to override the accordion's generic NPC reaction. A future dog or cat can carry
+the `animal` tag and receive the existing animal reaction without adding a Chapter-specific engine branch.
+Consumable self-use rules remove their item explicitly; non-consumable rules such as the accordion omit
+`removeItem`.
+
 ## Dialogue Choices
 
 A dialogue choice uses the same effect definition under its `effect` field:
@@ -96,6 +109,10 @@ After an effect is applied, the choice follows normal dialogue navigation: a cho
 continues to that node, while a choice without `next` closes the dialogue. This allows one choice to
 start a quest and immediately show the NPC's response node. Keep choice labels, response nodes, and
 effect messages authored naturally in both supported languages.
+
+An informational response node may declare `choicesFrom: "start"`. Its response line remains visible,
+but the currently available choices from the referenced node render immediately underneath it. Prefer
+this over a one-option Back response node for ordinary conversation answers.
 
 ## Extending The Vocabulary
 

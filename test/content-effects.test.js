@@ -80,10 +80,14 @@ test("Tony vote vertical slice is reachable from authored Chapter 1 data", () =>
   const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
   const accordion = apartment.interactables.find((target) => target.id === "hotspot.apartment.accordion");
   const tony = mehana.npcs.find((target) => target.id === "npc.tony_fridge");
-  const water = mehana.interactables.find((target) => target.id === "hotspot.mehana.water_jug");
+  const mitkoGlass = mehana.interactables.find(
+    (target) => target.id === "hotspot.mehana.bai_mitko_rakia_glass"
+  );
+  const tonyDialogue = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.tony_fridge");
   const inventory = inventoryWith(accordion.takeItemId);
   const state = {
     tonyVote: false,
+    swappedOwnRakiaWithWater: false,
     influence: 0,
     suspicion: 0,
     publicMood: 50,
@@ -96,18 +100,131 @@ test("Tony vote vertical slice is reachable from authored Chapter 1 data", () =>
     quests: { complete: (questId) => completed.push(questId) }
   };
 
-  const distraction = firstMatchingRule(tony.useRules, context);
+  const distraction = firstMatchingRule(
+    tony.itemUseRules.filter((rule) => rule.itemId === "item.accordion"),
+    context
+  );
   assert.ok(distraction);
   applyEffects(distraction.effects, context);
-  const swap = firstMatchingRule(water.useRules, context);
-  assert.equal(swap.messageKey, "msg.water_swap_success");
+  inventory.add("item.glass_of_water");
+  const swap = firstMatchingRule(
+    mitkoGlass.itemUseRules.filter((rule) => rule.itemId === "item.glass_of_water"),
+    context
+  );
+  assert.equal(swap.messageKey, "msg.water_swap_ready");
   applyEffects(swap.effects, context);
+
+  assert.equal(state.swappedOwnRakiaWithWater, true);
+  assert.equal(state.tonyVote, false);
+  const finish = firstMatchingRule(tonyDialogue.nodes.start.choices, context);
+  const finishChoice = tonyDialogue.nodes.start.choices.find(
+    (choice) => choice.textKey === "dialogue.tony.choice.finish_challenge"
+  );
+  assert.equal(finish, finishChoice);
+  applyEffects(finishChoice.effect.effects, context);
 
   assert.equal(state.tonyVote, true);
   assert.equal(state.influence, 25);
   assert.equal(state.suspicion, 10);
   assert.equal(state.publicMood, 55);
+  assert.equal(inventory.has("item.glass_of_water"), false);
   assert.deepEqual(completed, ["quest.chapter1.tony_vote"]);
+});
+
+test("Tony quest exposes one outstanding objective for each unresolved puzzle stage", () => {
+  const quest = chapter1.quests.find((candidate) => candidate.id === "quest.chapter1.tony_vote");
+  const objectiveFor = (flags, state = {}) => firstMatchingRule(quest.stages, {
+    state: { tonyVote: false, swappedOwnRakiaWithWater: false, flags, ...state },
+    inventory: inventoryWith()
+  });
+
+  assert.equal(objectiveFor({}).id, "stage.tony.accept_challenge");
+  assert.equal(objectiveFor({ tonyChallengeStarted: true }).id, "stage.tony.distract");
+  assert.equal(objectiveFor({ tonyChallengeStarted: true, tonyDistracted: true }).id, "stage.tony.swap_water");
+  assert.equal(objectiveFor(
+    { tonyChallengeStarted: true, tonyDistracted: true },
+    { swappedOwnRakiaWithWater: true }
+  ).id, "stage.tony.finish_challenge");
+});
+
+test("refusing Tony safely defers the challenge, reveals Kiro's clue, and permits later acceptance", () => {
+  const dialogue = chapter1.dialogues.find((candidate) => candidate.id === "dialogue.tony_fridge");
+  const waiter = chapter1.dialogues.find((candidate) => candidate.id === "dialogue.mehana_waiter");
+  const refuse = dialogue.nodes.challenge.choices.find(
+    (choice) => choice.textKey === "dialogue.tony.choice.refuse"
+  );
+  const accept = dialogue.nodes.challenge.choices.find(
+    (choice) => choice.textKey === "dialogue.tony.choice.accept"
+  );
+  const clue = waiter.nodes.start.choices.find(
+    (choice) => choice.textKey === "dialogue.waiter.choice.tony_weakness"
+      && choice.requirements.notFlags?.includes("tonyChallengeStarted")
+  );
+  const state = {
+    tonyVote: false,
+    swappedOwnRakiaWithWater: false,
+    suspicion: 7,
+    flags: {}
+  };
+  const context = { state, inventory: inventoryWith() };
+
+  applyEffects(refuse.effect.effects, context);
+  assert.equal(state.flags.tonyChallengeDeferred, true);
+  assert.equal(state.flags.tonyChallengeStarted, undefined);
+  assert.equal(state.suspicion, 7);
+  assert.equal(requirementsMet(clue.requirements, context), true);
+  const challengeAgain = dialogue.nodes.start.choices.find(
+    (choice) => choice.textKey === "dialogue.tony.choice.challenge"
+  );
+  assert.equal(requirementsMet(challengeAgain.requirements, context), true);
+
+  applyEffects(accept.effect.effects, context);
+  assert.equal(state.flags.tonyChallengeStarted, true);
+  assert.equal(state.flags.tonyChallengeDeferred, false);
+});
+
+test("Tony catches one early water attempt but does not consume the water", () => {
+  const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
+  const mitkoGlass = mehana.interactables.find(
+    (target) => target.id === "hotspot.mehana.bai_mitko_rakia_glass"
+  );
+  const inventory = inventoryWith("item.glass_of_water");
+  const state = {
+    tonyVote: false,
+    swappedOwnRakiaWithWater: false,
+    suspicion: 0,
+    flags: { tonyChallengeStarted: true }
+  };
+  const context = { state, inventory };
+  const waterRules = mitkoGlass.itemUseRules.filter((rule) => rule.itemId === "item.glass_of_water");
+
+  const caught = firstMatchingRule(waterRules, context);
+  assert.equal(caught.messageKey, "msg.water_swap_watched");
+  applyEffects(caught.effects, context);
+  assert.equal(state.flags.tonyCaughtWaterAttempt, true);
+  assert.equal(state.suspicion, 3);
+  assert.equal(inventory.has("item.glass_of_water"), true);
+
+  const repeated = firstMatchingRule(waterRules, context);
+  assert.equal(repeated.messageKey, "msg.water_swap_still_watched");
+  applyEffects(repeated.effects, context);
+  assert.equal(state.suspicion, 3);
+  assert.equal(inventory.has("item.glass_of_water"), true);
+});
+
+test("Tony's challenge invitation disappears after acceptance or vote completion", () => {
+  const dialogue = chapter1.dialogues.find((candidate) => candidate.id === "dialogue.tony_fridge");
+  const challenge = dialogue.nodes.start.choices.find(
+    (choice) => choice.textKey === "dialogue.tony.choice.challenge"
+  );
+  const available = (state) => requirementsMet(challenge.requirements, {
+    state,
+    inventory: inventoryWith()
+  });
+
+  assert.equal(available({ tonyVote: false, flags: {} }), true);
+  assert.equal(available({ tonyVote: false, flags: { tonyChallengeStarted: true } }), false);
+  assert.equal(available({ tonyVote: true, flags: {} }), false);
 });
 
 test("Mehana waiter asks for here or to go before serving every order", () => {
@@ -264,6 +381,165 @@ test("Kiro always sells village wine and Baba reacts to early wine and rakia off
   applyEffects(earlyWineOffer.effect.effects, context);
   assert.equal(inventory.has("item.village_wine"), true);
   assert.equal(earlyWineOffer.effect.messageKey, "msg.baba.reject_early_wine");
+});
+
+test("every takeaway Mehana purchase can be offered to each authored NPC", () => {
+  const purchases = ["item.rakia", "item.shopska_salad", "item.tripe_soup", "item.village_wine"];
+  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
+  const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
+  const recipients = [
+    square.npcs.find((npc) => npc.id === "npc.baba_stoyanka"),
+    mehana.npcs.find((npc) => npc.id === "npc.mehana_waiter"),
+    mehana.npcs.find((npc) => npc.id === "npc.tony_fridge")
+  ];
+
+  for (const recipient of recipients) {
+    for (const itemId of purchases) {
+      assert.ok(
+        recipient.itemUseRules?.some((rule) => rule.itemId === itemId),
+        `${itemId} should be offerable to ${recipient.id}`
+      );
+    }
+  }
+});
+
+test("inventory offers to Baba preserve the existing cheap-offer and recovery logic", () => {
+  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
+  const baba = square.npcs.find((npc) => npc.id === "npc.baba_stoyanka");
+  const inventory = inventoryWith(
+    "item.shopska_salad", "item.tripe_soup", "item.rakia", "item.sunflower_oil", "item.village_wine"
+  );
+  const state = {
+    flags: {},
+    babaStoyankaVote: false,
+    babaCheapOfferAttempts: 0,
+    babaTrust: "neutral",
+    influence: 0,
+    suspicion: 0,
+    publicMood: 50
+  };
+  const completed = [];
+  const context = {
+    state,
+    inventory,
+    quests: { start() {}, complete: (questId) => completed.push(questId) }
+  };
+  const offer = (itemId) => firstMatchingRule(
+    baba.itemUseRules.filter((rule) => rule.itemId === itemId),
+    context
+  );
+
+  for (const itemId of ["item.shopska_salad", "item.tripe_soup"]) {
+    const rejection = offer(itemId);
+    assert.ok(rejection.reject);
+    applyEffects(rejection.effects, context);
+    assert.equal(inventory.has(itemId), true);
+  }
+  assert.equal(state.babaCheapOfferAttempts, 2);
+
+  const rakiaRejection = offer("item.rakia");
+  applyEffects(rakiaRejection.effects, context);
+  assert.equal(inventory.has("item.rakia"), true);
+  assert.equal(state.babaCheapOfferAttempts, 2);
+
+  const earlyOil = offer("item.sunflower_oil");
+  assert.equal(earlyOil.messageKey, "msg.baba.accept_oil");
+  applyEffects(earlyOil.effects, context);
+  assert.equal(state.babaStoyankaVote, true);
+  assert.equal(inventory.has("item.sunflower_oil"), false);
+  assert.deepEqual(completed, ["quest.chapter1.baba_vote"]);
+});
+
+test("Baba's inventory-targeted late-oil route remains recoverable with village wine", () => {
+  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
+  const baba = square.npcs.find((npc) => npc.id === "npc.baba_stoyanka");
+  const inventory = inventoryWith("item.sunflower_oil", "item.village_wine");
+  const state = {
+    flags: {},
+    babaStoyankaVote: false,
+    babaCheapOfferAttempts: 3,
+    babaTrust: "neutral",
+    influence: 0,
+    suspicion: 0,
+    publicMood: 50
+  };
+  const completed = [];
+  const context = {
+    state,
+    inventory,
+    quests: { start() {}, complete: (questId) => completed.push(questId) }
+  };
+  const offer = (itemId) => firstMatchingRule(
+    baba.itemUseRules.filter((rule) => rule.itemId === itemId),
+    context
+  );
+
+  const lateOil = offer("item.sunflower_oil");
+  assert.equal(lateOil.messageKey, "msg.baba.reject_late_oil");
+  applyEffects(lateOil.effects, context);
+  assert.equal(inventory.has("item.sunflower_oil"), true);
+  assert.equal(state.flags.babaRequiresBetterGift, true);
+
+  const repairWine = offer("item.village_wine");
+  assert.equal(repairWine.messageKey, "msg.baba.accept_wine");
+  applyEffects(repairWine.effects, context);
+  assert.equal(inventory.has("item.village_wine"), false);
+  assert.equal(state.babaStoyankaVote, true);
+  assert.equal(state.babaTrust, "transactional");
+  assert.deepEqual(completed, ["quest.chapter1.baba_vote"]);
+});
+
+test("self-use rules consume refreshments and adjust intoxication in the intended direction", () => {
+  const items = Object.fromEntries(chapter1.items.map((item) => [item.id, item]));
+  const inventory = inventoryWith(
+    "item.rakia", "item.village_wine", "item.glass_of_water", "item.tripe_soup", "item.shopska_salad"
+  );
+  const state = { rakiaGlasses: 4, rakiaLastChangedAt: 1, flags: {} };
+  const context = { state, inventory, now: () => 123 };
+  const useSelf = (itemId) => {
+    const rule = firstMatchingRule(items[itemId].selfUseRules, context);
+    assert.ok(rule);
+    applyEffects(rule.effects, context);
+  };
+
+  useSelf("item.rakia");
+  assert.equal(state.rakiaGlasses, 6);
+  useSelf("item.village_wine");
+  assert.equal(state.rakiaGlasses, 7);
+  useSelf("item.glass_of_water");
+  assert.equal(state.rakiaGlasses, 6);
+  useSelf("item.shopska_salad");
+  assert.equal(state.rakiaGlasses, 5);
+  useSelf("item.tripe_soup");
+  assert.equal(state.rakiaGlasses, 3);
+  assert.equal(state.rakiaLastChangedAt, 123);
+  assert.equal([
+    "item.rakia", "item.village_wine", "item.glass_of_water", "item.shopska_salad", "item.tripe_soup"
+  ].every((itemId) => !inventory.has(itemId)), true);
+  assert.equal(items["item.accordion"].selfUseRules[0].effects.length, 0);
+});
+
+test("accordion target reactions remain non-consuming and data-driven", () => {
+  const accordion = chapter1.items.find((item) => item.id === "item.accordion");
+  assert.ok(accordion.targetUseRules.some((rule) => rule.targetIds?.includes("npc.baba_stoyanka")));
+  assert.ok(accordion.targetUseRules.some((rule) => rule.targetKinds?.includes("npc")));
+  assert.ok(accordion.targetUseRules.some((rule) => rule.targetTags?.includes("animal")));
+  assert.equal(accordion.targetUseRules.every((rule) => (
+    !rule.effects.some((effect) => effect.type === "removeItem" && effect.itemId === "item.accordion")
+  )), true);
+});
+
+test("informational dialogue answers expose the parent options without a Back choice", () => {
+  for (const dialogue of chapter1.dialogues) {
+    for (const node of Object.values(dialogue.nodes)) {
+      assert.equal(
+        node.choices?.some((choice) => choice.textKey === "dialogue.common.back") || false,
+        false,
+        `${dialogue.id} should not author a Back-only answer step`
+      );
+      if (node.choicesFrom) assert.ok(dialogue.nodes[node.choicesFrom]);
+    }
+  }
 });
 
 test("Baba dialogue exposes a first-conversation choice that starts her vote quest", () => {

@@ -32,8 +32,18 @@ function migrateSave(save) {
   const normalized = {
     ...save,
     inventory: Array.isArray(save.inventory) ? save.inventory : [],
-    droppedItems: Array.isArray(save.droppedItems) ? save.droppedItems : []
+    droppedItems: Array.isArray(save.droppedItems) ? save.droppedItems : [],
+    activeQuests: Array.isArray(save.activeQuests) ? save.activeQuests : [],
+    completedQuests: Array.isArray(save.completedQuests) ? save.completedQuests : []
   };
+  const babaQuestId = "quest.chapter1.baba_vote";
+  if (
+    !normalized.babaStoyankaVote
+    && !normalized.activeQuests.includes(babaQuestId)
+    && !normalized.completedQuests.includes(babaQuestId)
+  ) {
+    normalized.activeQuests.push(babaQuestId);
+  }
   const oldStarterInventory = ["item.accordion", "item.unpaid_bills", "item.empty_envelope"];
   if (
     normalized.inventory.length === oldStarterInventory.length

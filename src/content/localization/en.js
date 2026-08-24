@@ -239,7 +239,7 @@ export const en = {
   "msg.mehana.ballot_box_recovered": "Bai Mitko recovered the ballot box. It smells faintly of dill, but the seal has survived.",
   "msg.scene_not_ready": "This part of the municipality is still under repair of the repair.",
 
-  "quest.chapter1.main.title": "Win the village election before your creditors find you.",
+  "quest.chapter1.main.title": "Become Mayor before your creditors find you.",
   "quest.chapter1.fake_diploma.title": "Create a diploma impressive enough for voters who never read diplomas.",
   "quest.chapter1.fake_diploma.stage.collect_official_paper": "Find paper that already looks sufficiently official.",
   "quest.chapter1.fake_diploma.stage.collect_envelope": "Find an envelope with administrative potential.",

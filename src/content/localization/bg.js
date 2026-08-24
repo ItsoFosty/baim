@@ -239,7 +239,7 @@ export const bg = {
   "msg.mehana.ballot_box_recovered": "Бай Митко прибра урната. Леко мирише на копър, но пломбата е оцеляла.",
   "msg.scene_not_ready": "Тази част от общината още е в ремонт на ремонта.",
 
-  "quest.chapter1.main.title": "Спечели селските избори, преди кредиторите да те намерят.",
+  "quest.chapter1.main.title": "Стани кмет, преди кредиторите да те намерят.",
   "quest.chapter1.fake_diploma.title": "Направи диплома, достатъчно впечатляваща за избиратели, които не четат дипломи.",
   "quest.chapter1.fake_diploma.stage.collect_official_paper": "Вземи хартия, която вече изглежда достатъчно официална.",
   "quest.chapter1.fake_diploma.stage.collect_envelope": "Намери плик с административен потенциал.",

@@ -136,8 +136,10 @@ test("game start waits only for bootstrap character, current scene, and owned it
 test("localization returns Bulgarian and English strings from stable keys", () => {
   const l10n = new Localization(strings, "bg");
   assert.equal(l10n.t("chapter1.title"), "Изборен ден на село");
+  assert.equal(l10n.t("quest.chapter1.main.title"), "Стани кмет, преди кредиторите да те намерят.");
   l10n.setLanguage("en");
   assert.equal(l10n.t("chapter1.title"), "Election Day in the Village");
+  assert.equal(l10n.t("quest.chapter1.main.title"), "Become Mayor before your creditors find you.");
 });
 
 test("menu and Mehana interaction labels are authored in both languages", () => {
@@ -876,6 +878,40 @@ test("save migration adds Baba's known vote quest without resurrecting completed
   const completed = new SaveSystem(completedStorage, "test").load();
   assert.deepEqual(completed.activeQuests, ["quest.chapter1.main"]);
   assert.deepEqual(completed.completedQuests, ["quest.chapter1.baba_vote"]);
+});
+
+test("fresh chapter start exposes the authored initial campaign quests", () => {
+  const save = new SaveSystem(new MemoryStorage(), "test").load();
+  const initialQuests = [
+    "quest.chapter1.main",
+    "quest.chapter1.fake_diploma",
+    "quest.chapter1.baba_vote",
+    "quest.chapter1.tony_vote"
+  ];
+  assert.deepEqual(DEFAULT_SAVE.activeQuests, initialQuests);
+  assert.deepEqual(save.activeQuests, initialQuests);
+});
+
+test("reset restores the authored fresh quest list", () => {
+  const storage = new MemoryStorage({
+    test: JSON.stringify({
+      activeQuests: ["quest.chapter1.main", "quest.chapter1.fake_diploma", "quest.chapter1.tony_vote"]
+    })
+  });
+  const save = new SaveSystem(storage, "test").reset();
+  assert.deepEqual(save.activeQuests, DEFAULT_SAVE.activeQuests);
+  assert.equal(storage.getItem("test"), null);
+});
+
+test("chapter quest IDs remain stable", () => {
+  assert.deepEqual(chapter1.quests.map((quest) => quest.id), [
+    "quest.chapter1.main",
+    "quest.chapter1.fake_diploma",
+    "quest.chapter1.baba_vote",
+    "quest.chapter1.tony_vote",
+    "quest.chapter1.journalist",
+    "quest.chapter1.ballot_box"
+  ]);
 });
 
 test("save migration removes the old prototype starter inventory", () => {
@@ -2009,6 +2045,34 @@ test("registered action requiring exact approach walks to its anchor even from h
   assert.deepEqual(game.walkedTo, { x: 330, y: 470 });
   assert.deepEqual(game.player.pendingInteraction.approach, { x: 330, y: 470 });
   assert.equal(game.player.pendingInteraction.actionSequence.requireExactApproach, true);
+});
+
+test("village-square poster-board clicks share one fixed east-facing look approach", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const target = scene.interactables.find((candidate) => candidate.id === "hotspot.square.poster_board");
+  const approaches = [];
+
+  for (const clickPoint of [{ x: 1080, y: 270 }, { x: 1160, y: 400 }]) {
+    const game = Object.create(Game.prototype);
+    game.currentScene = scene;
+    game.selectedVerb = "look";
+    game.player = {
+      position: { x: 900, y: 550 },
+      target: null,
+      animation: "idle",
+      facing: "east",
+      pendingInteraction: null
+    };
+    game.walkToPoint = (point) => { approaches.push({ ...point }); };
+    game.clearStatusMessage = () => {};
+
+    assert.equal(game.shouldApproachTargetBeforeAction(target, clickPoint), true);
+    assert.deepEqual(game.player.pendingInteraction.approach, { x: 976, y: 625 });
+    assert.equal(game.player.pendingInteraction.actionSequence.messageKey, target.lookKey);
+    assert.equal(game.player.facing, "east");
+  }
+
+  assert.deepEqual(approaches, [{ x: 976, y: 625 }, { x: 976, y: 625 }]);
 });
 
 test("looking at an already-open window still approaches but skips animation and repeats its talk", () => {

@@ -786,20 +786,20 @@ export const mehanaObjectGeometry = {
       "id": "hotspot.mehana.bai_mitko_rakia_glass",
       "polygon": [
         {
-          "x": 410,
-          "y": 388
+          "x": 375,
+          "y": 403
         },
         {
-          "x": 482,
-          "y": 388
+          "x": 455,
+          "y": 403
         },
         {
-          "x": 482,
-          "y": 440
+          "x": 455,
+          "y": 463
         },
         {
-          "x": 410,
-          "y": 440
+          "x": 375,
+          "y": 463
         }
       ]
     },
@@ -807,20 +807,20 @@ export const mehanaObjectGeometry = {
       "id": "hotspot.mehana.tony_rakia_glass",
       "polygon": [
         {
-          "x": 850,
-          "y": 390
+          "x": 779,
+          "y": 441
         },
         {
-          "x": 920,
-          "y": 390
+          "x": 867,
+          "y": 441
         },
         {
-          "x": 920,
-          "y": 445
+          "x": 867,
+          "y": 510
         },
         {
-          "x": 850,
-          "y": 445
+          "x": 779,
+          "y": 510
         }
       ]
     },
@@ -828,20 +828,20 @@ export const mehanaObjectGeometry = {
       "id": "hotspot.mehana.table",
       "polygon": [
         {
-          "x": 280,
-          "y": 430
+          "x": 230,
+          "y": 435
         },
         {
-          "x": 640,
-          "y": 430
+          "x": 625,
+          "y": 435
         },
         {
-          "x": 640,
-          "y": 605
+          "x": 625,
+          "y": 665
         },
         {
-          "x": 280,
-          "y": 605
+          "x": 230,
+          "y": 665
         }
       ]
     },
@@ -849,20 +849,20 @@ export const mehanaObjectGeometry = {
       "id": "hotspot.mehana.oil",
       "polygon": [
         {
-          "x": 540,
-          "y": 405
+          "x": 1138,
+          "y": 292
         },
         {
-          "x": 610,
-          "y": 405
+          "x": 1182,
+          "y": 292
         },
         {
-          "x": 610,
-          "y": 475
+          "x": 1182,
+          "y": 389
         },
         {
-          "x": 540,
-          "y": 475
+          "x": 1138,
+          "y": 389
         }
       ]
     },
@@ -870,20 +870,62 @@ export const mehanaObjectGeometry = {
       "id": "hotspot.mehana.water_jug",
       "polygon": [
         {
-          "x": 710,
-          "y": 370
+          "x": 1190,
+          "y": 320
         },
         {
-          "x": 800,
-          "y": 370
+          "x": 1265,
+          "y": 320
         },
         {
-          "x": 800,
-          "y": 475
+          "x": 1265,
+          "y": 403
         },
         {
-          "x": 710,
-          "y": 475
+          "x": 1190,
+          "y": 403
+        }
+      ]
+    },
+    "hotspot.mehana.newspaper": {
+      "id": "hotspot.mehana.newspaper",
+      "polygon": [
+        {
+          "x": 398,
+          "y": 402
+        },
+        {
+          "x": 522,
+          "y": 402
+        },
+        {
+          "x": 522,
+          "y": 495
+        },
+        {
+          "x": 398,
+          "y": 495
+        }
+      ]
+    },
+    "hotspot.mehana.radio": {
+      "id": "hotspot.mehana.radio",
+      "polygon": [
+        {
+          "x": 1130,
+          "y": 135
+        },
+        {
+          "x": 1275,
+          "y": 135
+        },
+        {
+          "x": 1275,
+          "y": 275
+        },
+        {
+          "x": 1130,
+          "y": 275
         }
       ]
     },
@@ -891,20 +933,20 @@ export const mehanaObjectGeometry = {
       "id": "hotspot.mehana.cellar_hatch",
       "polygon": [
         {
-          "x": 1060,
-          "y": 475
+          "x": 815,
+          "y": 585
         },
         {
-          "x": 1230,
-          "y": 475
+          "x": 1085,
+          "y": 585
         },
         {
-          "x": 1230,
-          "y": 580
+          "x": 1085,
+          "y": 715
         },
         {
-          "x": 1060,
-          "y": 580
+          "x": 815,
+          "y": 715
         }
       ]
     },
@@ -912,20 +954,20 @@ export const mehanaObjectGeometry = {
       "id": "hotspot.mehana.ballot_box",
       "polygon": [
         {
-          "x": 1090,
-          "y": 400
+          "x": 850,
+          "y": 510
         },
         {
-          "x": 1215,
-          "y": 400
+          "x": 1010,
+          "y": 510
         },
         {
-          "x": 1215,
-          "y": 505
+          "x": 1010,
+          "y": 620
         },
         {
-          "x": 1090,
-          "y": 505
+          "x": 850,
+          "y": 620
         }
       ]
     },
@@ -933,20 +975,20 @@ export const mehanaObjectGeometry = {
       "id": "npc.mehana_waiter",
       "polygon": [
         {
-          "x": 600,
-          "y": 275
+          "x": 648,
+          "y": 232
         },
         {
-          "x": 725,
-          "y": 275
+          "x": 762,
+          "y": 232
         },
         {
-          "x": 725,
-          "y": 500
+          "x": 762,
+          "y": 565
         },
         {
-          "x": 600,
-          "y": 500
+          "x": 648,
+          "y": 565
         }
       ]
     },
@@ -954,20 +996,20 @@ export const mehanaObjectGeometry = {
       "id": "npc.tony_fridge",
       "polygon": [
         {
-          "x": 930,
-          "y": 305
+          "x": 862,
+          "y": 315
         },
         {
-          "x": 1045,
-          "y": 305
+          "x": 1007,
+          "y": 315
         },
         {
-          "x": 1045,
-          "y": 485
+          "x": 1007,
+          "y": 555
         },
         {
-          "x": 930,
-          "y": 485
+          "x": 862,
+          "y": 555
         }
       ]
     }

@@ -5,5 +5,78 @@
     "frontmost": 0,
     "horizon": 100
   },
-  "layers": []
+  "layers": [
+    {
+      "id": "layer.mehana.waiter_idle",
+      "enabled": true,
+      "asset": "mehanaWaiterIdle",
+      "output": "assets/chapter1/characters/mehana_waiter/idle-v1.png",
+      "zIndex": 50,
+      "top": 238,
+      "left": 653,
+      "height": 322
+    },
+    {
+      "id": "layer.mehana.tony_fridge_seated",
+      "enabled": true,
+      "asset": "tonyFridgeSeated",
+      "output": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+      "zIndex": 35,
+      "top": 310,
+      "left": 861,
+      "height": 244
+    },
+    {
+      "id": "layer.mehana.kaliakra_oil",
+      "enabled": true,
+      "asset": "kaliakraOil",
+      "output": "assets/chapter1/scenes/mehana/kaliakra-oil-v1.png",
+      "zIndex": 95,
+      "top": 297,
+      "left": 1145,
+      "height": 88,
+      "hiddenWhenState": "hasSunflowerOil"
+    },
+    {
+      "id": "layer.mehana.water_jug",
+      "enabled": true,
+      "asset": "waterJug",
+      "output": "assets/chapter1/scenes/mehana/water-jug-v1.png",
+      "zIndex": 95,
+      "top": 327,
+      "left": 1200,
+      "height": 70,
+      "hiddenWhenState": "hasGlassOfWater"
+    },
+    {
+      "id": "layer.mehana.table_group_left",
+      "enabled": true,
+      "asset": "tableGroupLeft",
+      "output": "assets/chapter1/scenes/mehana/table-group-left-v2.png",
+      "zIndex": 20,
+      "top": 369,
+      "left": 230,
+      "width": 395
+    },
+    {
+      "id": "layer.mehana.table_group_right",
+      "enabled": true,
+      "asset": "tableGroupRight",
+      "output": "assets/chapter1/scenes/mehana/table-group-right-v2.png",
+      "zIndex": 20,
+      "top": 372,
+      "left": 714,
+      "width": 414
+    },
+    {
+      "id": "layer.mehana.newspaper_left_table",
+      "enabled": true,
+      "asset": "todayNewspaper",
+      "output": "assets/chapter1/scenes/mehana/newspaper-v3.png",
+      "zIndex": 19,
+      "top": 405,
+      "left": 400,
+      "width": 120
+    }
+  ]
 }

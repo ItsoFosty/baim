@@ -429,16 +429,16 @@ const rawScenes = [
     playerMode: "seated",
     playerStart: { x: 430, y: 530 },
     seatedPresentation: {
-      tableRect: { x: 285, y: 455, w: 365, h: 150 }
+      tableRect: { x: 230, y: 435, w: 395, h: 230 }
     },
     walkPolygons: mehanaWalkGeometry.walkPolygons,
     walkMask: mehanaWalkGeometry.walkMask,
-    perspectiveScale: { horizonY: 415, bottomY: 590, far: 0.8, near: 1.12 },
+    perspectiveScale: { horizonY: 415, bottomY: 590, far: 1.08, near: 1.51 },
     anchors: {
       baiMitkoSeat: { x: 430, y: 530 },
-      tonyTable: { x: 900, y: 505 },
+      tonyTable: { x: 845, y: 570 },
       bar: { x: 620, y: 500 },
-      waiter: { x: 650, y: 465 },
+      waiter: { x: 705, y: 465 },
       exit: { x: 170, y: 505 }
     },
     foregroundLayers: sceneLayerGeometry["scene.chapter1.mehana"]?.foregroundLayers || [],
@@ -457,7 +457,7 @@ const rawScenes = [
         id: "hotspot.mehana.bai_mitko_rakia_glass",
         kind: "hotspot",
         nameKey: "hotspot.mehana.bai_mitko_rakia_glass.name",
-        rect: { x: 410, y: 388, w: 72, h: 52 },
+        rect: { x: 375, y: 403, w: 80, h: 60 },
         lookKey: "look.mehana.bai_mitko_rakia_glass",
         requirements: {
           flags: ["tonyChallengeStarted"],
@@ -507,7 +507,7 @@ const rawScenes = [
         id: "hotspot.mehana.tony_rakia_glass",
         kind: "hotspot",
         nameKey: "hotspot.mehana.tony_rakia_glass.name",
-        rect: { x: 850, y: 390, w: 70, h: 55 },
+        rect: { x: 779, y: 441, w: 88, h: 69 },
         lookKey: "look.mehana.tony_rakia_glass",
         requirements: {
           flags: ["tonyChallengeStarted"],
@@ -518,14 +518,14 @@ const rawScenes = [
         id: "hotspot.mehana.table",
         kind: "hotspot",
         nameKey: "hotspot.mehana_table.name",
-        rect: { x: 280, y: 430, w: 360, h: 175 },
+        rect: { x: 230, y: 435, w: 395, h: 230 },
         lookKey: "look.mehana.table"
       },
       {
         id: "hotspot.mehana.oil",
         kind: "hotspot",
         nameKey: "item.sunflower_oil.name",
-        rect: { x: 540, y: 405, w: 70, h: 70 },
+        rect: { x: 1138, y: 292, w: 44, h: 97 },
         lookKey: "look.mehana.oil",
         takeItemId: "item.sunflower_oil",
         flagOnTake: "hasSunflowerOil",
@@ -541,7 +541,7 @@ const rawScenes = [
         id: "hotspot.mehana.water_jug",
         kind: "hotspot",
         nameKey: "hotspot.water_jug.name",
-        rect: { x: 710, y: 370, w: 90, h: 105 },
+        rect: { x: 1190, y: 320, w: 75, h: 83 },
         lookKey: "look.mehana.water_jug",
         takeItemId: "item.glass_of_water",
         flagOnTake: "hasGlassOfWater",
@@ -557,10 +557,24 @@ const rawScenes = [
         ]
       },
       {
+        id: "hotspot.mehana.newspaper",
+        kind: "hotspot",
+        nameKey: "hotspot.mehana.newspaper.name",
+        rect: { x: 398, y: 402, w: 124, h: 93 },
+        lookKey: "look.mehana.newspaper"
+      },
+      {
+        id: "hotspot.mehana.radio",
+        kind: "hotspot",
+        nameKey: "hotspot.mehana.radio.name",
+        rect: { x: 1130, y: 135, w: 145, h: 140 },
+        lookKey: "look.mehana.radio"
+      },
+      {
         id: "hotspot.mehana.cellar_hatch",
         kind: "hotspot",
         nameKey: "hotspot.mehana.cellar_hatch.name",
-        rect: { x: 1060, y: 475, w: 170, h: 105 },
+        rect: { x: 815, y: 585, w: 270, h: 130 },
         lookKey: "look.mehana.cellar_hatch",
         useRules: [
           {
@@ -588,7 +602,7 @@ const rawScenes = [
         id: "hotspot.mehana.ballot_box",
         kind: "hotspot",
         nameKey: "item.ballot_box.name",
-        rect: { x: 1090, y: 400, w: 125, h: 105 },
+        rect: { x: 850, y: 510, w: 160, h: 110 },
         lookKey: "look.mehana.ballot_box",
         takeItemId: "item.ballot_box",
         hiddenWhenItemOwned: "item.ballot_box",
@@ -610,7 +624,7 @@ const rawScenes = [
         id: "npc.mehana_waiter",
         kind: "npc",
         nameKey: "npc.mehana_waiter.name",
-        rect: { x: 600, y: 275, w: 125, h: 225 },
+        rect: { x: 648, y: 232, w: 114, h: 333 },
         dialogueId: "dialogue.mehana_waiter",
         lookKey: "look.npc.mehana_waiter",
         itemUseRules: ["item.rakia", "item.shopska_salad", "item.tripe_soup", "item.village_wine"].map(
@@ -626,7 +640,7 @@ const rawScenes = [
         id: "npc.tony_fridge",
         kind: "npc",
         nameKey: "npc.tony_fridge.name",
-        rect: { x: 930, y: 305, w: 115, h: 180 },
+        rect: { x: 862, y: 315, w: 145, h: 240 },
         dialogueId: "dialogue.tony_fridge",
         lookKey: "look.npc.tony_fridge",
         itemUseRules: [

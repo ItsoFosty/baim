@@ -57,13 +57,24 @@ That scene now has the first real apartment runtime background.
 
 The village square background is also integrated and proves runtime background loading works, but it is not final locked art direction. Its layout is useful, but the final version should later be regenerated or repainted closer to the Bai Mitko model-sheet style, with less baked-in readable text and more replaceable poster/sign surfaces.
 
+The mehana now has a lighter third painted runtime pass. Its background contains the fixed architecture,
+bar, sideboard, coat rack, cellar hatch, and old radio. Two matching bentwood-chair table groups,
+seated Tony, the standing waiter, the newspaper, and the sideboard-mounted oil and water gameplay props
+remain independent raster layers, so their scale, placement, visibility, and depth can be tuned without
+repainting the room. The newspaper and background-baked radio both have authored Look hotspots and
+natural Bulgarian/English observations.
+
+Bai Mitko uses the same external animation sources as in the apartment. His mehana-only character-height
+calibration is set so his visual height at `anchors.baiMitkoSeat` matches his apartment spawn height;
+this does not change his scale in any other scene.
+
 ## Scene Background Status
 
 | Scene ID | Runtime background | Status |
 | --- | --- | --- |
 | `scene.chapter1.apartment` | `assets/chapter1/scenes/apartment/background.png` | integrated |
 | `scene.chapter1.village_square` | `assets/chapter1/scenes/village_square/background.png` | integrated; runtime proof, not final locked style |
-| `scene.chapter1.mehana` | `assets/chapter1/scenes/mehana/background.png` | missing |
+| `scene.chapter1.mehana` | `assets/chapter1/scenes/mehana/background.png` | integrated V3; separate tables, Tony, waiter, newspaper, oil, and water layers |
 | `scene.chapter1.municipality` | `assets/chapter1/scenes/municipality/background.png` | playable graybox; runtime background missing |
 | `scene.chapter1.election_booth` | `assets/chapter1/scenes/election_booth/background.png` | playable graybox; runtime background missing |
 
@@ -179,9 +190,24 @@ The active village square manifest entry is:
 }
 ```
 
+The active mehana manifest entry is:
+
+```js
+"scene.chapter1.mehana": {
+  background: "assets/chapter1/scenes/mehana/background.png",
+  tableGroupLeft: "assets/chapter1/scenes/mehana/table-group-left-v2.png",
+  tableGroupRight: "assets/chapter1/scenes/mehana/table-group-right-v2.png",
+  mehanaWaiterIdle: "assets/chapter1/characters/mehana_waiter/idle-v1.png",
+  tonyFridgeSeated: "assets/chapter1/characters/tony_fridge/seated-v1.png",
+  kaliakraOil: "assets/chapter1/scenes/mehana/kaliakra-oil-v1.png",
+  waterJug: "assets/chapter1/scenes/mehana/water-jug-v1.png",
+  todayNewspaper: "assets/chapter1/scenes/mehana/newspaper-v3.png"
+}
+```
+
 Missing assets are omitted from the manifest so preload does not generate expected 404 responses.
-Mehana keeps an empty scene entry and therefore uses the renderer's intentional debug-art fallback
-until its background direction is approved.
+Municipality and election-booth backgrounds remain omitted and use the renderer's intentional
+debug-art fallback until their directions are approved.
 
 The renderer resolves these paths relative to `index.html`.
 
@@ -297,6 +323,18 @@ Village square roughly aligned in logical `1280x720` scene coordinates:
 - Journalist anchor
 - Old Men Chorus anchor
 - Bai Mitko default spawn point
+
+Mehana aligned in logical `1280x720` scene coordinates:
+
+- square exit and entrance door
+- independent left and right table/chair compositions
+- seated Tony layer, interaction area, and rakia glass
+- standing waiter layer and dialogue interaction area
+- separate newspaper layer and Look hotspot
+- separate collectible oil and water layers on the sideboard
+- background-baked radio Look hotspot
+- cellar hatch and hidden ballot-box interaction areas
+- Bai Mitko seat and apartment-matched visual-height calibration
 
 The Baba cutout uses an authored `height` of `122` in the village-square layer source, approximately
 80% of Bai Mitko's perspective-scaled height at `anchors.babaBench`. Its `left` and `top` placement

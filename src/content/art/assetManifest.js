@@ -19,6 +19,14 @@ export const assetManifest = {
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.mehana": {
+      background: "assets/chapter1/scenes/mehana/background.png",
+      tableGroupLeft: "assets/chapter1/scenes/mehana/table-group-left-v2.png",
+      tableGroupRight: "assets/chapter1/scenes/mehana/table-group-right-v2.png",
+      mehanaWaiterIdle: "assets/chapter1/characters/mehana_waiter/idle-v1.png",
+      tonyFridgeSeated: "assets/chapter1/characters/tony_fridge/seated-v1.png",
+      kaliakraOil: "assets/chapter1/scenes/mehana/kaliakra-oil-v1.png",
+      waterJug: "assets/chapter1/scenes/mehana/water-jug-v1.png",
+      todayNewspaper: "assets/chapter1/scenes/mehana/newspaper-v3.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.municipality": {

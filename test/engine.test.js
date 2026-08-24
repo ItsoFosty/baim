@@ -599,12 +599,56 @@ test("village square and municipality form a playable round trip", () => {
 test("Mehana starts Bai Mitko seated with waiter and table interactions", () => {
   const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.mehana");
   const waiter = scene.npcs.find((npc) => npc.id === "npc.mehana_waiter");
+  const waiterLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.waiter_idle");
 
   assert.equal(scene.playerMode, "seated");
   assert.deepEqual(scene.playerStart, scene.anchors.baiMitkoSeat);
   assert.equal(scene.interactables.some((target) => target.id === "hotspot.mehana.table"), true);
   assert.equal(waiter.dialogueId, "dialogue.mehana_waiter");
+  assert.equal(waiterLayer.asset, "mehanaWaiterIdle");
+  assert.equal(waiterLayer.height, 322);
+  assert.equal(waiterLayer.left, 653);
   assert.equal(scene.npcs.some((npc) => npc.id === "npc.tony_fridge"), true);
+});
+
+test("Mehana sideboard props, larger furniture, and moved cellar align with the revised painted scene", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.mehana");
+  const oil = scene.interactables.find((target) => target.id === "hotspot.mehana.oil");
+  const water = scene.interactables.find((target) => target.id === "hotspot.mehana.water_jug");
+  const oilLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.kaliakra_oil");
+  const waterLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.water_jug");
+  const leftTableLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.table_group_left");
+  const rightTableLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.table_group_right");
+  const tonyLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.tony_fridge_seated");
+  const newspaperLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.newspaper_left_table");
+  const cellar = scene.interactables.find((target) => target.id === "hotspot.mehana.cellar_hatch");
+
+  assert.equal(pointInPolygon({ x: 1155, y: 340 }, oil.polygon), true);
+  assert.equal(pointInPolygon({ x: 1220, y: 360 }, water.polygon), true);
+  assert.equal(pointInPolygon({ x: 575, y: 440 }, oil.polygon), false);
+  assert.equal(pointInPolygon({ x: 950, y: 650 }, cellar.polygon), true);
+  assert.equal(pointInPolygon({ x: 1160, y: 520 }, cellar.polygon), false);
+  assert.equal(oilLayer.hiddenWhenState, "hasSunflowerOil");
+  assert.equal(waterLayer.hiddenWhenState, "hasGlassOfWater");
+  assert.equal(leftTableLayer.width, 395);
+  assert.equal(rightTableLayer.width, 414);
+  assert.equal(tonyLayer.height, 244);
+  assert.equal(tonyLayer.top, 310);
+  assert.equal(newspaperLayer.asset, "todayNewspaper");
+  assert.equal(scene.interactables.find((target) => target.id === "hotspot.mehana.newspaper").lookKey, "look.mehana.newspaper");
+  assert.equal(scene.interactables.find((target) => target.id === "hotspot.mehana.radio").lookKey, "look.mehana.radio");
+  assert.ok(sceneScale(scene, scene.playerStart) > 1.3);
+  assert.ok(sceneScale(scene, scene.playerStart) < 1.4);
+});
+
+test("Bai Mitko has the same calibrated visual height in the apartment and Mehana", () => {
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const apartment = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.apartment");
+  const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
+  const apartmentHeight = characterHeight(definition, apartment, apartment.playerStart);
+  const mehanaHeight = characterHeight(definition, mehana, mehana.playerStart);
+
+  assert.ok(Math.abs(apartmentHeight - mehanaHeight) < 0.1);
 });
 
 test("Mehana and municipality use authored raster, object, and layer editor sources", () => {

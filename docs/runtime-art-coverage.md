@@ -5,8 +5,10 @@
 - Apartment background: integrated as first real default-start background.
 - Village square background: integrated, technical proof works.
 - Village square art direction: usable for layout/runtime proof, but still too realistic and text-heavy for final style.
-- Mehana interaction scene: functional seated-table prototype with waiter ordering and Tony dialogue;
-  it still uses intentional debug fallback art.
+- Mehana interaction scene: lighter painted V3 background, two independently positioned matching
+  bentwood-chair table layers, seated Tony, the standing waiter, a separate newspaper, and separate
+  sideboard-mounted oil/water gameplay props are integrated. The radio is intentionally baked into
+  the background but has authored interaction geometry.
 - Municipality and election booth: their complete Chapter 1 interactions are functional as geometry
   grayboxes; both still need final painted backgrounds and foreground treatment.
 - Journalist: complete bilingual interview and square interaction are functional with an intentional
@@ -43,6 +45,14 @@ The current village square stays as a runtime proof and layout reference, not fi
 
 - `assets/chapter1/scenes/apartment/background.png`
 - `assets/chapter1/scenes/village_square/background.png`
+- `assets/chapter1/scenes/mehana/background.png`
+- `assets/chapter1/scenes/mehana/table-group-left-v2.png`
+- `assets/chapter1/scenes/mehana/table-group-right-v2.png`
+- `assets/chapter1/scenes/mehana/kaliakra-oil-v1.png`
+- `assets/chapter1/scenes/mehana/water-jug-v1.png`
+- `assets/chapter1/scenes/mehana/newspaper-v3.png`
+- `assets/chapter1/characters/tony_fridge/seated-v1.png`
+- `assets/chapter1/characters/mehana_waiter/idle-v1.png`
 - `target/external_animation_v1/runtime/walk_east_start.png`
 - `target/external_animation_v1/runtime/walk_east_loop.png`
 - `target/external_animation_v1/runtime/walk_east_stop.png`
@@ -54,7 +64,7 @@ The current village square stays as a runtime proof and layout reference, not fi
 ## Remaining Placeholders
 
 - Bai Mitko talk/look/use/take animations
-- Mehana background
+- Mehana character animation beyond the current static Tony/waiter presentation
 - Municipality background
 - Election booth background
 - Journalist final character art and animation

@@ -62,7 +62,66 @@ export const sceneLayerGeometry = {
   },
   "scene.chapter1.mehana": {
     "sceneId": "scene.chapter1.mehana",
-    "foregroundLayers": []
+    "foregroundLayers": [
+      {
+        "id": "layer.mehana.waiter_idle",
+        "asset": "mehanaWaiterIdle",
+        "zIndex": 50,
+        "top": 238,
+        "left": 653,
+        "height": 322
+      },
+      {
+        "id": "layer.mehana.tony_fridge_seated",
+        "asset": "tonyFridgeSeated",
+        "zIndex": 35,
+        "top": 310,
+        "left": 861,
+        "height": 244
+      },
+      {
+        "id": "layer.mehana.kaliakra_oil",
+        "asset": "kaliakraOil",
+        "zIndex": 95,
+        "top": 297,
+        "left": 1145,
+        "height": 88,
+        "hiddenWhenState": "hasSunflowerOil"
+      },
+      {
+        "id": "layer.mehana.water_jug",
+        "asset": "waterJug",
+        "zIndex": 95,
+        "top": 327,
+        "left": 1200,
+        "height": 70,
+        "hiddenWhenState": "hasGlassOfWater"
+      },
+      {
+        "id": "layer.mehana.table_group_left",
+        "asset": "tableGroupLeft",
+        "zIndex": 20,
+        "top": 369,
+        "left": 230,
+        "width": 395
+      },
+      {
+        "id": "layer.mehana.table_group_right",
+        "asset": "tableGroupRight",
+        "zIndex": 20,
+        "top": 372,
+        "left": 714,
+        "width": 414
+      },
+      {
+        "id": "layer.mehana.newspaper_left_table",
+        "asset": "todayNewspaper",
+        "zIndex": 19,
+        "top": 405,
+        "left": 400,
+        "width": 120
+      }
+    ]
   },
   "scene.chapter1.municipality": {
     "sceneId": "scene.chapter1.municipality",

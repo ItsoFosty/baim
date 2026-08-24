@@ -35,8 +35,25 @@ is rasterized into the world canvas and makes high-resolution item art harder to
 
 ## Dialogue Answer Contract
 
+- NPC response lines render in character-anchored speech bubbles over the scene; the lower dialogue panel
+  is reserved for player choices. Non-NPC reading/menu dialogues may continue to show their line and entries
+  inside the panel.
+- NPC scene definitions may provide `speechAnchor: { x, y }` in 1280x720 world coordinates. Use it to point
+  the bubble tail at the painted character when the interaction rectangle is not aligned with the visible
+  head. The engine falls back to the upper center of the NPC rectangle when no anchor is authored.
+- Bubble colors and silhouettes may vary by stable NPC ID so characters answer in a recognizable visual
+  style. Dialogue text remains localized content; do not duplicate it as visible engine-authored text.
+- The choice panel stays horizontally centered at the bottom HUD margin. Its width remains 760 virtual CSS
+  pixels and its height uses the same `--indicator-panel-height` contract as the lower-left meter panel.
+- The choice viewport shows three 30-pixel rows. Further available choices scroll vertically; scrolling must
+  not change authored order or choice availability.
+- Choice buttons have no resting outline or opaque button tile. Hover and keyboard focus use the same
+  feedback: a subtle translucent highlight plus larger, bold text. Keep a visible focus treatment even
+  though the standard browser outline is suppressed.
+- Dialogue chrome remains slightly translucent, blurred, and rounded to the same 11-pixel corner radius as
+  the indicators panel. The UI font stack must retain natural Bulgarian Cyrillic coverage.
 - Informational answer nodes may set `choicesFrom: "start"`. The answer remains visible while the currently
-  available parent choices render directly below it.
+  available parent choices remain in the lower choice viewport.
 - Do not add one-option Back nodes for ordinary NPC answers. Keep an explicit Back choice only where moving
   between genuinely different menus is meaningful.
 

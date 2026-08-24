@@ -1509,7 +1509,11 @@ export class Game {
     if (this.devHome) this.uiRoot.appendChild(this.createDevHome());
     if (this.menuOpen) this.uiRoot.appendChild(this.createMenu());
     if (this.paused) this.uiRoot.appendChild(this.createPause());
-    if (dialogueNode) this.uiRoot.appendChild(this.createDialogue(dialogueNode));
+    if (dialogueNode) {
+      const npcSpeech = this.createDialogueSpeechBubble(dialogueNode);
+      if (npcSpeech) this.uiRoot.appendChild(npcSpeech);
+      this.uiRoot.appendChild(this.createDialogue(dialogueNode));
+    }
     if (this.speechBubble && !this.menuOpen && !this.paused && !dialogueNode) this.uiRoot.appendChild(this.createSpeechBubble());
     if (!this.editMode && !this.devHome && !this.menuOpen && !this.paused && !dialogueNode) this.uiRoot.appendChild(this.createHud());
     if (this.droppedItemsOpen && !this.menuOpen && !this.paused && !dialogueNode) {
@@ -2398,7 +2402,9 @@ node tools/build-external-runtime-staging.js</pre>
 
   createDialogue(node) {
     const panel = element("section", "dialogue-panel");
-    if (node.lineKey) {
+    const dialogue = this.content.dialogues[this.dialogue.current?.id];
+    const isNpcDialogue = Boolean(dialogue?.npcId);
+    if (node.lineKey && !isNpcDialogue) {
       const line = document.createElement("p");
       line.textContent = this.t(node.lineKey);
       panel.appendChild(line);
@@ -2412,12 +2418,43 @@ node tools/build-external-runtime-staging.js</pre>
       }
       panel.appendChild(entries);
     }
-    const dialogue = this.content.dialogues[this.dialogue.current?.id];
     const choiceNode = node.choicesFrom ? dialogue?.nodes?.[node.choicesFrom] : node;
+    const choices = element("div", "dialogue-choice-list");
     for (const choice of (choiceNode?.choices || []).filter((candidate) => this.dialogueChoiceAvailable(candidate))) {
-      panel.appendChild(button(this.t(choice.textKey), (event) => this.chooseDialogueChoice(choice, event)));
+      choices.appendChild(button(this.t(choice.textKey), (event) => this.chooseDialogueChoice(choice, event)));
     }
+    if (choices.childElementCount) panel.appendChild(choices);
     return panel;
+  }
+
+  createDialogueSpeechBubble(node) {
+    if (!node?.lineKey) return null;
+    const dialogue = this.content.dialogues[this.dialogue.current?.id];
+    if (!dialogue?.npcId) return null;
+    const npc = this.currentScene.npcs?.find((candidate) => candidate.id === dialogue.npcId);
+    if (!npc?.rect) return null;
+
+    const speechAnchor = npc.speechAnchor || {
+      x: npc.rect.x + npc.rect.w * 0.5,
+      y: npc.rect.y + Math.min(42, npc.rect.h * 0.18)
+    };
+    const npcCenterX = speechAnchor.x;
+    const bubbleCenterX = clampNumber(npcCenterX, 210, 1070);
+    const bubbleBottomY = clampNumber(speechAnchor.y, 118, 480);
+    const tailOffset = clampNumber(npcCenterX - bubbleCenterX, -150, 150);
+    const speakerClass = dialogue.npcId.replaceAll(".", "-");
+    const bubble = element("aside", `dialogue-speech-bubble speaker-${speakerClass}`);
+    bubble.setAttribute("role", "status");
+    bubble.setAttribute("aria-live", "polite");
+    bubble.setAttribute("aria-label", this.t(npc.nameKey));
+    bubble.style.left = `${bubbleCenterX}px`;
+    bubble.style.top = `${bubbleBottomY}px`;
+    bubble.style.setProperty("--dialogue-tail-offset", `${tailOffset}px`);
+
+    const line = document.createElement("p");
+    line.textContent = this.t(node.lineKey);
+    bubble.appendChild(line);
+    return bubble;
   }
 
   chooseDialogueChoice(choice, event) {

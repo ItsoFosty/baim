@@ -57,6 +57,7 @@ const rawScenes = [
         lookKey: "look.apartment.accordion",
         takeItemId: "item.accordion",
         hiddenWhenItemOwned: "item.accordion",
+        restoreOnDrop: true,
         flagOnTake: "hasAccordion"
       },
       {

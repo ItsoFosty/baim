@@ -285,7 +285,18 @@ export class Game {
   }
 
   droppedItemsInScene(sceneId = this.currentScene?.id) {
-    return (this.state.droppedItems || []).filter((record) => record.sceneId === sceneId);
+    return (this.state.droppedItems || []).filter((record) => (
+      record.sceneId === sceneId && !this.itemRestoresToScene(record.itemId, sceneId)
+    ));
+  }
+
+  itemRestoresToScene(itemId, sceneId = this.currentScene?.id) {
+    const scene = this.currentScene?.id === sceneId
+      ? this.currentScene
+      : this.content?.scenes?.[sceneId];
+    return Boolean(scene?.interactables?.some((target) => (
+      target.restoreOnDrop && target.takeItemId === itemId
+    )));
   }
 
   sceneWithDroppedItems(scene) {
@@ -1689,16 +1700,23 @@ export class Game {
   dropInventoryItem(item) {
     if (!item?.id || !this.inventory.has(item.id)) return false;
     this.state.droppedItems ||= [];
-    const existingPile = this.droppedItemsInScene()[0];
-    const requestedPosition = { x: this.player.position.x + 54, y: this.player.position.y };
-    const position = existingPile?.position
-      || nearestWalkablePoint(this.currentScene, requestedPosition)
-      || { ...this.player.position };
-    this.state.droppedItems.push({ itemId: item.id, sceneId: this.currentScene.id, position });
+    const restoresToScene = this.itemRestoresToScene(item.id);
+    if (restoresToScene) {
+      this.state.droppedItems = this.state.droppedItems.filter((record) => (
+        record.itemId !== item.id || record.sceneId !== this.currentScene.id
+      ));
+    } else {
+      const existingPile = this.droppedItemsInScene()[0];
+      const requestedPosition = { x: this.player.position.x + 54, y: this.player.position.y };
+      const position = existingPile?.position
+        || nearestWalkablePoint(this.currentScene, requestedPosition)
+        || { ...this.player.position };
+      this.state.droppedItems.push({ itemId: item.id, sceneId: this.currentScene.id, position });
+    }
     this.inventory.remove(item.id);
     this.selectedInventoryItemId = null;
     this.refreshCurrentSceneDroppedItems();
-    this.droppedItemsOpen = true;
+    this.droppedItemsOpen = !restoresToScene;
     this.save();
     this.setStatusMessage(this.t("msg.inventory.dropped_nearby", { item: this.t(item.nameKey) }));
     this.renderUi();

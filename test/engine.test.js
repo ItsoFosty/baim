@@ -230,7 +230,7 @@ test("dialogue choices can apply an effect and then advance to an answer node", 
   assert.equal(game.dialogue.getNode().lineKey, "dialogue.test.answer");
 });
 
-test("dropping an inventory item leaves a saved recoverable record in the current scene", () => {
+test("dropping an inventory item outside its home scene leaves a saved recoverable record", () => {
   const game = Object.create(Game.prototype);
   const owned = new Set(["item.accordion"]);
   let saves = 0;
@@ -238,7 +238,7 @@ test("dropping an inventory item leaves a saved recoverable record in the curren
   let sceneRefreshes = 0;
   let message = null;
   game.state = { droppedItems: [] };
-  game.currentScene = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.apartment");
+  game.currentScene = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
   game.player = { position: { x: 700, y: 540 } };
   game.inventory = {
     has: (itemId) => owned.has(itemId),
@@ -257,7 +257,7 @@ test("dropping an inventory item leaves a saved recoverable record in the curren
   assert.equal(game.dropInventoryItem({ id: "item.accordion", nameKey: "item.accordion.name" }), true);
   assert.equal(owned.has("item.accordion"), false);
   assert.equal(game.state.droppedItems[0].itemId, "item.accordion");
-  assert.equal(game.state.droppedItems[0].sceneId, "scene.chapter1.apartment");
+  assert.equal(game.state.droppedItems[0].sceneId, "scene.chapter1.village_square");
   assert.ok(Number.isFinite(game.state.droppedItems[0].position.x));
   assert.equal(game.selectedInventoryItemId, null);
   assert.equal(message, "dropped:Акордеон");
@@ -274,6 +274,39 @@ test("dropping an inventory item leaves a saved recoverable record in the curren
   assert.equal(sceneRefreshes, 2);
   assert.equal(saves, 2);
   assert.equal(renders, 2);
+});
+
+test("dropping the accordion in the apartment restores it without creating a bag pile", () => {
+  const game = Object.create(Game.prototype);
+  const apartment = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.apartment");
+  const owned = new Set(["item.accordion"]);
+  game.state = {
+    droppedItems: [
+      { itemId: "item.accordion", sceneId: apartment.id, position: { x: 700, y: 540 } }
+    ]
+  };
+  game.currentScene = apartment;
+  game.content = { scenes: { [apartment.id]: apartment } };
+  game.player = { position: { x: 700, y: 540 } };
+  game.inventory = {
+    has: (itemId) => owned.has(itemId),
+    remove: (itemId) => owned.delete(itemId)
+  };
+  game.selectedInventoryItemId = "item.accordion";
+  game.t = (key) => key;
+  game.save = () => {};
+  game.setStatusMessage = () => {};
+  game.renderUi = () => {};
+
+  assert.equal(game.droppedItemsInScene().length, 0);
+  assert.equal(game.dropInventoryItem({ id: "item.accordion", nameKey: "item.accordion.name" }), true);
+  assert.equal(owned.has("item.accordion"), false);
+  assert.deepEqual(game.state.droppedItems, []);
+  assert.equal(game.droppedItemsOpen, false);
+  assert.equal(game.currentScene.interactables.some((target) => target.droppedItemsPile), false);
+  assert.equal(game.targetAvailable(
+    apartment.interactables.find((target) => target.id === "hotspot.apartment.accordion")
+  ), true);
 });
 
 test("saved dropped items create one compact interactive pile per scene", () => {

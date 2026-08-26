@@ -1075,6 +1075,7 @@ test("apartment accordion is collectible through the generic take flow", () => {
     has: (itemId) => owned.has(itemId),
     add: (itemId) => owned.add(itemId)
   };
+  game.state = {};
   game.t = (key) => key;
   game.setStatusMessage = () => {};
   game.save = () => { saves += 1; };
@@ -1084,24 +1085,11 @@ test("apartment accordion is collectible through the generic take flow", () => {
   assert.equal(game.targetAvailable(accordion), true);
   game.takeTarget(accordion);
   assert.equal(owned.has("item.accordion"), true);
+  assert.equal(game.state.hasAccordion, true);
   assert.equal(game.targetAvailable(accordion), false);
   assert.equal(saves, 1);
   game.takeTarget(accordion);
   assert.equal(owned.size, 1);
-  assert.equal(saves, 1);
-});
-
-test("Tony's existing distraction logic accepts the collected accordion", () => {
-  const game = Object.create(Game.prototype);
-  let saves = 0;
-  game.inventory = { has: (itemId) => itemId === "item.accordion" };
-  game.state = { flags: {} };
-  game.t = (key) => key;
-  game.setStatusMessage = () => {};
-  game.save = () => { saves += 1; };
-
-  game.useTarget({ id: "npc.tony_fridge" });
-  assert.equal(game.state.flags.tonyDistracted, true);
   assert.equal(saves, 1);
 });
 

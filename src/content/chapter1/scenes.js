@@ -292,6 +292,7 @@ const rawScenes = [
         nameKey: "npc.baba_stoyanka.name",
         rect: { x: 480, y: 345, w: 70, h: 115 },
         speechAnchor: { x: 360, y: 310 },
+        itemRejectKey: "msg.inventory.npc_reject.baba_stoyanka",
         dialogueId: "dialogue.baba_stoyanka",
         lookKey: "look.npc.baba_stoyanka",
         itemUseRules: [
@@ -422,6 +423,7 @@ const rawScenes = [
         nameKey: "npc.journalist.name",
         rect: { x: 1030, y: 300, w: 105, h: 210 },
         speechAnchor: { x: 1082, y: 275 },
+        itemRejectKey: "msg.inventory.npc_reject.journalist",
         dialogueId: "dialogue.journalist",
         lookKey: "look.npc.journalist",
         debugVisual: { fill: "#6b263d", accent: "#d7b35f", labelKey: "npc.journalist.name" },
@@ -637,6 +639,7 @@ const rawScenes = [
         nameKey: "npc.mehana_waiter.name",
         rect: { x: 648, y: 232, w: 114, h: 333 },
         speechAnchor: { x: 705, y: 215 },
+        itemRejectKey: "msg.inventory.npc_reject.mehana_waiter",
         dialogueId: "dialogue.mehana_waiter",
         lookKey: "look.npc.mehana_waiter",
         itemUseRules: ["item.rakia", "item.shopska_salad", "item.tripe_soup", "item.village_wine"].map(
@@ -654,6 +657,7 @@ const rawScenes = [
         nameKey: "npc.tony_fridge.name",
         rect: { x: 862, y: 315, w: 145, h: 240 },
         speechAnchor: { x: 934, y: 285 },
+        itemRejectKey: "msg.inventory.npc_reject.tony_fridge",
         dialogueId: "dialogue.tony_fridge",
         lookKey: "look.npc.tony_fridge",
         itemUseRules: [
@@ -819,6 +823,7 @@ const rawScenes = [
         nameKey: "npc.municipality_clerk.name",
         rect: { x: 735, y: 245, w: 170, h: 245 },
         speechAnchor: { x: 820, y: 215 },
+        itemRejectKey: "msg.inventory.npc_reject.municipality_clerk",
         dialogueId: "dialogue.municipality_clerk",
         lookKey: "look.npc.municipality_clerk",
         itemUseRules: [

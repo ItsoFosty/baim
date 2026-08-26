@@ -53,6 +53,8 @@ test("inventory preload discovery includes every authored high-resolution item i
   assert.deepEqual(paths.sort(), [
     assetManifest.items["item.accordion"].icon,
     assetManifest.items["item.empty_envelope"].icon,
+    assetManifest.items["item.glass_of_water"].icon,
+    assetManifest.items["item.sunflower_oil"].icon,
     assetManifest.items["item.unpaid_bills"].icon
   ].sort());
 });
@@ -563,6 +565,48 @@ test("accordion uses character reactions and future animal fallbacks without ove
     "msg.accordion_generic_npc",
     "msg.accordion_animal"
   ]);
+});
+
+test("unmatched inventory use on an NPC is rejected by that NPC instead of Bai Mitko", () => {
+  const game = Object.create(Game.prototype);
+  const target = {
+    id: "npc.baba_stoyanka",
+    kind: "npc",
+    nameKey: "npc.baba_stoyanka.name",
+    itemRejectKey: "msg.inventory.npc_reject.baba_stoyanka",
+    itemUseRules: []
+  };
+  let npcSpeech = null;
+  game.content = { items: { "item.empty_envelope": { id: "item.empty_envelope", targetUseRules: [] } } };
+  game.state = { flags: {} };
+  game.inventory = { has: () => true };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.inventoryUseItemId = "item.empty_envelope";
+  game.selectedInventoryItemId = null;
+  game.t = (key) => key;
+  game.setNpcSpeechMessage = (speaker, message) => { npcSpeech = { speaker, message }; return true; };
+  game.setStatusMessage = () => assert.fail("Bai Mitko must not speak an NPC item rejection");
+
+  assert.equal(game.useInventoryItemOnTarget("item.empty_envelope", target), false);
+  assert.deepEqual(npcSpeech, { speaker: target, message: target.itemRejectKey });
+  assert.equal(game.inventoryUseItemId, null);
+});
+
+test("authored inventory reactions on NPCs retain the target as the speaker", () => {
+  const game = Object.create(Game.prototype);
+  const rule = { itemId: "item.test", effects: [], messageKey: "msg.test" };
+  const target = { id: "npc.test", kind: "npc", itemUseRules: [rule] };
+  let application = null;
+  game.content = { items: { "item.test": { id: "item.test", targetUseRules: [] } } };
+  game.state = { flags: {} };
+  game.inventory = { has: () => true };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.applyContentEffect = (definition, options) => { application = { definition, options }; return true; };
+
+  assert.equal(game.useInventoryItemOnTarget("item.test", target), true);
+  assert.deepEqual(application, { definition: rule, options: { speakerTarget: target } });
 });
 
 test("inventory self-use applies the item's authored rule and clears the expanded item state", () => {
@@ -2444,6 +2488,37 @@ test("speech bubble messages start talk or reject animation variants", () => {
 
   assert.equal(game.player.animation, "reject");
   assert.equal(game.player.speechAnimation.slot, "external_reject_east_1");
+});
+
+test("overlong speech is paginated at word boundaries without losing text", () => {
+  const game = Object.create(Game.prototype);
+  game.speechBubbleTextFits = (text) => text.length <= 18;
+
+  const message = "One bureaucratic sentence with several needlessly ceremonial words";
+  const pages = game.speechBubblePages(message);
+
+  assert.ok(pages.length > 1);
+  assert.equal(pages.join(" "), message);
+  assert.ok(pages.every((page) => page.length <= 18));
+});
+
+test("automatic speech pages join authored message beats in the existing queue", () => {
+  const game = Object.create(Game.prototype);
+  game.usesExternalCharacterAnimation = () => false;
+  game.renderUi = () => {};
+  game.measureSpeechBubble = () => ({ width: 350, height: 120, maxWidth: 350, maxHeight: 190 });
+  game.speechBubbleTextFits = (text) => text.split(" ").length <= 2;
+  game.player = { target: null, animation: "idle", speaking: false, speechAnimation: null };
+  game.speechBubble = null;
+  game.pendingSpeechBubble = null;
+  game.speechBubbleQueue = [];
+  game.speechBubblePauseRemaining = 0;
+  game.speechBubbleSequence = 0;
+
+  game.setStatusMessage(["one two three four", "five six"]);
+
+  assert.equal(game.speechBubble.text, "one two");
+  assert.deepEqual(game.speechBubbleQueue.map((beat) => beat.message), ["three four", "five six"]);
 });
 
 test("speech bubble defers during walking and appears when idle", () => {

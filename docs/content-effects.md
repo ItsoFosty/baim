@@ -91,6 +91,12 @@ the `animal` tag and receive the existing animal reaction without adding a Chapt
 Consumable self-use rules remove their item explicitly; non-consumable rules such as the accordion omit
 `removeItem`.
 
+When an inventory item targets an NPC, an authored rule's `messageKey` is spoken by that NPC and uses the
+NPC's scene `speechAnchor` and visual bubble style. If no rule matches, the NPC speaks `itemRejectKey` from
+its scene definition, falling back to `msg.inventory.npc_reject_generic`. Non-NPC targets keep the normal
+Bai Mitko rejection. This speaker routing is presentation-only and does not change requirement priority,
+effects, inventory consumption, or quest state.
+
 ## Dialogue Choices
 
 A dialogue choice uses the same effect definition under its `effect` field:

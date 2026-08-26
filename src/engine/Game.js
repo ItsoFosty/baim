@@ -44,7 +44,8 @@ export const SHORT_WALK_PATH_DISTANCE = 400;
 const TALK_SINGLE_WORD_MAX_CHARS = 18;
 const TALK_LONG_SENTENCE_MIN_CHARS = 72;
 const SPEECH_BUBBLE_MAX_WIDTH_PX = 350;
-const SPEECH_BUBBLE_MAX_HEIGHT_PX = 170;
+const SPEECH_BUBBLE_MAX_HEIGHT_PX = 190;
+const SPEECH_BUBBLE_MAX_TEXT_HEIGHT_PX = 150;
 const SPEECH_BUBBLE_WEST_OFFSET_X_FULL_SIZE = 40;
 const SPEECH_BUBBLE_WEST_OFFSET_Y_FULL_SIZE = -75;
 const SPEECH_BUBBLE_WEST_TAIL_END_FROM_RIGHT_PX = 72;
@@ -85,6 +86,7 @@ export class Game {
     this.speechBubbleQueue = [];
     this.speechBubblePauseRemaining = 0;
     this.speechBubbleSequence = 0;
+    this.npcSpeechBubble = null;
     this.currentScene = this.resolveInitialScene();
     this.player = {
       id: "npc.bai_mitko",
@@ -214,6 +216,7 @@ export class Game {
       this.updateActionSequence();
       this.updateSpeechAnimationHold();
       this.updateSpeechBubble(dt);
+      this.updateNpcSpeechBubble(dt);
     }
     this.renderer.draw();
     requestAnimationFrame((next) => this.tick(next));
@@ -594,14 +597,16 @@ export class Game {
     this.pendingSpeechBubble = null;
     this.speechBubbleQueue = [];
     this.speechBubblePauseRemaining = 0;
+    this.npcSpeechBubble = null;
     if (this.speechBubble) this.hideSpeechBubble(true);
     else if (this.uiRoot) this.renderUi();
   }
 
   setStatusMessage(message, options = {}) {
-    const beats = (Array.isArray(message) ? message : [message])
+    const authoredBeats = (Array.isArray(message) ? message : [message])
       .map((part) => String(part || "").trim())
       .filter(Boolean);
+    const beats = authoredBeats.flatMap((part) => this.speechBubblePages(part));
     if (this.speechBubble) this.hideSpeechBubble(true);
     this.speechBubbleQueue = beats.slice(1).map((part) => ({ message: part, options: { ...options } }));
     this.speechBubblePauseRemaining = 0;
@@ -615,6 +620,37 @@ export class Game {
       return;
     }
     this.showSpeechBubbleBeat(firstBeat, options);
+  }
+
+  speechBubblePages(message) {
+    const normalized = String(message || "").trim();
+    if (!normalized || this.speechBubbleTextFits(normalized)) return normalized ? [normalized] : [];
+
+    const words = normalized.split(/\s+/u);
+    const pages = [];
+    let pageWords = [];
+    for (const word of words) {
+      const candidate = [...pageWords, word].join(" ");
+      if (!pageWords.length || this.speechBubbleTextFits(candidate)) {
+        pageWords.push(word);
+        continue;
+      }
+      pages.push(pageWords.join(" "));
+      pageWords = [word];
+    }
+    if (pageWords.length) pages.push(pageWords.join(" "));
+    return pages;
+  }
+
+  speechBubbleTextFits(text) {
+    if (typeof document === "undefined" || !this.uiRoot) return true;
+    const probe = element("div", "speech-text speech-text-measure");
+    probe.style.width = `${SPEECH_BUBBLE_MAX_WIDTH_PX - 32}px`;
+    probe.textContent = text;
+    this.uiRoot.appendChild(probe);
+    const fits = probe.scrollHeight <= SPEECH_BUBBLE_MAX_TEXT_HEIGHT_PX;
+    probe.remove();
+    return fits;
   }
 
   showSpeechBubbleBeat(message, options = {}) {
@@ -719,6 +755,47 @@ export class Game {
     const punctuationBonus = (normalized.match(/[.!?…]/g)?.length || 0) * 0.18;
     const readingSeconds = normalized.length / SPEECH_BUBBLE_CHARS_PER_SECOND + punctuationBonus;
     return clampNumber(readingSeconds, SPEECH_BUBBLE_MIN_VISIBLE_SECONDS, SPEECH_BUBBLE_MAX_VISIBLE_SECONDS);
+  }
+
+  setNpcSpeechMessage(target, message) {
+    const text = String(message || "").trim();
+    if (!target?.id || target.kind !== "npc" || !text) return false;
+    if (this.speechBubble) this.hideSpeechBubble(true);
+    this.pendingSpeechBubble = null;
+    this.speechBubbleQueue = [];
+    this.npcSpeechBubble = {
+      id: `npc-speech-${++this.speechBubbleSequence}`,
+      npcId: target.id,
+      text,
+      elapsed: 0,
+      visibleSeconds: this.speechBubbleVisibleSeconds(text),
+      phase: "in"
+    };
+    if (this.uiRoot) this.renderUi();
+    return true;
+  }
+
+  updateNpcSpeechBubble(dt) {
+    if (!this.npcSpeechBubble) return;
+    this.npcSpeechBubble.elapsed += dt;
+    if (this.npcSpeechBubble.phase === "in" && this.npcSpeechBubble.elapsed >= SPEECH_BUBBLE_FADE_SECONDS) {
+      this.npcSpeechBubble.phase = "visible";
+      this.renderUi();
+    }
+    if (
+      this.npcSpeechBubble.phase !== "out"
+      && this.npcSpeechBubble.elapsed >= this.npcSpeechBubble.visibleSeconds
+    ) {
+      this.npcSpeechBubble.phase = "out";
+      this.renderUi();
+    }
+    if (
+      this.npcSpeechBubble?.phase === "out"
+      && this.npcSpeechBubble.elapsed >= this.npcSpeechBubble.visibleSeconds + SPEECH_BUBBLE_FADE_SECONDS
+    ) {
+      this.npcSpeechBubble = null;
+      this.renderUi();
+    }
   }
 
   updateSpeechBubble(dt) {
@@ -1184,6 +1261,7 @@ export class Game {
     const routeDistance = walkPathDistance(this.player.position, route);
     const shortWalk = routeDistance > 0 && routeDistance <= SHORT_WALK_PATH_DISTANCE;
     this.hideSpeechBubble(true);
+    this.npcSpeechBubble = null;
     this.player.actionSequence = null;
     this.player.actionAnimation = null;
     this.movement.walkTo(point, facingPoint, route, { shortWalk });
@@ -1290,7 +1368,11 @@ export class Game {
     );
     const rule = explicitRule || fallbackRule;
     this.clearInventoryInteraction();
-    if (rule) return this.applyContentEffect(rule);
+    if (rule) return this.applyContentEffect(rule, { speakerTarget: target.kind === "npc" ? target : null });
+    if (target.kind === "npc") {
+      this.setNpcSpeechMessage(target, this.t(target.itemRejectKey || "msg.inventory.npc_reject_generic"));
+      return false;
+    }
     this.setStatusMessage(this.t("msg.inventory.cannot_use_with", {
       item: this.t(item?.nameKey || itemId),
       target: this.t(target.nameKey || target.lookKey || target.id)
@@ -1362,7 +1444,11 @@ export class Game {
       && (!Number.isFinite(Number(range.max)) || stateValue <= Number(range.max))
     ));
     const messageKey = matchingMessage?.messageKey || definition.messageKey;
-    if (messageKey) this.setStatusMessage(this.t(messageKey), { reject: Boolean(definition.reject) });
+    if (messageKey) {
+      const message = this.t(messageKey);
+      if (options.speakerTarget?.kind === "npc") this.setNpcSpeechMessage(options.speakerTarget, message);
+      else this.setStatusMessage(message, { reject: Boolean(definition.reject) });
+    }
     this.player.speed = this.sceneMovementSpeed(this.currentScene);
     this.save();
     if (options.render !== false) this.renderUi();
@@ -1524,6 +1610,10 @@ export class Game {
       const npcSpeech = this.createDialogueSpeechBubble(dialogueNode);
       if (npcSpeech) this.uiRoot.appendChild(npcSpeech);
       this.uiRoot.appendChild(this.createDialogue(dialogueNode));
+    }
+    if (this.npcSpeechBubble && !this.menuOpen && !this.paused && !dialogueNode) {
+      const reaction = this.createNpcReactionBubble();
+      if (reaction) this.uiRoot.appendChild(reaction);
     }
     if (this.speechBubble && !this.menuOpen && !this.paused && !dialogueNode) this.uiRoot.appendChild(this.createSpeechBubble());
     if (!this.editMode && !this.devHome && !this.menuOpen && !this.paused && !dialogueNode) this.uiRoot.appendChild(this.createHud());
@@ -2450,7 +2540,18 @@ node tools/build-external-runtime-staging.js</pre>
     const dialogue = this.content.dialogues[this.dialogue.current?.id];
     if (!dialogue?.npcId) return null;
     const npc = this.currentScene.npcs?.find((candidate) => candidate.id === dialogue.npcId);
-    if (!npc?.rect) return null;
+    return this.createNpcSpeechBubble(npc, this.t(node.lineKey), "dialogue-speech-bubble");
+  }
+
+  createNpcReactionBubble() {
+    const speech = this.npcSpeechBubble;
+    if (!speech) return null;
+    const npc = this.currentScene.npcs?.find((candidate) => candidate.id === speech.npcId);
+    return this.createNpcSpeechBubble(npc, speech.text, `dialogue-speech-bubble npc-reaction-bubble phase-${speech.phase}`);
+  }
+
+  createNpcSpeechBubble(npc, text, className) {
+    if (!npc?.rect || !text) return null;
 
     const speechAnchor = npc.speechAnchor || {
       x: npc.rect.x + npc.rect.w * 0.5,
@@ -2460,8 +2561,8 @@ node tools/build-external-runtime-staging.js</pre>
     const bubbleCenterX = clampNumber(npcCenterX, 210, 1070);
     const bubbleBottomY = clampNumber(speechAnchor.y, 118, 480);
     const tailOffset = clampNumber(npcCenterX - bubbleCenterX, -150, 150);
-    const speakerClass = dialogue.npcId.replaceAll(".", "-");
-    const bubble = element("aside", `dialogue-speech-bubble speaker-${speakerClass}`);
+    const speakerClass = npc.id.replaceAll(".", "-");
+    const bubble = element("aside", `${className} speaker-${speakerClass}`);
     bubble.setAttribute("role", "status");
     bubble.setAttribute("aria-live", "polite");
     bubble.setAttribute("aria-label", this.t(npc.nameKey));
@@ -2470,7 +2571,7 @@ node tools/build-external-runtime-staging.js</pre>
     bubble.style.setProperty("--dialogue-tail-offset", `${tailOffset}px`);
 
     const line = document.createElement("p");
-    line.textContent = this.t(node.lineKey);
+    line.textContent = text;
     bubble.appendChild(line);
     return bubble;
   }

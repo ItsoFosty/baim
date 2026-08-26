@@ -31,6 +31,10 @@ is rasterized into the world canvas and makes high-resolution item art harder to
   Target-authored `itemUseRules` take priority so a quest-specific interaction such as playing the accordion
   for Tony overrides the generic NPC reaction. Future cats and dogs should use the `animal` tag to receive
   the authored animal response without adding Chapter-specific engine checks.
+- Inventory effects aimed at an NPC present their `messageKey` in that NPC's anchored speech bubble rather
+  than Bai Mitko's status bubble. If no explicit or item-authored rule matches, the NPC uses its optional
+  `itemRejectKey`; NPCs without one use the bilingual generic rejection. Author recurring Chapter NPCs with
+  an individual rejection key so their voice remains recognizable outside quest interactions.
 - Reduced-motion preferences disable dock movement while preserving focus and tooltip feedback.
 
 ## Dialogue Answer Contract

@@ -723,10 +723,18 @@ button.active {
   border-radius: 11px;
 }
 
+.npc-reaction-bubble.phase-in {
+  animation: speech-fade-in 300ms ease-out both;
+}
+
+.npc-reaction-bubble.phase-out {
+  animation: speech-fade-out 300ms ease-in both;
+}
+
 .speech-bubble {
   position: absolute;
   min-width: 200px;
-  max-height: 170px;
+  max-height: 190px;
   /*transform: translate(-50%, -100%);*/
   pointer-events: none;
   color: #4b3625;
@@ -795,8 +803,8 @@ button.active {
 .speech-text {
   position: relative;
   z-index: 2;
-  max-height: 102px;
-  overflow: hidden;
+  max-height: 150px;
+  overflow: visible;
   padding: 0 12px;
   color: #5e513e;
   font-size: 20px;
@@ -804,6 +812,16 @@ button.active {
   font-weight: 400;
   overflow-wrap: anywhere;
   text-align: center;
+}
+
+.speech-text-measure {
+  position: absolute;
+  left: -10000px;
+  top: -10000px;
+  visibility: hidden;
+  box-sizing: border-box;
+  max-height: none;
+  pointer-events: none;
 }
 
 .speech-measure {

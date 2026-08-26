@@ -52,6 +52,12 @@ export const assetManifest = {
     },
     "item.empty_envelope": {
       icon: "assets/chapter1/items/empty_envelope.png"
+    },
+    "item.sunflower_oil": {
+      icon: "assets/chapter1/items/sunflower-oil-v1.png"
+    },
+    "item.glass_of_water": {
+      icon: "assets/chapter1/items/glass-of-water-v1.png"
     }
   }
 };

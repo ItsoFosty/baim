@@ -9,6 +9,7 @@ export const assetManifest = {
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png",
       foregroundTable: "assets/chapter1/scenes/apartment/foreground-table.png",
       billsOnTable: "assets/chapter1/scenes/apartment/bills-on-table.png",
+      accordionOnChair: "assets/chapter1/scenes/apartment/accordion-on-chair.png",
       windowOpen: "assets/chapter1/scenes/apartment/window-open.png",
       windowOpenBack: "assets/chapter1/scenes/apartment/window-open-0.png"
     },

@@ -11,7 +11,7 @@ import { characterHeight } from "../src/engine/CharacterRenderMath.js";
 import { facingFromDelta, MovementSystem, requestWalkStop, eastWestFallbackFacing, motionMultiplierAtFrame, walkMotionMultiplierForFrame } from "../src/engine/MovementSystem.js";
 import { AnimationPlayer } from "../src/engine/AnimationPlayer.js";
 import { Game, SHORT_WALK_PATH_DISTANCE } from "../src/engine/Game.js";
-import { Renderer, animationRenderMirrored, animationRenderOffset, animationRenderScale, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY, targetZIndex } from "../src/engine/Renderer.js";
+import { Renderer, animationRenderMirrored, animationRenderOffset, animationRenderScale, externalFrameVisualBounds, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY, targetZIndex } from "../src/engine/Renderer.js";
 import { applyTimedSobering, intoxicationBandKey, intoxicationColor, intoxicationMovementMultiplier, RAKIA_SOBER_INTERVAL_MS } from "../src/engine/IntoxicationSystem.js";
 import { strings } from "../src/content/localization/index.js";
 import { chapter1 } from "../src/content/chapter1/index.js";
@@ -677,9 +677,119 @@ test("village square and municipality form a playable round trip", () => {
   const leave = municipality.exits.find((exit) => exit.id === "exit.municipality.to_square");
 
   assert.equal(enter.targetSceneId, municipality.id);
+  assert.deepEqual(enter.targetPosition, { x: 250, y: 520 });
+  assert.deepEqual(municipality.playerStart, { x: 260, y: 520 });
+  assert.deepEqual(municipality.anchors.baiMitkoSpawn, municipality.playerStart);
   assert.equal(leave.targetSceneId, square.id);
   assert.equal(municipality.walkPolygons[0].id, "walk.chapter1.municipality.main");
   assert.equal(municipality.npcs[0].dialogueId, "dialogue.municipality_clerk");
+});
+
+test("municipality background staff expose short bilingual talk barks without replacing Penka's dialogue", () => {
+  const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
+  const clerk = municipality.npcs.find((npc) => npc.id === "npc.municipality_clerk");
+  const colleague = municipality.npcs.find((npc) => npc.id === "npc.municipality_colleague");
+  const backgroundClerk = municipality.npcs.find((npc) => npc.id === "npc.municipality_background_clerk");
+
+  assert.equal(clerk.talkKey, undefined);
+  assert.equal(clerk.dialogueId, "dialogue.municipality_clerk");
+  assert.equal(clerk.useDialogueId, undefined);
+  assert.equal(colleague.talkKey, "talk.npc.municipality_colleague.helping");
+  assert.equal(backgroundClerk.talkKey, "talk.npc.municipality_clerk.busy");
+  for (const npc of [clerk, colleague, backgroundClerk]) {
+    assert.ok(npc.polygon?.length >= 3);
+    assert.equal(typeof strings.bg[npc.nameKey], "string");
+    assert.equal(typeof strings.en[npc.nameKey], "string");
+  }
+  for (const npc of [colleague, backgroundClerk]) {
+    assert.equal(typeof strings.bg[npc.talkKey], "string");
+    assert.equal(typeof strings.en[npc.talkKey], "string");
+  }
+});
+
+test("municipality security officer remains a standalone bilingual NPC beside a separate prop table", () => {
+  const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
+  const officer = municipality.npcs.find((npc) => npc.id === "npc.municipality_security_officer");
+  const officerLayer = municipality.foregroundLayers.find((layer) => layer.id === "layer.municipality.security_officer");
+  const tableLayer = municipality.foregroundLayers.find((layer) => layer.id === "layer.municipality.security_table");
+
+  assert.ok(officer.polygon?.length >= 3);
+  assert.equal(officer.talkKey, "talk.npc.municipality_security_officer.identification");
+  assert.equal(typeof strings.bg[officer.nameKey], "string");
+  assert.equal(typeof strings.en[officer.nameKey], "string");
+  assert.equal(typeof strings.bg[officer.talkKey], "string");
+  assert.equal(typeof strings.en[officer.talkKey], "string");
+  assert.equal(officerLayer.asset, "securityOfficer");
+  assert.equal(tableLayer.asset, "securityTable");
+  assert.ok(officerLayer.zIndex < tableLayer.zIndex, "security officer must render in front of the table");
+  assert.ok(tableLayer.zIndex < 0, "security table must render in front of foreground-depth Bai Mitko");
+});
+
+test("Penka's fitted selection takes priority over the archive cabinet", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+
+  assert.equal(findTargetAt(scene, { x: 1150, y: 350 }).id, "npc.municipality_clerk");
+  assert.equal(findTargetAt(scene, { x: 1100, y: 250 }).id, "hotspot.municipality.archive_cabinet");
+  assert.equal(findTargetAt(scene, { x: 875, y: 330 }).id, "npc.municipality_background_clerk");
+});
+
+test("a talk bark takes precedence over a target's formal dialogue", () => {
+  const game = Object.create(Game.prototype);
+  let spoken = null;
+  let openedDialogue = null;
+  game.selectedVerb = VERBS.TALK;
+  game.t = (key) => key;
+  game.setNpcSpeechMessage = (target, message) => {
+    spoken = { target, message };
+    return true;
+  };
+  game.dialogue = { start: (dialogueId) => { openedDialogue = dialogueId; } };
+  game.player = { speaking: false };
+
+  const target = {
+    id: "npc.municipality_clerk",
+    kind: "npc",
+    talkKey: "talk.npc.municipality_clerk.busy",
+    dialogueId: "dialogue.municipality_clerk"
+  };
+  game.performTargetAction(target);
+
+  assert.deepEqual(spoken, { target, message: target.talkKey });
+  assert.equal(openedDialogue, null);
+  assert.equal(game.player.speaking, false);
+});
+
+test("talking to seated Penka opens her original municipality dialogue", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const penka = scene.npcs.find((npc) => npc.id === "npc.municipality_clerk");
+  const game = Object.create(Game.prototype);
+  let openedDialogue = null;
+  game.selectedVerb = VERBS.TALK;
+  game.dialogue = { start: (dialogueId) => { openedDialogue = dialogueId; } };
+  game.player = { speaking: false };
+  game.renderUi = () => {};
+
+  game.performTargetAction(penka);
+
+  assert.equal(openedDialogue, "dialogue.municipality_clerk");
+  assert.equal(game.player.speaking, true);
+});
+
+test("regular Use on seated Penka rejects instead of opening her Talk dialogue", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const penka = scene.npcs.find((npc) => npc.id === "npc.municipality_clerk");
+  const game = Object.create(Game.prototype);
+  let openedDialogue = null;
+  let status = null;
+  game.selectedVerb = VERBS.USE;
+  game.t = (key) => key;
+  game.dialogue = { start: (dialogueId) => { openedDialogue = dialogueId; } };
+  game.setStatusMessage = (message, options) => { status = { message, options }; };
+
+  game.performTargetAction(penka);
+
+  assert.equal(openedDialogue, null);
+  assert.deepEqual(status, { message: "msg.no_use", options: { reject: true } });
 });
 
 test("Mehana starts Bai Mitko seated with waiter and table interactions", () => {
@@ -727,7 +837,7 @@ test("Mehana sideboard props, larger furniture, and moved cellar align with the 
   assert.ok(sceneScale(scene, scene.playerStart) < 1.4);
 });
 
-test("Bai Mitko has the same calibrated visual height in the apartment and Mehana", () => {
+test("Bai Mitko keeps his calibrated entrance height in the apartment and Mehana", () => {
   const definition = characterDefinitions["npc.bai_mitko"];
   const apartment = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.apartment");
   const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
@@ -735,6 +845,110 @@ test("Bai Mitko has the same calibrated visual height in the apartment and Mehan
   const mehanaHeight = characterHeight(definition, mehana, mehana.playerStart);
 
   assert.ok(Math.abs(apartmentHeight - mehanaHeight) < 0.1);
+});
+
+test("municipality starts Bai Mitko five percent below foreground size and shrinks him at the counter", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const entranceHeight = characterHeight(definition, scene, scene.playerStart);
+  const counterHeight = characterHeight(definition, scene, scene.anchors.clerkCounter);
+  const registerHeight = characterHeight(definition, scene, scene.anchors.candidateRegister);
+
+  assert.ok(Math.abs(entranceHeight - 386 * 0.95) < 0.01);
+  assert.equal(counterHeight, 225.75);
+  assert.equal(registerHeight, 225.75);
+  assert.ok(counterHeight / 105 >= 2.1 && counterHeight / 105 <= 2.2);
+});
+
+test("the route to Penka keeps the municipality opening size throughout the outlined foreground", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const penka = scene.npcs.find((npc) => npc.id === "npc.municipality_clerk");
+  const square = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const entry = square.exits.find((exit) => exit.id === "exit.square.to_municipality").targetPosition;
+  const path = findWalkPath(scene, entry, penka.interactionApproach);
+  const openingHeight = characterHeight(definition, scene, entry);
+
+  assert.deepEqual(penka.interactionApproach, { x: 850, y: 690 });
+  assert.ok(Math.max(...path.map((point) => point.y)) >= 690);
+  assert.ok(Math.abs(openingHeight - 386 * 0.95) < 0.01);
+  for (let index = 1; index < path.length; index += 1) {
+    const start = path[index - 1];
+    const end = path[index];
+    const steps = Math.max(1, Math.ceil(Math.hypot(end.x - start.x, end.y - start.y) / 5));
+    for (let step = 1; step <= steps; step += 1) {
+      const position = {
+        x: start.x + ((end.x - start.x) * step) / steps,
+        y: start.y + ((end.y - start.y) * step) / steps
+      };
+      const height = characterHeight(definition, scene, position);
+      assert.ok(Math.abs(height - openingHeight) < 0.01);
+    }
+  }
+});
+
+test("municipality outlined foreground positions keep Bai Mitko at the opening size", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const foregroundPositions = [
+    { x: 300, y: 560 },
+    { x: 600, y: 650 },
+    { x: 850, y: 690 },
+    { x: 1141, y: 670 },
+    { x: 1170, y: 630 }
+  ];
+  const openingHeight = 386 * 0.95;
+
+  for (const position of foregroundPositions) {
+    assert.ok(Math.abs(characterHeight(definition, scene, position) - openingHeight) < 0.01);
+  }
+});
+
+test("every walkable point in the municipality foreground band has one explicit Bai Mitko height", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const definition = characterDefinitions["npc.bai_mitko"];
+  for (let y = 505; y <= 715; y += 5) {
+    for (let x = 5; x <= 1275; x += 5) {
+      if (!isWalkable(scene, { x, y })) continue;
+      assert.equal(characterHeight(definition, scene, { x, y }), 366.7);
+    }
+  }
+});
+
+test("municipality foreground scale is independent from desk occlusion depth", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const desk = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_desk");
+  const position = { x: 850, y: 690 };
+
+  assert.equal(sceneZIndexForPoint(scene, position), 0);
+  assert.ok(desk.zIndex > sceneZIndexForPoint(scene, position));
+});
+
+test("the wall-leaning candidate register always renders behind Bai Mitko", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const register = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.candidate_register");
+
+  assert.ok(register.zIndex > 100);
+});
+
+test("Penka's chair is a separate layer behind her approved desk", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const chair = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_chair");
+  const desk = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_desk");
+
+  assert.equal(chair.asset, "penkaChair");
+  assert.ok(chair.zIndex > desk.zIndex);
+});
+
+test("Penka sits between her chair and desk in municipality depth order", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const chair = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_chair");
+  const penka = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_seated");
+  const desk = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_desk");
+
+  assert.equal(penka.asset, "penkaSeated");
+  assert.ok(chair.zIndex > penka.zIndex);
+  assert.ok(penka.zIndex > desk.zIndex);
 });
 
 test("Mehana and municipality use authored raster, object, and layer editor sources", () => {
@@ -1034,6 +1248,19 @@ test("Bai Mitko external renderer uses stable visual bounds across walk phases",
   assert.equal(bounds.h, 442);
   assert.equal(bounds.w, 214);
   assert.equal(bounds.baselineY, 476);
+});
+
+test("Bai Mitko walk frames normalize their visible height instead of contracting", () => {
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const loop = definition.animations.walk.parts.east.loop;
+  const stableBounds = stableExternalVisualBounds(definition);
+  const targetHeight = 386 * 0.95;
+
+  for (let frameIndex = 0; frameIndex < loop.frameCount; frameIndex += 1) {
+    const bounds = externalFrameVisualBounds(loop, frameIndex, stableBounds);
+    const scale = targetHeight / bounds.h;
+    assert.ok(Math.abs(bounds.h * scale - targetHeight) < 0.01);
+  }
 });
 
 test("Bai Mitko idle directions use walk-start animation frames instead of static images", () => {

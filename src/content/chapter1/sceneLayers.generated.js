@@ -133,6 +133,57 @@ export const sceneLayerGeometry = {
   },
   "scene.chapter1.municipality": {
     "sceneId": "scene.chapter1.municipality",
-    "foregroundLayers": []
+    "foregroundLayers": [
+      {
+        "id": "layer.municipality.candidate_register",
+        "asset": "candidateRegister",
+        "zIndex": 110,
+        "top": 333,
+        "left": 457,
+        "height": 162
+      },
+      {
+        "id": "layer.municipality.security_table",
+        "asset": "securityTable",
+        "zIndex": -10,
+        "top": 508,
+        "left": 0,
+        "width": 299,
+        "height": 247
+      },
+      {
+        "id": "layer.municipality.security_officer",
+        "asset": "securityOfficer",
+        "zIndex": -20,
+        "top": 355,
+        "left": 245,
+        "height": 487.025
+      },
+      {
+        "id": "layer.municipality.penka_chair",
+        "asset": "penkaChair",
+        "zIndex": 9,
+        "top": 360,
+        "left": 1025,
+        "height": 287.5
+      },
+      {
+        "id": "layer.municipality.penka_seated",
+        "asset": "penkaSeated",
+        "zIndex": 8.5,
+        "top": 300,
+        "left": 1010,
+        "height": 368
+      },
+      {
+        "id": "layer.municipality.penka_desk",
+        "asset": "penkaDesk",
+        "zIndex": 8,
+        "top": 275.25,
+        "left": 809.75,
+        "width": 310.5,
+        "height": 419.75
+      }
+    ]
   }
 };

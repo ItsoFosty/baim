@@ -1,4 +1,5 @@
 import { clamp, pointInRect } from "./geometry.js";
+import { sceneDepthT } from "./DepthMath.js";
 
 export function pointInPolygon(point, polygon) {
   let inside = false;
@@ -293,7 +294,7 @@ function nearestWalkablePointInMask(mask, point) {
 export function sceneScale(scene, point) {
   const zone = scene.perspectiveScale;
   if (!zone) return 1;
-  const t = clamp((point.y - zone.horizonY) / Math.max(1, zone.bottomY - zone.horizonY), 0, 1);
+  const t = sceneDepthT(scene, point);
   return zone.far + t * (zone.near - zone.far);
 }
 

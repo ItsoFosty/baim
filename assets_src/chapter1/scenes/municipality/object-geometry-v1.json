@@ -2,7 +2,7 @@
   "id": "objectGeometry.chapter1.municipality.v1",
   "sceneId": "scene.chapter1.municipality",
   "sourceBackground": {
-    "path": "assets/chapter1/scenes/municipality/background.png",
+    "path": "assets/chapter1/scenes/municipality/background-v9.png",
     "width": 1280,
     "height": 720
   },
@@ -12,9 +12,12 @@
   },
   "objects": [
     { "id": "exit.municipality.to_square", "polygon": [{ "x": 30, "y": 300 }, { "x": 200, "y": 300 }, { "x": 200, "y": 545 }, { "x": 30, "y": 545 }] },
-    { "id": "hotspot.municipality.candidate_register", "polygon": [{ "x": 930, "y": 315 }, { "x": 1140, "y": 315 }, { "x": 1140, "y": 460 }, { "x": 930, "y": 460 }] },
+    { "id": "hotspot.municipality.candidate_register", "polygon": [{ "x": 457, "y": 333 }, { "x": 539, "y": 333 }, { "x": 539, "y": 495 }, { "x": 457, "y": 495 }] },
     { "id": "hotspot.municipality.stamp_desk", "polygon": [{ "x": 540, "y": 340 }, { "x": 710, "y": 340 }, { "x": 710, "y": 465 }, { "x": 540, "y": 465 }] },
-    { "id": "hotspot.municipality.archive_cabinet", "polygon": [{ "x": 1080, "y": 205 }, { "x": 1255, "y": 205 }, { "x": 1255, "y": 490 }, { "x": 1080, "y": 490 }] },
-    { "id": "npc.municipality_clerk", "polygon": [{ "x": 735, "y": 245 }, { "x": 905, "y": 245 }, { "x": 905, "y": 490 }, { "x": 735, "y": 490 }] }
+    { "id": "hotspot.municipality.archive_cabinet", "polygon": [{ "x": 1087, "y": 230 }, { "x": 1195, "y": 230 }, { "x": 1195, "y": 490 }, { "x": 1087, "y": 490 }] },
+    { "id": "npc.municipality_clerk", "polygon": [{ "x": 1127, "y": 308 }, { "x": 1174, "y": 310 }, { "x": 1196, "y": 332 }, { "x": 1201, "y": 372 }, { "x": 1212, "y": 399 }, { "x": 1218, "y": 456 }, { "x": 1211, "y": 509 }, { "x": 1198, "y": 538 }, { "x": 1187, "y": 566 }, { "x": 1170, "y": 577 }, { "x": 1151, "y": 561 }, { "x": 1134, "y": 567 }, { "x": 1123, "y": 600 }, { "x": 1118, "y": 641 }, { "x": 1106, "y": 654 }, { "x": 1096, "y": 648 }, { "x": 1102, "y": 609 }, { "x": 1099, "y": 573 }, { "x": 1091, "y": 546 }, { "x": 1095, "y": 499 }, { "x": 1080, "y": 476 }, { "x": 1065, "y": 467 }, { "x": 1063, "y": 449 }, { "x": 1077, "y": 441 }, { "x": 1098, "y": 452 }, { "x": 1106, "y": 424 }, { "x": 1105, "y": 391 }, { "x": 1111, "y": 365 }, { "x": 1107, "y": 338 }] },
+    { "id": "npc.municipality_colleague", "polygon": [{ "x": 914, "y": 255 }, { "x": 962, "y": 255 }, { "x": 962, "y": 367 }, { "x": 914, "y": 367 }] },
+    { "id": "npc.municipality_background_clerk", "polygon": [{ "x": 848, "y": 303 }, { "x": 910, "y": 303 }, { "x": 910, "y": 367 }, { "x": 848, "y": 367 }] },
+    { "id": "npc.municipality_security_officer", "polygon": [{ "x": 270, "y": 380 }, { "x": 370, "y": 364 }, { "x": 416, "y": 425 }, { "x": 420, "y": 592 }, { "x": 399, "y": 733 }, { "x": 409, "y": 838 }, { "x": 338, "y": 843 }, { "x": 284, "y": 823 }, { "x": 275, "y": 663 }, { "x": 245, "y": 533 }] }
   ]
 }

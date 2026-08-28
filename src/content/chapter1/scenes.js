@@ -200,7 +200,7 @@ const rawScenes = [
         nameKey: "exit.to_municipality",
         rect: { x: 900, y: 165, w: 230, h: 285 },
         targetSceneId: "scene.chapter1.municipality",
-        targetPosition: { x: 220, y: 505 }
+        targetPosition: { x: 250, y: 520 }
       },
       {
         id: "exit.square.to_election_booth",
@@ -698,16 +698,44 @@ const rawScenes = [
     titleKey: "scene.chapter1.municipality.title",
     palette: { sky: "#68747a", wall: "#817866", floor: "#3f413c" },
     movementSpeed: 70,
-    playerStart: { x: 220, y: 505 },
+    playerStart: { x: 260, y: 520 },
     walkPolygons: municipalityWalkGeometry.walkPolygons,
     walkMask: municipalityWalkGeometry.walkMask,
-    perspectiveScale: { horizonY: 415, bottomY: 590, far: 0.8, near: 1.1 },
+    perspectiveScale: { horizonY: 415, bottomY: 650, far: 0.8, near: 1.1 },
+    depthZones: [
+      {
+        id: "depth.chapter1.municipality.back_service_area",
+        depth: 0,
+        polygon: [
+          { x: 430, y: 410 },
+          { x: 1000, y: 410 },
+          { x: 1000, y: 500 },
+          { x: 430, y: 500 }
+        ]
+      },
+      {
+        id: "depth.chapter1.municipality.foreground",
+        depth: 0.879563182527301,
+        zDepth: 1,
+        characterHeights: { "npc.bai_mitko": 366.7 },
+        polygon: [
+          { x: 0, y: 470 },
+          { x: 430, y: 470 },
+          { x: 430, y: 500 },
+          { x: 1000, y: 500 },
+          { x: 1000, y: 470 },
+          { x: 1280, y: 470 },
+          { x: 1280, y: 720 },
+          { x: 0, y: 720 }
+        ]
+      }
+    ],
     anchors: {
-      baiMitkoSpawn: { x: 220, y: 505 },
+      baiMitkoSpawn: { x: 260, y: 520 },
       clerkCounter: { x: 820, y: 475 },
-      candidateRegister: { x: 1000, y: 455 },
+      candidateRegister: { x: 498, y: 495 },
       stampDesk: { x: 620, y: 475 },
-      archiveCabinet: { x: 1120, y: 465 },
+      archiveCabinet: { x: 1141, y: 490 },
       exit: { x: 135, y: 505 }
     },
     foregroundLayers: sceneLayerGeometry["scene.chapter1.municipality"]?.foregroundLayers || [],
@@ -821,8 +849,10 @@ const rawScenes = [
         id: "npc.municipality_clerk",
         kind: "npc",
         nameKey: "npc.municipality_clerk.name",
-        rect: { x: 735, y: 245, w: 170, h: 245 },
-        speechAnchor: { x: 820, y: 215 },
+        rect: { x: 1063, y: 308, w: 155, h: 346 },
+        speechAnchor: { x: 1152, y: 290 },
+        interactionApproach: { x: 850, y: 690 },
+        interactionFacingPoint: { x: 1150, y: 400 },
         itemRejectKey: "msg.inventory.npc_reject.municipality_clerk",
         dialogueId: "dialogue.municipality_clerk",
         lookKey: "look.npc.municipality_clerk",
@@ -840,6 +870,32 @@ const rawScenes = [
             messageKey: "msg.municipality.credentials_already_accepted"
           }
         ]
+      },
+      {
+        id: "npc.municipality_colleague",
+        kind: "npc",
+        nameKey: "npc.municipality_colleague.name",
+        rect: { x: 914, y: 255, w: 48, h: 112 },
+        speechAnchor: { x: 938, y: 245 },
+        talkKey: "talk.npc.municipality_colleague.helping",
+        lookKey: "look.npc.municipality_colleague"
+      },
+      {
+        id: "npc.municipality_background_clerk",
+        kind: "npc",
+        nameKey: "npc.municipality_background_clerk.name",
+        rect: { x: 848, y: 303, w: 62, h: 64 },
+        speechAnchor: { x: 878, y: 270 },
+        talkKey: "talk.npc.municipality_clerk.busy"
+      },
+      {
+        id: "npc.municipality_security_officer",
+        kind: "npc",
+        nameKey: "npc.municipality_security_officer.name",
+        rect: { x: 245, y: 355, w: 175, h: 488 },
+        speechAnchor: { x: 406, y: 349 },
+        talkKey: "talk.npc.municipality_security_officer.identification",
+        lookKey: "look.npc.municipality_security_officer"
       }
     ]
   },

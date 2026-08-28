@@ -3,6 +3,7 @@ import { characterHeight } from "./CharacterRenderMath.js";
 import { canExitToStop, eastWestFallbackFacing, stopExitFrameForPlayer } from "./MovementSystem.js";
 import { externalAnimationV1 } from "../content/art/externalAnimationRuntime.generated.js";
 import { intoxicationSway } from "./IntoxicationSystem.js";
+import { sceneZDepthT } from "./DepthMath.js";
 
 const PLAYER_SHADOW_FULL_SIZE_Y_OFFSET = -4;
 
@@ -75,11 +76,14 @@ export function stableExternalVisualBounds(definition) {
   };
 }
 
+export function externalFrameVisualBounds(frame, frameIndex, stableBounds = null) {
+  const bounds = frame?.sourceFrameContentBounds?.[frameIndex] || frame?.contentBounds || stableBounds;
+  if (!bounds || !Number.isFinite(bounds.h) || bounds.h <= 0) return stableBounds;
+  return bounds;
+}
+
 export function sceneZIndexForPoint(scene, point) {
-  const horizonY = Number(scene?.perspectiveScale?.horizonY ?? 0);
-  const bottomY = Number(scene?.perspectiveScale?.bottomY ?? 720);
-  const t = clamp(((point?.y ?? bottomY) - horizonY) / Math.max(1, bottomY - horizonY), 0, 1);
-  return 100 - t * 100;
+  return 100 - sceneZDepthT(scene, point) * 100;
 }
 
 export function targetZIndex(scene, target) {
@@ -722,7 +726,11 @@ export class Renderer {
     const sourceWidth = preserveFrameLayout && spriteInfo.frame ? spriteInfo.frame.frameWidth : boundsForSize?.w || spriteInfo.frame?.frameWidth || sprite.width;
     const sourceHeight = preserveFrameLayout && spriteInfo.frame ? spriteInfo.frame.frameHeight : boundsForSize?.h || spriteInfo.frame?.frameHeight || sprite.height;
     const stableBounds = preserveFrameLayout && usesExternalWalkPose(p, definition) ? stableExternalVisualBounds(definition) : null;
-    const visualHeight = stableBounds?.h || (preserveFrameLayout ? sourceHeight : boundsForSize?.h || sourceHeight);
+    const frameIndex = spriteInfo.frame
+      ? Number.isInteger(spriteInfo.staticFrameIndex) ? spriteInfo.staticFrameIndex : this.game.player.animator.frameIndex % spriteInfo.frame.frameCount
+      : 0;
+    const currentVisualBounds = stableBounds ? externalFrameVisualBounds(spriteInfo.frame, frameIndex, stableBounds) : null;
+    const visualHeight = currentVisualBounds?.h || (preserveFrameLayout ? sourceHeight : boundsForSize?.h || sourceHeight);
     const animationScale = animationRenderScale(spriteInfo.frame);
     const scale = (height / visualHeight) * animationScale;
     const width = sourceWidth * scale;
@@ -730,9 +738,6 @@ export class Renderer {
     const anchor = spriteInfo.frame?.anchor || definition.render.anchor;
     const useRealWalk = p.animation === "walk" && spriteInfo.frame;
     const verticalOffset = useRealWalk ? 0 : walkBob;
-    const frameIndex = spriteInfo.frame
-      ? Number.isInteger(spriteInfo.staticFrameIndex) ? spriteInfo.staticFrameIndex : this.game.player.animator.frameIndex % spriteInfo.frame.frameCount
-      : 0;
     const mirrored = animationRenderMirrored(spriteInfo.frame, spriteInfo.mirrored);
     const renderOffset = animationRenderOffset(spriteInfo.frame, frameIndex, mirrored);
     const renderOffsetX = stopRenderOffsetX(spriteInfo.frame, frameIndex, mirrored) + renderOffset.x;

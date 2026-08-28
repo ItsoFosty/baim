@@ -48,6 +48,8 @@ test("development home and server expose Mehana and municipality editors", () =>
     assert.match(gameSource, new RegExp(`edit=1&scene=${escapedSceneId}`));
     assert.match(serverSource, new RegExp(`"${escapedSceneId}"`));
   }
+  assert.match(gameSource, /<h2>Scene Editors<\/h2>/);
+  assert.match(gameSource, /dev-links dev-scene-editors/);
 });
 
 test("every configured scene editor provides a Back to Main control", () => {

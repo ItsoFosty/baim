@@ -75,7 +75,7 @@ this does not change his scale in any other scene.
 | `scene.chapter1.apartment` | `assets/chapter1/scenes/apartment/background.png` | integrated |
 | `scene.chapter1.village_square` | `assets/chapter1/scenes/village_square/background.png` | integrated; runtime proof, not final locked style |
 | `scene.chapter1.mehana` | `assets/chapter1/scenes/mehana/background.png` | integrated V3; separate tables, Tony, waiter, newspaper, oil, and water layers |
-| `scene.chapter1.municipality` | `assets/chapter1/scenes/municipality/background.png` | playable graybox; runtime background missing |
+| `scene.chapter1.municipality` | `assets/chapter1/scenes/municipality/background.png` | integrated V2; five-counter background with independent archive cabinet and candidate register layers |
 | `scene.chapter1.election_booth` | `assets/chapter1/scenes/election_booth/background.png` | playable graybox; runtime background missing |
 
 ## Apartment Runtime Target

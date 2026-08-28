@@ -31,6 +31,14 @@ export const assetManifest = {
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.municipality": {
+      background: "assets/chapter1/scenes/municipality/background-v9.png",
+      archiveCabinet: "assets/chapter1/scenes/municipality/archive-cabinet-v6.png",
+      candidateRegister: "assets/chapter1/scenes/municipality/candidate-register-v4.png",
+      penkaChair: "assets/chapter1/scenes/municipality/penka-chair-v1.png",
+      penkaSeated: "assets/chapter1/scenes/municipality/penka-seated-bordeaux-polka-v2.png",
+      penkaDesk: "assets/chapter1/scenes/municipality/penka-desk-v10.png",
+      securityOfficer: "assets/chapter1/scenes/municipality/policeman-security-guard-v2.png",
+      securityTable: "assets/chapter1/scenes/municipality/security-table-v6.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.election_booth": {

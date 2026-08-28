@@ -1118,8 +1118,7 @@ export class Game {
     const actionApproach = this.actionSequenceApproachPoint(actionSequence);
     if (actionApproach) {
       const rawApproach = actionApproach;
-      const approach = nearestWalkablePoint(this.currentScene, rawApproach)
-        || nearestReachableWalkablePoint(this.currentScene, this.player.position, rawApproach);
+      const approach = this.reachableTargetApproachPoint(rawApproach);
       const reachPoint = actionSequence.facingPoint || clickPoint || this.targetReachPoint(target, clickPoint) || rawApproach;
       if (actionSequence.facing) this.player.facing = actionSequence.facing;
       else this.facePoint(reachPoint);
@@ -1154,11 +1153,41 @@ export class Game {
       this.clearStatusMessage();
       return true;
     }
+    if (target.interactionApproach) {
+      const rawApproach = target.interactionApproach;
+      const approach = this.reachableTargetApproachPoint(rawApproach);
+      const reachPoint = target.interactionFacingPoint || clickPoint || this.targetReachPoint(target, clickPoint) || rawApproach;
+      this.facePoint(reachPoint);
+      this.player.interactionDebug = {
+        kind: "target",
+        targetId: target.id,
+        click: clickPoint ? { ...clickPoint } : null,
+        hand: { ...reachPoint },
+        reachOrigin: this.playerReachOriginPoint(),
+        distancePoint: { ...reachPoint },
+        reachDistance: distance(this.playerReachOriginPoint(), reachPoint),
+        feetGoal: { ...rawApproach },
+        feet: approach ? { ...approach } : null
+      };
+      if (!approach || distance(this.player.position, approach) <= TARGET_APPROACH_FEET_CANCEL_DISTANCE) return false;
+      this.player.pendingFacingPoint = { ...reachPoint };
+      this.player.pendingInteraction = {
+        target,
+        verb: this.selectedVerb,
+        hand: reachPoint,
+        approach,
+        inventoryUseItemId: this.inventoryUseItemId
+      };
+      this.walkToPoint(approach, reachPoint);
+      this.clearStatusMessage();
+      return true;
+    }
     const reachPoint = this.targetReachPoint(target, clickPoint);
     if (!reachPoint) return false;
     this.facePoint(reachPoint);
     const feetGoal = this.targetFeetApproachPoint(reachPoint);
-    const approach = nearestWalkablePoint(this.currentScene, feetGoal) || nearestWalkablePoint(this.currentScene, reachPoint);
+    const approach = this.reachableTargetApproachPoint(feetGoal)
+      || this.reachableTargetApproachPoint(reachPoint);
     const reachOrigin = this.playerReachOriginPoint();
     const distancePoint = reachPoint;
     const reachDistance = distance(reachOrigin, distancePoint);
@@ -1239,6 +1268,16 @@ export class Game {
     };
   }
 
+  reachableTargetApproachPoint(point) {
+    const nearest = nearestWalkablePoint(this.currentScene, point);
+    if (!nearest) {
+      return nearestReachableWalkablePoint(this.currentScene, this.player.position, point);
+    }
+    if (distance(this.player.position, nearest) <= TARGET_APPROACH_FEET_CANCEL_DISTANCE) return nearest;
+    if (findWalkPath(this.currentScene, this.player.position, nearest).length) return nearest;
+    return nearestReachableWalkablePoint(this.currentScene, this.player.position, point) || nearest;
+  }
+
   playerReachOriginPoint() {
     const definition = this.characterDefinitions?.["npc.bai_mitko"] || characterDefinitions["npc.bai_mitko"];
     const height = characterHeight(definition, this.currentScene, this.player.position);
@@ -1294,6 +1333,7 @@ export class Game {
       return;
     }
     if (this.selectedVerb === VERBS.TALK) {
+      if (target.talkKey && this.setNpcSpeechMessage(target, this.t(target.talkKey))) return;
       if (target.dialogueId) {
         this.dialogue.start(target.dialogueId);
         this.player.speaking = true;
@@ -2053,16 +2093,19 @@ export class Game {
       <h1>Comrade Candidate Dev</h1>
       <p>Internal development links for runtime art and animation testing.</p>
       <a class="play-link" href="./?play=1">Play Animated East/West</a>
+      <h2>Scene Editors</h2>
+      <div class="dev-links dev-scene-editors">
+        <a href="./?edit=1&scene=scene.chapter1.apartment">Bai Mitko's Room Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.village_square">Village Square Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.mehana">Mehana Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.municipality">Municipality Editor</a>
+      </div>
       <div class="dev-status-list">
         <div class="dev-status">
           <strong>External Animation v1</strong>
           <span>active Bai Mitko animation import path. East start/loop/short/stop only; west mirrors east. North/south/diagonals deferred.</span>
           <a href="./?animLab=1">Open animLab external section</a>
           <a href="./?simpleAnimTest=1">Open simple animation test</a>
-          <a href="./?edit=1&scene=scene.chapter1.apartment">Edit Bai Mitko's room</a>
-          <a href="./?edit=1&scene=scene.chapter1.village_square">Edit village square</a>
-          <a href="./?edit=1&scene=scene.chapter1.mehana">Edit Mehana</a>
-          <a href="./?edit=1&scene=scene.chapter1.municipality">Edit Municipality</a>
           <a href="./?play=1">Play with External Animation v1</a>
         </div>
       </div>
@@ -2073,10 +2116,6 @@ node tools/build-external-runtime-staging.js</pre>
       <div class="dev-links">
         <a href="./?animLab=1">Animation Lab</a>
         <a href="./?simpleAnimTest=1">Simple Animation Test</a>
-        <a href="./?edit=1&scene=scene.chapter1.apartment">Bai Mitko's Room Editor</a>
-        <a href="./?edit=1&scene=scene.chapter1.village_square">Village Square Editor</a>
-        <a href="./?edit=1&scene=scene.chapter1.mehana">Mehana Editor</a>
-        <a href="./?edit=1&scene=scene.chapter1.municipality">Municipality Editor</a>
         <a href="./?play=1">Play External Animation v1</a>
         <a href="./target/external_animation_v1/previews/walk_east_start.gif">Walk East Start GIF</a>
         <a href="./target/external_animation_v1/previews/walk_east_loop.gif">Walk East Loop GIF</a>

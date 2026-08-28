@@ -972,8 +972,13 @@ button.active {
 }
 
 .dev-home h1,
+.dev-home h2,
 .dev-home p {
   margin: 0;
+}
+
+.dev-scene-editors a {
+  font-weight: 700;
 }
 
 .dev-home a {

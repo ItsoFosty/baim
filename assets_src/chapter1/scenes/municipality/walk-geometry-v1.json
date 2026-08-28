@@ -14,10 +14,22 @@
     {
       "id": "walk.chapter1.municipality.main",
       "points": [
-        { "x": 80, "y": 430 },
-        { "x": 1180, "y": 430 },
-        { "x": 1220, "y": 590 },
-        { "x": 55, "y": 590 }
+        {
+          "x": 80,
+          "y": 430
+        },
+        {
+          "x": 1180,
+          "y": 430
+        },
+        {
+          "x": 1220,
+          "y": 590
+        },
+        {
+          "x": 55,
+          "y": 590
+        }
       ]
     }
   ],
@@ -47,21 +59,21 @@
       "................................................................",
       "................................................................",
       "................................................................",
-      "....ccccccccccccccccccccccccccccccccccccccccccccccccccccccc.....",
-      "....cccccccccccccccccccccccccccccccccccccccccccccccccccccccc....",
-      "...cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc...",
-      "...cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc...",
-      "...cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc...",
-      "...cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc...",
-      "...cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc...",
-      "...cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc...",
-      "...cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc...",
       "................................................................",
-      "................................................................",
-      "................................................................",
-      "................................................................",
-      "................................................................",
-      "................................................................"
+      ".......................cccccccccccccccccccccccccccccccccccc.....",
+      "......................ccccccccccccccccccccc.....................",
+      "........c.........cccccccccccccccccccccccc......................",
+      ".............cccccccccccccccccccccccccccc.......................",
+      ".............cccccccccccccccccccccccccccc.......................",
+      ".ccccccccccccccccccccccccccccccccccccccc........................",
+      ".cccccccccccccccccccccccccccccccccccccccc.......................",
+      ".cccccccccccccccccccccccccccccccccccccccc.......................",
+      ".cccccccccccccccccccccccccccccccccccccccc.......................",
+      ".cccccccccccccccccccccccccccccccccccccccc.................cccccc",
+      ".cccccccccccccccccccccccccccccccccccccccc..............ccccccccc",
+      ".cccccccccccccccccccccccccccccccccccccccc..............ccccccccc",
+      ".ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      ".ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
     ]
   },
   "legend": {

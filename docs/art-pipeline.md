@@ -104,8 +104,9 @@ The active Bai Mitko production path starts from the approved model sheet:
   sprite placement. Use the same constants for animation cutouts.
 - Green-removal utilities must only convert existing listed source files. Do not generate additional
   Bai Mitko poses or directions unless explicitly requested.
-- External Ludo.ai ZIP exports under `assets_src/characters/bai_mitko/external_animation_v1/` are
-  deferred review/import material until the model-sheet-driven character variables are stable.
+- Reviewed external Ludo.ai ZIP exports under
+  `assets_src/characters/bai_mitko/external_animation_v1/` are the active sprite-sheet import path.
+  New inputs must still preserve the locked model-sheet identity and approved runtime-pose family.
 
 ## AI Image Generation Use
 

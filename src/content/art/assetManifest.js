@@ -31,7 +31,7 @@ export const assetManifest = {
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.municipality": {
-      background: "assets/chapter1/scenes/municipality/background-v9.png",
+      background: "assets/chapter1/scenes/municipality/background-style-match-medium-v1.png",
       archiveCabinet: "assets/chapter1/scenes/municipality/archive-cabinet-v6.png",
       candidateRegister: "assets/chapter1/scenes/municipality/candidate-register-v4.png",
       penkaChair: "assets/chapter1/scenes/municipality/penka-chair-v1.png",

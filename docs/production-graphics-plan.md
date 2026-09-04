@@ -16,8 +16,10 @@ as the primary reference for canvas, framing, scale, lighting, rendering, green 
 weight, and face/style continuity. Do not generate new Bai Mitko runtime poses from text plus the
 model sheet alone.
 
-External/Ludo.ai animation output is deferred review material until the model-sheet-driven character
-variables are stable again.
+The reviewed Ludo.ai sprite sheets and JSON metadata under
+`assets_src/characters/bai_mitko/external_animation_v1/` are the active browser-runtime animation
+source path. The locked model sheet and approved green runtime poses remain identity/style review
+references for any new input supplied to that path.
 
 ## Recommended Stack
 
@@ -88,7 +90,8 @@ authored atlas resolution and let the runtime character renderer scale Bai Mitko
 character constants.
 
 Existing Ludo.ai ZIP exports remain under `assets_src/characters/bai_mitko/external_animation_v1/`
-as deferred review/import material. Do not treat them as the current character-design authority.
+as the active sprite-sheet import source. They are runtime motion assets, not permission to drift
+from the locked model-sheet identity when new source work is commissioned.
 
 Rive is useful for menus, logos, UI widgets, election meters, posters, and small animated signs.
 It is not the first choice for painterly full-body adventure characters.

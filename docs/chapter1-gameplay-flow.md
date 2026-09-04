@@ -105,7 +105,7 @@ takes priority over the generic NPC response only after the challenge has starte
    item recovery system remains available until assembly succeeds.
 
 This route and the remaining Step 2 sequence are playable end to end. The municipality credential check
-runs in the graybox `scene.chapter1.municipality`: arriving without the diploma gives a clear,
+runs in the painted, layered `scene.chapter1.municipality`: arriving without the diploma gives a clear,
 repeatable hint, while presenting it through dialogue or directly to the clerk persistently records
 acceptance without consuming the diploma. The player then takes the self-service municipality stamp,
 uses it on the candidate register, and may inspect the archive cabinet. The archive starts
@@ -265,6 +265,8 @@ After resolution:
 
 ## Acceptance Status
 
-The graybox gameplay milestone is complete. The automated test suite covers all three election outcomes,
-recoverable puzzle routes, bilingual finale keys, and ending persistence. A public-server playthrough has
-also reached and completed the Chapter 1 finale. Final-art acceptance remains a separate milestone.
+The graybox gameplay milestone is complete. The automated suite covers all three election outcomes,
+recoverable puzzle routes, bilingual finale keys, and ending persistence. A Playwright browser smoke
+test also runs the required diploma, municipality, ballot-box, journalist, and election path from a
+fresh save, then reloads the persisted ending. As of 2026-09-04, `npm test` passes all 201 tests.
+Final-art acceptance remains a separate milestone.

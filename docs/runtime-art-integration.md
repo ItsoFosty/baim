@@ -28,15 +28,15 @@ The service worker keeps at most 96 hashed runtime responses and 64 shell respon
 the in-memory decoded-image cache targets 256 MiB and evicts the least-recently-used optional images
 while protecting the active scene, core walking sheets, and owned inventory icons.
 
-Current measured build (2026-08-23):
+Current measured build (2026-09-04):
 
 | Payload | Transfer size | Approximate decoded size |
 | --- | ---: | ---: |
-| Playable apartment bootstrap art | 3.44 MiB | 63.58 MiB |
-| Complete current runtime art library | 20.39 MiB | 405.10 MiB |
+| Playable apartment bootstrap art | 3.58 MiB | 63.77 MiB |
+| Complete current runtime art library | 42.77 MiB | 457.18 MiB |
 | Generated animation metadata module | 0.85 MiB | n/a |
 
-At a sustained 10 Mbit/s, the bootstrap art is about 2.9 seconds of ideal wire time, before latency
+At a sustained 10 Mbit/s, the bootstrap art is about 3.0 seconds of ideal wire time, before latency
 and the metadata/module requests. The former eager 151.35 MiB animation-sheet transfer alone was
 about two minutes at that speed. Future chapters increase the manifest and cache population, not
 the reload payload: only the current working set and newly encountered content are transferred.
@@ -57,7 +57,7 @@ That scene now has the first real apartment runtime background.
 
 The village square background is also integrated and proves runtime background loading works, but it is not final locked art direction. Its layout is useful, but the final version should later be regenerated or repainted closer to the Bai Mitko model-sheet style, with less baked-in readable text and more replaceable poster/sign surfaces.
 
-The mehana now has a lighter third painted runtime pass. Its background contains the fixed architecture,
+The Mehana now uses the approved medium-cartoon character-readability V2 runtime background. Its background contains the fixed architecture,
 bar, sideboard, coat rack, cellar hatch, and old radio. Two matching bentwood-chair table groups,
 seated Tony, the standing waiter, the newspaper, and the sideboard-mounted oil and water gameplay props
 remain independent raster layers, so their scale, placement, visibility, and depth can be tuned without
@@ -68,14 +68,21 @@ Bai Mitko uses the same external animation sources as in the apartment. His meha
 calibration is set so his visual height at `anchors.baiMitkoSeat` matches his apartment spawn height;
 this does not change his scale in any other scene.
 
+The municipality uses the approved style-match medium V1 background, derived from V9 with the
+apartment and Mehana as restrained style references. Its camera, service-counter footprint, exits,
+walkable floor, and gameplay anchors remain compatible with the existing geometry and independent
+prop/character layers. The full-resolution generated source and reproducible prompt live under
+`assets_src/chapter1/scenes/municipality/`. `background-v9.png` remains untouched; rollback only
+requires changing the municipality manifest entry back to that path and rebuilding runtime assets.
+
 ## Scene Background Status
 
 | Scene ID | Runtime background | Status |
 | --- | --- | --- |
 | `scene.chapter1.apartment` | `assets/chapter1/scenes/apartment/background.png` | integrated |
 | `scene.chapter1.village_square` | `assets/chapter1/scenes/village_square/background.png` | integrated; runtime proof, not final locked style |
-| `scene.chapter1.mehana` | `assets/chapter1/scenes/mehana/background.png` | integrated V3; separate tables, Tony, waiter, newspaper, oil, and water layers |
-| `scene.chapter1.municipality` | `assets/chapter1/scenes/municipality/background.png` | integrated V2; five-counter background with independent archive cabinet and candidate register layers |
+| `scene.chapter1.mehana` | `assets/chapter1/scenes/mehana/background.png` | integrated medium-cartoon readability V2; separate tables, Tony, waiter, newspaper, oil, and water layers |
+| `scene.chapter1.municipality` | `assets/chapter1/scenes/municipality/background-style-match-medium-v1.png` | approved style-match medium V1; independent archive/register, Penka chair/character/desk, and security officer/table layers; previous V9 remains available for rollback |
 | `scene.chapter1.election_booth` | `assets/chapter1/scenes/election_booth/background.png` | playable graybox; runtime background missing |
 
 ## Apartment Runtime Target
@@ -150,11 +157,14 @@ The model sheet remains source direction:
 assets_src/characters/bai-mitko-model-sheet-v1.png
 ```
 
-Next character-art task:
+Remaining character-art work:
 
 ```text
-Bai Mitko walk/talk/look/use/take animation pass
+Bai Mitko look/use and puzzle-specific actions; north/south movement remains deferred
 ```
+
+The active external set already includes east walk start/loop/short/stop, six idle variants, three
+talk variants, rejection, and take. West mirrors the east-authored sheets.
 
 ## Starting Inventory Icons
 
@@ -164,6 +174,8 @@ Integrated runtime icons:
 assets/chapter1/items/accordion.png
 assets/chapter1/items/unpaid_bills.png
 assets/chapter1/items/empty_envelope.png
+assets/chapter1/items/sunflower-oil-v1.png
+assets/chapter1/items/glass-of-water-v1.png
 ```
 
 If an icon is missing, the inventory UI keeps the existing text-label fallback box.
@@ -205,9 +217,12 @@ The active mehana manifest entry is:
 }
 ```
 
-Missing assets are omitted from the manifest so preload does not generate expected 404 responses.
-Municipality and election-booth backgrounds remain omitted and use the renderer's intentional
-debug-art fallback until their directions are approved.
+The active municipality manifest entry also includes its painted background and eight independent
+scene layers (`archiveCabinet`, `candidateRegister`, `penkaChair`, `penkaSeated`, `penkaDesk`,
+`securityOfficer`, `securityTable`, and the shared dropped-item pile). Missing assets are omitted from
+the manifest so preload does not generate expected 404 responses. The election-booth background
+remains omitted and uses the renderer's intentional debug-art fallback until its direction is
+approved.
 
 The renderer resolves these paths relative to `index.html`.
 
@@ -346,9 +361,9 @@ resampling the approved runtime asset for every placement adjustment.
 
 - Fine hotspot tuning should be done with `Shift+G` in browser.
 - Apartment foreground occlusion is not split yet; later split objects such as the table/chairs, accordion chair, and door frame if needed.
-- The municipality is playable as a geometry graybox with the clerk, stamp desk, candidate register,
-  archive cabinet, and square return route. It still needs a reviewed runtime background and tuned
-  object geometry once that art exists.
+- The municipality painted background, independent props and characters, raster walk mask, depth
+  zones, object geometry, and square return route are integrated. Further work belongs to the
+  broader visual-direction and polish pass rather than the technical scene milestone.
 - The election booth is playable as a geometry graybox with a final-commitment interaction and three
   persistent outcomes. It still needs its reviewed background, commission presentation, and tuned
   geometry once that art exists.

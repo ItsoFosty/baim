@@ -33,9 +33,14 @@ if ("serviceWorker" in navigator && window.isSecureContext) {
 }
 
 const game = new Game(canvas, uiRoot);
+const params = new URLSearchParams(window.location.search);
 
-if (new URLSearchParams(window.location.search).get("animationFit") === "1") {
+if (params.get("animationFit") === "1") {
   window.__comradeCandidateAnimationFit = { game };
 }
 
-game.start();
+const startPromise = game.start();
+
+if (params.get("testHarness") === "1") {
+  window.__comradeCandidateTest = { game, ready: startPromise };
+}

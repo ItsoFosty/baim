@@ -2093,6 +2093,9 @@ export class Game {
       <h1>Comrade Candidate Dev</h1>
       <p>Internal development links for runtime art and animation testing.</p>
       <a class="play-link" href="./?play=1">Play Animated East/West</a>
+      <div class="dev-links">
+        <a href="./docs/chapter1-storyboard.html">Chapter 1 Storyboard / Сториборд — Глава 1</a>
+      </div>
       <h2>Scene Editors</h2>
       <div class="dev-links dev-scene-editors">
         <a href="./?edit=1&scene=scene.chapter1.apartment">Bai Mitko's Room Editor</a>

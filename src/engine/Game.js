@@ -2557,6 +2557,7 @@ node tools/build-external-runtime-staging.js</pre>
       panel.appendChild(line);
     }
     if (node.entries?.length) {
+      panel.classList.add("dialogue-panel-with-entries");
       const entries = element("div", "dialogue-menu-entries");
       for (const entry of node.entries) {
         const row = document.createElement(entry.kind === "heading" ? "h3" : "p");

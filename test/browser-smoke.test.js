@@ -53,6 +53,35 @@ test("browser completes the required Chapter 1 path and restores the ending afte
       chapter1Completed: false
     });
 
+    await t.test("square menu stays readable and can be closed in both languages at different viewport sizes", async () => {
+      for (const viewport of [{ width: 1280, height: 720 }, { width: 640, height: 360 }, { width: 390, height: 844 }]) {
+        await page.setViewportSize(viewport);
+        for (const language of ["bg", "en"]) {
+          await page.evaluate(async (language) => {
+            const { game } = window.__comradeCandidateTest;
+            await game.changeScene("scene.chapter1.village_square");
+            game.localization.setLanguage(language);
+            game.useTarget(game.currentScene.interactables.find((entry) => entry.id === "hotspot.square.mehana_menu"));
+            game.renderUi();
+          }, language);
+          const close = page.locator(".dialogue-choice-list button");
+          const panelBounds = await page.locator(".dialogue-panel").boundingBox();
+          const closeBounds = await close.boundingBox();
+          assert.ok(closeBounds.y >= panelBounds.y);
+          assert.ok(closeBounds.y + closeBounds.height <= panelBounds.y + panelBounds.height);
+          await page.locator(".dialogue-menu-entries p").last().scrollIntoViewIfNeeded();
+          await close.click({ timeout: 2000 });
+          assert.equal(await page.locator(".dialogue-panel").count(), 0);
+          assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.dialogue.current), null);
+          assert.equal(await page.locator(".game-hud").count(), 1);
+        }
+      }
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.evaluate(async () => {
+        await window.__comradeCandidateTest.game.changeScene("scene.chapter1.apartment");
+      });
+    });
+
     const beforeInterview = await page.evaluate(async () => {
       const { game } = window.__comradeCandidateTest;
       const find = (entries, id) => entries.find((entry) => entry.id === id);

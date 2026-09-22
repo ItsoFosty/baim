@@ -91,6 +91,11 @@ test("the recovered ballot box reveals a completable journalist encounter and po
   };
   assert.equal(requirementsMet(journalist.requirements, context), true);
   assert.equal(requirementsMet(electionExit.requirements, context), false);
+  assert.equal(electionExit.debugVisual, undefined);
+  const sign = square.foregroundLayers.find(layer => layer.asset === "electionSign");
+  assert.equal(sign.visibleWhenTargetId, electionExit.id);
+  assert.notEqual(findTargetAt(square, { x: 290, y: 520 }, target =>
+    requirementsMet(target.requirements, context))?.id, electionExit.id);
   assert.equal(findTargetAt(square, { x: 290, y: 350 }, (target) => (
     requirementsMet(target.requirements, context)
   )).id, "hotspot.square.election_notice");
@@ -101,7 +106,7 @@ test("the recovered ballot box reveals a completable journalist encounter and po
   }
   assert.equal(context.state.journalistInterviewCompleted, true);
   assert.equal(requirementsMet(electionExit.requirements, context), true);
-  assert.equal(findTargetAt(square, { x: 290, y: 350 }, (target) => (
+  assert.equal(findTargetAt(square, { x: 290, y: 520 }, (target) => (
     requirementsMet(target.requirements, context)
   )).id, "exit.square.to_election_booth");
 });

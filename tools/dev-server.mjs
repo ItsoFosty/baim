@@ -14,6 +14,15 @@ const serverOptions = secure ? {
   cert: readFileSync(process.env.TLS_CERT || join(root, "target/server/localhost-cert.pem"))
 } : undefined;
 const editorScenes = {
+  "scene.chapter1.archive": {
+    objectGeometryPath: "assets_src/chapter1/scenes/archive/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/archive/layers.json"
+  },
+  "scene.chapter1.mayor_office": {
+    walkGeometryPath: "assets_src/chapter1/scenes/mayor_office/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/mayor_office/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/mayor_office/layers.json"
+  },
   "scene.chapter1.apartment": {
     walkGeometryPath: "assets_src/chapter1/scenes/apartment/walk-geometry-v1.json",
     objectGeometryPath: "assets_src/chapter1/scenes/apartment/object-geometry-v1.json",
@@ -43,6 +52,7 @@ const types = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".webmanifest": "application/manifest+json; charset=utf-8",
+  ".pdf": "application/pdf",
   ".png": "image/png",
   ".webp": "image/webp",
   ".jpg": "image/jpeg",
@@ -111,7 +121,7 @@ function handleEditorSave(req, res) {
       const saveScope = String(payload.saveScope || "all");
       if (!["walk", "objects", "layers", "actions", "all"].includes(saveScope)) throw new Error(`Unknown editor save scope: ${saveScope}`);
       const savedScopes = [];
-      if (saveScope === "walk" || saveScope === "all") {
+      if ((saveScope === "walk" || saveScope === "all") && config.walkGeometryPath) {
         validateWalkGeometry(payload.walkGeometry);
         writeKnownJson(config.walkGeometryPath, payload.walkGeometry);
         runBuild("tools/build-walk-masks.js");

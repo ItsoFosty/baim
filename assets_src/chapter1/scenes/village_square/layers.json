@@ -25,6 +25,49 @@
       "top": 330,
       "left": 325,
       "height": 122
+    },
+    {
+      "id": "layer.square.old_men_chorus",
+      "enabled": true,
+      "asset": "oldMenChorusSeated",
+      "output": "assets/chapter1/characters/old_men_chorus/seated-pair-v1.png",
+      "zIndex": 91,
+      "top": 322,
+      "left": 488,
+      "height": 99
+    },
+    {
+      "id": "layer.square.poster_before",
+      "enabled": true,
+      "asset": "posterBefore",
+      "output": "assets/chapter1/scenes/village_square/poster-before-v1.png",
+      "left": 1082,
+      "top": 238,
+      "zIndex": 100,
+      "hiddenWhenFlag": "campaignPosted"
+    },
+    {
+      "id": "layer.square.journalist",
+      "asset": "journalistStanding",
+      "output": "assets/chapter1/characters/journalist/standing-v2.png",
+      "enabled": true,
+      "left": 930,
+      "top": 305,
+      "height": 220,
+      "zIndex": 46,
+      "hiddenWhenState": "chapter1Completed",
+      "visibleWhenTargetId": "npc.journalist"
+    },
+    {
+      "id": "layer.square.election_sign",
+      "enabled": true,
+      "asset": "electionSign",
+      "output": "assets/chapter1/scenes/village_square/election-sign-v1.png",
+      "left": 205,
+      "top": 448,
+      "width": 190,
+      "zIndex": 30,
+      "visibleWhenTargetId": "exit.square.to_election_booth"
     }
   ]
 }

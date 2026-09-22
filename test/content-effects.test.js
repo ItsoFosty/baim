@@ -1,3 +1,4 @@
+import { registerRule } from "../src/content/chapter1/registration.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { applyEffects, firstMatchingRule, requirementsMet } from "../src/engine/EffectSystem.js";
@@ -159,7 +160,7 @@ test("fake diploma vertical slice combines recoverable authored inventory compon
   assert.equal(inventory.has("item.fake_diploma"), true);
   assert.equal(state.hasFakeDiploma, true);
   assert.equal(state.suspicion, 4);
-  assert.deepEqual(completed, ["quest.chapter1.fake_diploma"]);
+  assert.deepEqual(completed, []);
 });
 
 test("fake diploma quest exposes its collection and assembly stages in order", () => {
@@ -198,34 +199,34 @@ test("apartment bills cannot respawn after diploma assembly consumes the invento
   }), false);
 });
 
-test("the municipality clerk accepts but does not consume the fake diploma", () => {
+test("the municipality clerk checks but does not register an unstamped diploma", () => {
   const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
   const clerk = municipality.npcs.find((npc) => npc.id === "npc.municipality_clerk");
   const inventory = inventoryWith("item.fake_diploma");
-  const state = { flags: {} };
+  const state = { flags: {}, chapter1Completed: false };
   const context = { state, inventory };
   const credentialRule = firstMatchingRule(
     clerk.itemUseRules.filter((rule) => rule.itemId === "item.fake_diploma"),
     context
   );
 
-  assert.equal(credentialRule.messageKey, "msg.municipality.credentials_accepted");
+  assert.equal(credentialRule.messageKey, "registration.clerk_rejects");
   applyEffects(credentialRule.effects, context);
   assert.equal(state.flags.municipalityCredentialsAccepted, true);
   assert.equal(inventory.has("item.fake_diploma"), true);
   assert.equal(firstMatchingRule(
     clerk.itemUseRules.filter((rule) => rule.itemId === "item.fake_diploma"),
     context
-  ).messageKey, "msg.municipality.credentials_already_accepted");
+  ).messageKey, "registration.clerk_rejects");
 });
 
 test("municipality dialogue exposes a recoverable credentials check", () => {
   const dialogue = chapter1.dialogues.find((candidate) => candidate.id === "dialogue.municipality_clerk");
   const choices = dialogue.nodes.start.choices;
-  const withoutDiploma = { state: { flags: {} }, inventory: inventoryWith() };
-  const withDiploma = { state: { flags: {} }, inventory: inventoryWith("item.fake_diploma") };
-  const missingChoice = choices.find((choice) => choice.textKey === "dialogue.municipality_clerk.choice.ask_registration");
-  const presentChoice = choices.find((choice) => choice.textKey === "dialogue.municipality_clerk.choice.present_credentials");
+  const withoutDiploma = { state: { flags: {}, chapter1Completed: false }, inventory: inventoryWith() };
+  const withDiploma = { state: { flags: {}, chapter1Completed: false }, inventory: inventoryWith("item.fake_diploma") };
+  const missingChoice = choices.find((choice) => choice.textKey === "registration.need" && requirementsMet(choice.requirements, withoutDiploma));
+  const presentChoice = choices.find((choice) => choice.textKey === "registration.present" && !choice.requirements.flags);
 
   assert.equal(requirementsMet(missingChoice.requirements, withoutDiploma), true);
   assert.equal(requirementsMet(presentChoice.requirements, withoutDiploma), false);
@@ -234,7 +235,7 @@ test("municipality dialogue exposes a recoverable credentials check", () => {
   assert.equal(withDiploma.state.flags.municipalityCredentialsAccepted, true);
 });
 
-test("municipality stamp and archive sequence starts the ballot-box quest", () => {
+test("Mayor-validated diploma enables clerk registration then the archive clue", () => {
   const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
   const register = municipality.interactables.find(
     (target) => target.id === "hotspot.municipality.candidate_register"
@@ -242,58 +243,43 @@ test("municipality stamp and archive sequence starts the ballot-box quest", () =
   const archive = municipality.interactables.find(
     (target) => target.id === "hotspot.municipality.archive_cabinet"
   );
-  const inventory = inventoryWith("item.municipality_stamp");
+  const inventory = inventoryWith("item.municipality_stamp", "item.fake_diploma");
   const state = {
     hasMunicipalityStamp: true,
+    chapter1Completed: false,
     hasBallotBox: false,
-    flags: { municipalityCredentialsAccepted: true }
+    flags: { municipalityCredentialsAccepted: true, mayorDiplomaStamped: true }
   };
   const started = [];
   const context = {
     state,
     inventory,
-    quests: { start: (questId) => started.push(questId) }
+    quests: { start: (questId) => started.push(questId), complete() {} }
   };
 
   const stamp = firstMatchingRule(register.itemUseRules, context);
   assert.equal(stamp.itemId, "item.municipality_stamp");
   applyEffects(stamp.effects, context);
-  assert.equal(inventory.has("item.municipality_stamp"), false);
-  assert.equal(state.hasMunicipalityStamp, false);
+  assert.equal(inventory.has("item.municipality_stamp"), true);
+  assert.equal(state.flags.candidateRegistrationStamped, undefined);
+  applyEffects(registerRule.effects, context);
   assert.equal(state.flags.candidateRegistrationStamped, true);
 
   const clue = firstMatchingRule(archive.useRules, context);
-  assert.equal(clue.messageKey, "msg.municipality.ballot_box_clue");
+  assert.equal(clue.sceneTransition.sceneId, "scene.chapter1.archive");
   applyEffects(clue.effects, context);
   assert.equal(state.flags.ballotBoxArchiveClue, true);
-  assert.deepEqual(started, ["quest.chapter1.ballot_box"]);
+  assert.deepEqual([...new Set(started)], ["quest.chapter1.ballot_box"]);
 
   const quest = chapter1.quests.find((candidate) => candidate.id === "quest.chapter1.ballot_box");
   assert.equal(firstMatchingRule(quest.stages, context).id, "stage.ballot_box.follow_archive_clue");
 });
 
-test("the archive clue reveals a recoverable ballot box in the Mehana", () => {
-  const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
-  const hatch = mehana.interactables.find((target) => target.id === "hotspot.mehana.cellar_hatch");
-  const ballotBox = mehana.interactables.find((target) => target.id === "hotspot.mehana.ballot_box");
-  const state = {
-    hasBallotBox: false,
-    flags: { ballotBoxArchiveClue: true }
-  };
-  const completed = [];
-  const context = {
-    state,
-    inventory: inventoryWith(),
-    quests: { complete: (questId) => completed.push(questId) }
-  };
-
-  const openHatch = firstMatchingRule(hatch.useRules, context);
-  assert.equal(openHatch.messageKey, "msg.mehana.cellar_opened");
-  applyEffects(openHatch.effects, context);
-  assert.equal(requirementsMet(ballotBox.requirements, context), true);
-  applyEffects(ballotBox.takeEffects, context);
-  assert.equal(state.flags.ballotBoxRecovered, true);
-  assert.deepEqual(completed, ["quest.chapter1.ballot_box"]);
+test("legacy cellar flags cannot expose a second ballot box", () => {
+  const mehana = chapter1.scenes.find(scene => scene.id === "scene.chapter1.mehana");
+  const box = mehana.interactables.find(target => target.id === "hotspot.mehana.ballot_box");
+  assert.equal(requirementsMet(box.requirements, { state: { hasBallotBox: false, flags: { mehanaCellarOpened: true, ballotBoxArchiveClue: true } } }), false);
+  assert.equal(box.takeItemId, undefined);
 });
 
 test("Tony quest exposes one outstanding objective for each unresolved puzzle stage", () => {
@@ -439,115 +425,6 @@ test("Mehana waiter asks for here or to go before serving every order", () => {
   assert.equal(takeawayState.rakiaGlasses, 0);
 });
 
-test("Baba accepts early oil but requires village wine after three cheap offers", () => {
-  const baba = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.baba_stoyanka");
-  const waiter = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.mehana_waiter");
-  const choice = (textKey, predicate = () => true) => baba.nodes.start.choices
-    .find((candidate) => candidate.textKey === textKey && predicate(candidate));
-  const earlyOil = choice("dialogue.baba.choice.offer_oil", (candidate) => candidate.effect.requirements.stateMax);
-  const lateOil = choice("dialogue.baba.choice.offer_oil", (candidate) => candidate.effect.requirements.stateMin);
-  const earlyWine = choice("dialogue.baba.choice.offer_wine", (candidate) => candidate.effect.requirements.notFlags);
-  const repairWine = choice("dialogue.baba.choice.offer_wine", (candidate) => candidate.effect.requirements.flags);
-
-  const earlyInventory = inventoryWith("item.sunflower_oil");
-  const earlyState = {
-    flags: {}, babaCheapOfferAttempts: 2, babaStoyankaVote: false, babaTrust: "neutral",
-    influence: 0, suspicion: 0, publicMood: 50
-  };
-  const earlyCompleted = [];
-  assert.equal(requirementsMet(earlyOil.effect.requirements, { state: earlyState, inventory: earlyInventory }), true);
-  applyEffects(earlyOil.effect.effects, {
-    state: earlyState,
-    inventory: earlyInventory,
-    quests: { start() {}, complete: (questId) => earlyCompleted.push(questId) }
-  });
-  assert.equal(earlyInventory.has("item.sunflower_oil"), false);
-  assert.equal(earlyState.babaStoyankaVote, true);
-  assert.equal(earlyState.babaTrust, "traditional");
-  assert.deepEqual(earlyCompleted, ["quest.chapter1.baba_vote"]);
-
-  const lateInventory = inventoryWith(
-    "item.unpaid_bills", "item.glass_of_water", "item.shopska_salad", "item.sunflower_oil"
-  );
-  const lateState = {
-    flags: {}, babaCheapOfferAttempts: 0, babaStoyankaVote: false, babaTrust: "neutral",
-    influence: 0, suspicion: 0, publicMood: 50
-  };
-  const started = [];
-  const completed = [];
-  const context = {
-    state: lateState,
-    inventory: lateInventory,
-    quests: {
-      start: (questId) => started.push(questId),
-      complete: (questId) => completed.push(questId)
-    }
-  };
-  for (const textKey of [
-    "dialogue.baba.choice.offer_bills",
-    "dialogue.baba.choice.offer_water",
-    "dialogue.baba.choice.offer_shopska"
-  ]) {
-    const cheapOffer = choice(textKey);
-    assert.equal(requirementsMet(cheapOffer.effect.requirements, context), true);
-    applyEffects(cheapOffer.effect.effects, context);
-  }
-  assert.equal(lateState.babaCheapOfferAttempts, 3);
-  assert.equal(requirementsMet(earlyOil.effect.requirements, context), false);
-  assert.equal(requirementsMet(lateOil.effect.requirements, context), true);
-  applyEffects(lateOil.effect.effects, context);
-  assert.equal(lateInventory.has("item.sunflower_oil"), true);
-  assert.equal(lateState.flags.babaRequiresBetterGift, true);
-
-  const wineOrder = waiter.nodes.start.choices
-    .find((candidate) => candidate.textKey === "dialogue.waiter.choice.village_wine");
-  assert.equal(wineOrder.requirements, undefined);
-  assert.equal(requirementsMet(wineOrder.requirements, context), true);
-  const takeawayWine = waiter.nodes[wineOrder.next].choices
-    .find((candidate) => candidate.textKey === "dialogue.waiter.choice.to_go");
-  applyEffects(takeawayWine.effect.effects, context);
-  assert.equal(lateInventory.has("item.village_wine"), true);
-
-  assert.equal(requirementsMet(earlyWine.effect.requirements, context), false);
-  assert.equal(requirementsMet(repairWine.effect.requirements, context), true);
-  applyEffects(repairWine.effect.effects, context);
-  assert.equal(lateInventory.has("item.village_wine"), false);
-  assert.equal(lateState.babaStoyankaVote, true);
-  assert.equal(lateState.babaTrust, "transactional");
-  assert.deepEqual(completed, ["quest.chapter1.baba_vote"]);
-  assert.ok(started.length >= 4);
-});
-
-test("Kiro always sells village wine and Baba reacts to early wine and rakia offers", () => {
-  const baba = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.baba_stoyanka");
-  const waiter = chapter1.dialogues.find((dialogue) => dialogue.id === "dialogue.mehana_waiter");
-  const choices = baba.nodes.start.choices;
-  const rakiaOffer = choices.find((choice) => choice.textKey === "dialogue.baba.choice.offer_rakia");
-  const earlyWineOffer = choices.find((choice) => (
-    choice.textKey === "dialogue.baba.choice.offer_wine" && choice.effect.requirements.notFlags
-  ));
-  const wineOrder = waiter.nodes.start.choices
-    .find((choice) => choice.textKey === "dialogue.waiter.choice.village_wine");
-  const inventory = inventoryWith("item.rakia", "item.village_wine");
-  const state = {
-    flags: {}, babaStoyankaVote: false, babaCheapOfferAttempts: 0, suspicion: 0
-  };
-  const context = { state, inventory, quests: { start() {} } };
-
-  assert.equal(wineOrder.requirements, undefined);
-  assert.equal(requirementsMet(rakiaOffer.effect.requirements, context), true);
-  assert.equal(requirementsMet(earlyWineOffer.effect.requirements, context), true);
-
-  applyEffects(rakiaOffer.effect.effects, context);
-  assert.equal(state.flags.babaRejectedRakia, true);
-  assert.equal(inventory.has("item.rakia"), true);
-  assert.equal(rakiaOffer.effect.messageKey, "msg.baba.reject_rakia");
-
-  applyEffects(earlyWineOffer.effect.effects, context);
-  assert.equal(inventory.has("item.village_wine"), true);
-  assert.equal(earlyWineOffer.effect.messageKey, "msg.baba.reject_early_wine");
-});
-
 test("every takeaway Mehana purchase can be offered to each authored NPC", () => {
   const purchases = ["item.rakia", "item.shopska_salad", "item.tripe_soup", "item.village_wine"];
   const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
@@ -566,92 +443,6 @@ test("every takeaway Mehana purchase can be offered to each authored NPC", () =>
       );
     }
   }
-});
-
-test("inventory offers to Baba preserve the existing cheap-offer and recovery logic", () => {
-  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
-  const baba = square.npcs.find((npc) => npc.id === "npc.baba_stoyanka");
-  const inventory = inventoryWith(
-    "item.shopska_salad", "item.tripe_soup", "item.rakia", "item.sunflower_oil", "item.village_wine"
-  );
-  const state = {
-    flags: {},
-    babaStoyankaVote: false,
-    babaCheapOfferAttempts: 0,
-    babaTrust: "neutral",
-    influence: 0,
-    suspicion: 0,
-    publicMood: 50
-  };
-  const completed = [];
-  const context = {
-    state,
-    inventory,
-    quests: { start() {}, complete: (questId) => completed.push(questId) }
-  };
-  const offer = (itemId) => firstMatchingRule(
-    baba.itemUseRules.filter((rule) => rule.itemId === itemId),
-    context
-  );
-
-  for (const itemId of ["item.shopska_salad", "item.tripe_soup"]) {
-    const rejection = offer(itemId);
-    assert.ok(rejection.reject);
-    applyEffects(rejection.effects, context);
-    assert.equal(inventory.has(itemId), true);
-  }
-  assert.equal(state.babaCheapOfferAttempts, 2);
-
-  const rakiaRejection = offer("item.rakia");
-  applyEffects(rakiaRejection.effects, context);
-  assert.equal(inventory.has("item.rakia"), true);
-  assert.equal(state.babaCheapOfferAttempts, 2);
-
-  const earlyOil = offer("item.sunflower_oil");
-  assert.equal(earlyOil.messageKey, "msg.baba.accept_oil");
-  applyEffects(earlyOil.effects, context);
-  assert.equal(state.babaStoyankaVote, true);
-  assert.equal(inventory.has("item.sunflower_oil"), false);
-  assert.deepEqual(completed, ["quest.chapter1.baba_vote"]);
-});
-
-test("Baba's inventory-targeted late-oil route remains recoverable with village wine", () => {
-  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
-  const baba = square.npcs.find((npc) => npc.id === "npc.baba_stoyanka");
-  const inventory = inventoryWith("item.sunflower_oil", "item.village_wine");
-  const state = {
-    flags: {},
-    babaStoyankaVote: false,
-    babaCheapOfferAttempts: 3,
-    babaTrust: "neutral",
-    influence: 0,
-    suspicion: 0,
-    publicMood: 50
-  };
-  const completed = [];
-  const context = {
-    state,
-    inventory,
-    quests: { start() {}, complete: (questId) => completed.push(questId) }
-  };
-  const offer = (itemId) => firstMatchingRule(
-    baba.itemUseRules.filter((rule) => rule.itemId === itemId),
-    context
-  );
-
-  const lateOil = offer("item.sunflower_oil");
-  assert.equal(lateOil.messageKey, "msg.baba.reject_late_oil");
-  applyEffects(lateOil.effects, context);
-  assert.equal(inventory.has("item.sunflower_oil"), true);
-  assert.equal(state.flags.babaRequiresBetterGift, true);
-
-  const repairWine = offer("item.village_wine");
-  assert.equal(repairWine.messageKey, "msg.baba.accept_wine");
-  applyEffects(repairWine.effects, context);
-  assert.equal(inventory.has("item.village_wine"), false);
-  assert.equal(state.babaStoyankaVote, true);
-  assert.equal(state.babaTrust, "transactional");
-  assert.deepEqual(completed, ["quest.chapter1.baba_vote"]);
 });
 
 test("self-use rules consume refreshments and adjust intoxication in the intended direction", () => {
@@ -712,13 +503,13 @@ test("Baba dialogue exposes a first-conversation choice that starts her vote que
   const startChoice = baba.nodes.start.choices
     .find((choice) => choice.textKey === "dialogue.baba.choice.ask_vote");
   const started = [];
-  const state = { flags: {}, babaStoyankaVote: false };
+  const state = { flags: {}, babaStoyankaVote: false, chapter1Completed: false };
 
   assert.ok(startChoice);
   assert.equal(requirementsMet(startChoice.requirements, { state }), true);
   applyEffects(startChoice.effect.effects, {
     state,
-    quests: { start: (questId) => started.push(questId) }
+    quests: { start: (questId) => started.push(questId), complete() {} }
   });
 
   assert.deepEqual(started, ["quest.chapter1.baba_vote"]);

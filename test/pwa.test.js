@@ -43,7 +43,7 @@ test("start and pause menus scroll inside the logical game viewport", () => {
 test("development home and server expose Mehana and municipality editors", () => {
   const gameSource = readFileSync("src/engine/Game.js", "utf8");
   const serverSource = readFileSync("tools/dev-server.mjs", "utf8");
-  for (const sceneId of ["scene.chapter1.mehana", "scene.chapter1.municipality"]) {
+  for (const sceneId of ["scene.chapter1.mehana", "scene.chapter1.municipality", "scene.chapter1.mayor_office", "scene.chapter1.archive"]) {
     const escapedSceneId = sceneId.replaceAll(".", "\\.");
     assert.match(gameSource, new RegExp(`edit=1&scene=${escapedSceneId}`));
     assert.match(serverSource, new RegExp(`"${escapedSceneId}"`));

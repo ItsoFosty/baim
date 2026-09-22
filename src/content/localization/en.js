@@ -1,4 +1,19 @@
+import { archiveEn } from "./chapter1Archive.js";
+import { registrationEn } from "./chapter1Registration.js";
+import { campaignEn } from "./chapter1Campaign.js";
+import { fountainEn } from "./chapter1Fountain.js";
+
 export const en = {
+  ...archiveEn,
+  ...registrationEn,
+  ...campaignEn,
+  ...fountainEn,
+  "scene.chapter1.mayor_office.title": "Mayor’s Office",
+  "exit.to_mayor_office": "Mayor’s Office",
+  "office.mayor.name": "The Mayor",
+  "office.mayor.look": "The Mayor, standing beside his desk.",
+  "office.desk.name": "Mayor’s desk",
+  "office.desk.look": "Official papers, a telephone and the Mayor’s stamp.",
   "game.title": "Comrade Candidate",
   "chapter1.title": "Election Day in the Village",
   "scene.chapter1.apartment.title": "Bai Mitko's Apartment",
@@ -220,7 +235,7 @@ export const en = {
   "msg.mehana.village_wine_to_go": "Kiro hands over an unlabelled bottle. This keeps the contents politically independent.",
   "msg.oil_used": "Bai Mitko drank the oil with the expression of a man investing in the future.",
   "msg.accordion_tony": "Tony closed his eyes and joined in harmony. A waitress from 1998 had temporarily suspended supervision of the glass.",
-  "msg.accordion_baba_before_vote": "Baba Stoyanka: That took me back to a village dance, when my knees still had quorum. Lovely playing, but my vote needs something that belongs in a cooking pot.",
+  "msg.accordion_baba_before_vote": "Baba Stoyanka: That took me back to a village dance, when my knees still had quorum. Lovely playing. Now make the fountain sing too.",
   "msg.accordion_baba_after_vote": "Baba Stoyanka: Play now. You already have my vote, but my youth still owes me one dance.",
   "msg.accordion_kiro": "Kiro: Keep playing and I charge for live music. Stop and I charge a quietness fee.",
   "msg.accordion_animal": "The animal listened, tilted its head, and declined to disclose its political preferences.",
@@ -241,12 +256,9 @@ export const en = {
   "msg.municipality.register_stamped": "THUNK. The register now believes in Bai Mitko more strongly than most voters do.",
   "msg.municipality.register_ready": "The entry is stamped. The ink has granted it administrative reality.",
   "msg.municipality.archive_credentials_first": "The archive cabinet refuses informal relationships. Candidate credentials come first.",
-  "msg.municipality.archive_stamp_first": "Penka: Archive access requires a stamped register. Otherwise you might learn something unofficially.",
-  "msg.municipality.ballot_box_clue": [
-    "The archive ledger says the ballot box was moved to the Mehana cellar as ‘temporary transparent storage’.",
-    "A later note adds: ‘Do not place pickle jars inside before Election Day.’ The note is underlined twice."
-  ],
-  "msg.municipality.ballot_box_clue_repeat": "The archive still points to the Mehana cellar. Bureaucracy has finally produced a direction.",
+  "msg.municipality.archive_stamp_first": "Penka: First bring me the diploma validated by the Mayor. Once I register you, you can check the archive.",
+  "msg.municipality.ballot_box_clue": "The ballot box is in this archive cabinet, filed under transparent containers for seasonal use.",
+  "msg.municipality.ballot_box_clue_repeat": "The ballot box is filed in the municipal archive under transparent seasonal containers.",
   "msg.mehana.cellar_no_reason": "Bai Mitko has no official reason to inspect Kiro's cellar. Personal curiosity has standards.",
   "msg.mehana.cellar_opened": "The hatch opens. Behind two pickle jars sits the missing ballot box, preserving democracy at room temperature.",
   "msg.mehana.cellar_already_open": "The cellar is open. The pickles remain under informal supervision.",
@@ -256,9 +268,9 @@ export const en = {
   "quest.chapter1.main.title": "Become Mayor before your creditors find you.",
   "quest.chapter1.fake_diploma.title": "Create a diploma impressive enough for voters who never read diplomas.",
   "quest.chapter1.fake_diploma.stage.collect_official_paper": "Find paper that already looks sufficiently official.",
-  "quest.chapter1.fake_diploma.stage.collect_envelope": "Find an envelope with administrative potential.",
-  "quest.chapter1.fake_diploma.stage.assemble": "Combine the unpaid bills with the empty envelope.",
-  "quest.chapter1.baba_vote.title": "Convince Baba Stoyanka that your corruption is at least traditional.",
+  "quest.chapter1.fake_diploma.stage.collect_envelope": "Take the bills to the kiosk for a diploma, or find an empty envelope there to assemble one yourself.",
+  "quest.chapter1.fake_diploma.stage.assemble": "Give the bills to the kiosk, or combine them with the empty envelope.",
+  "quest.chapter1.baba_vote.title": "Repair the fountain and earn Baba Stoyanka's support.",
   "quest.chapter1.tony_vote.title": "Win Tony the Fridge's support without losing consciousness.",
   "quest.chapter1.tony_vote.stage.accept_challenge": "Accept Tony the Fridge's drinking challenge.",
   "quest.chapter1.tony_vote.stage.distract": "Find a way to distract Tony during the challenge.",
@@ -268,7 +280,7 @@ export const en = {
   "quest.chapter1.journalist.stage.find_reporter": "Return to the square and find the journalist by the election notice.",
   "quest.chapter1.journalist.stage.finish_interview": "Finish the interview before the facts arrive.",
   "quest.chapter1.ballot_box.title": "Find the missing ballot box before someone ferments democracy.",
-  "quest.chapter1.ballot_box.stage.follow_archive_clue": "Follow the archive clue to the Mehana cellar.",
+  "quest.chapter1.ballot_box.stage.follow_archive_clue": "Inspect the jammed drawer; use the accordion strap to open it.",
 
   "dialogue.common.back": "Back.",
   "dialogue.municipality_clerk.start": "Clerk Penka: Candidate registration. Documents first; personhood is verified later if the schedule permits.",
@@ -361,7 +373,7 @@ export const en = {
   "dialogue.journalist.complaints.choice.counted": "Every complaint will be counted precisely. Solving them is a separate procurement.",
   "dialogue.journalist.complaints.choice.one_stop": "One service desk. It will send people back to itself, saving them the walk.",
   "dialogue.journalist.complaints.choice.not_ours": "If it disappeared, it is clearly outside our jurisdiction—and underwater.",
-  "dialogue.journalist.ballot_box": "Ralitsa: The ballot box was found in a cellar beside the pickles. Who is responsible?",
+  "dialogue.journalist.ballot_box": "Ralitsa: The ballot box was stored with the pickles. Who is responsible?",
   "dialogue.journalist.ballot_box.choice.pickles": "It was stored transparently. The gherkins were the only witnesses.",
   "dialogue.journalist.ballot_box.choice.responsibility": "Responsibility completed the full circuit and has returned to the first responsible office.",
   "dialogue.journalist.ballot_box.choice.training": "The ballot box was attending field training in local tradition.",

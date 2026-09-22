@@ -1,4 +1,19 @@
+import { archiveBg } from "./chapter1Archive.js";
+import { registrationBg } from "./chapter1Registration.js";
+import { campaignBg } from "./chapter1Campaign.js";
+import { fountainBg } from "./chapter1Fountain.js";
+
 export const bg = {
+  ...archiveBg,
+  ...registrationBg,
+  ...campaignBg,
+  ...fountainBg,
+  "scene.chapter1.mayor_office.title": "Кабинетът на кмета",
+  "exit.to_mayor_office": "Кабинетът на кмета",
+  "office.mayor.name": "Кметът",
+  "office.mayor.look": "Кметът стои до бюрото си.",
+  "office.desk.name": "Бюрото на кмета",
+  "office.desk.look": "Служебни документи, телефон и кметският печат.",
   "game.title": "Другарят Кандидат",
   "chapter1.title": "Изборен ден на село",
   "scene.chapter1.apartment.title": "Апартаментът на Бай Митко",
@@ -220,7 +235,7 @@ export const bg = {
   "msg.mehana.village_wine_to_go": "Киро подава бутилката без етикет. Така съдържанието остава политически независимо.",
   "msg.oil_used": "Бай Митко изпи олиото с изражение на човек, който инвестира в бъдещето.",
   "msg.accordion_tony": "Тони затвори очи и запя втория глас. Споменът за една сервитьорка от 1998-а временно прекрати надзора над чашата.",
-  "msg.accordion_baba_before_vote": "Баба Стоянка: Върна ме на една селска забава, когато коленете ми още имаха кворум. Хубаво свириш, ама за гласа донеси нещо, което влиза в тенджерата.",
+  "msg.accordion_baba_before_vote": "Баба Стоянка: Върна ме на една селска забава, когато коленете ми още имаха кворум. Хубаво свириш. Сега накарай и фонтана да запее.",
   "msg.accordion_baba_after_vote": "Баба Стоянка: Свири сега. Гласът вече ти го дадох, но младостта още ми дължи едно хоро.",
   "msg.accordion_kiro": "Киро: Ако продължиш, ще го пиша музика на живо. Ако спреш — такса спокойствие.",
   "msg.accordion_animal": "Животното изслуша мелодията, наклони глава и отказа да разкрие политическите си предпочитания.",
@@ -241,12 +256,9 @@ export const bg = {
   "msg.municipality.register_stamped": "ТУП. Регистърът вече вярва в Бай Митко повече от повечето избиратели.",
   "msg.municipality.register_ready": "Записът е подпечатан. Мастилото му придаде административна реалност.",
   "msg.municipality.archive_credentials_first": "Архивният шкаф не приема неслужебни отношения. Първо трябват документи за кандидат.",
-  "msg.municipality.archive_stamp_first": "Пенка: За достъп до архива трябва подпечатан регистър. Иначе може да научите нещо неофициално.",
-  "msg.municipality.ballot_box_clue": [
-    "В архивния дневник пише, че урната е преместена в мазето на механата като „временно прозрачно хранилище“.",
-    "Отдолу е добавено: „Да не се слагат буркани с туршия преди изборния ден.“ Подчертано е два пъти."
-  ],
-  "msg.municipality.ballot_box_clue_repeat": "Архивът още сочи към мазето на механата. Бюрокрацията най-сетне даде посока.",
+  "msg.municipality.archive_stamp_first": "Пенка: Първо ми донеси заверената от кмета диплома. След като те регистрирам, можеш да провериш архива.",
+  "msg.municipality.ballot_box_clue": "Урната е в този архивен шкаф, при прозрачните съдове за сезонна употреба.",
+  "msg.municipality.ballot_box_clue_repeat": "Урната е в общинския архив при прозрачните съдове за сезонна употреба.",
   "msg.mehana.cellar_no_reason": "Бай Митко няма служебна причина да проверява мазето на Киро. Личното любопитство все пак има стандарти.",
   "msg.mehana.cellar_opened": "Капакът се отвори. Зад два буркана с туршия стои изчезналата урна и съхранява демокрацията на стайна температура.",
   "msg.mehana.cellar_already_open": "Мазето е отворено. Туршията остава под неформален надзор.",
@@ -256,9 +268,9 @@ export const bg = {
   "quest.chapter1.main.title": "Стани кмет, преди кредиторите да те намерят.",
   "quest.chapter1.fake_diploma.title": "Направи диплома, достатъчно впечатляваща за избиратели, които не четат дипломи.",
   "quest.chapter1.fake_diploma.stage.collect_official_paper": "Вземи хартия, която вече изглежда достатъчно официална.",
-  "quest.chapter1.fake_diploma.stage.collect_envelope": "Намери плик с административен потенциал.",
-  "quest.chapter1.fake_diploma.stage.assemble": "Съчетай неплатените сметки с празния плик.",
-  "quest.chapter1.baba_vote.title": "Убеди баба Стоянка, че твоята корупция поне е традиционна.",
+  "quest.chapter1.fake_diploma.stage.collect_envelope": "Занеси сметките в будката за диплома или намери там празен плик, за да я сглобиш сам.",
+  "quest.chapter1.fake_diploma.stage.assemble": "Дай сметките в будката или ги съчетай с празния плик.",
+  "quest.chapter1.baba_vote.title": "Поправи фонтана и спечели подкрепата на Баба Стоянка.",
   "quest.chapter1.tony_vote.title": "Спечели подкрепата на Тони Хладилника, без да изпаднеш в безсъзнание.",
   "quest.chapter1.tony_vote.stage.accept_challenge": "Приеми алкохолното предизвикателство на Тони Хладилника.",
   "quest.chapter1.tony_vote.stage.distract": "Намери начин да разсееш Тони по време на предизвикателството.",
@@ -268,7 +280,7 @@ export const bg = {
   "quest.chapter1.journalist.stage.find_reporter": "Върни се на площада и намери журналистката до предизборното табло.",
   "quest.chapter1.journalist.stage.finish_interview": "Довърши интервюто, преди фактите да пристигнат.",
   "quest.chapter1.ballot_box.title": "Намери изчезналата урна, преди някой да ферментира демокрацията.",
-  "quest.chapter1.ballot_box.stage.follow_archive_clue": "Проследи архивната следа до мазето на механата.",
+  "quest.chapter1.ballot_box.stage.follow_archive_clue": "Огледай заялото чекмедже и го отвори с каишката на акордеона.",
 
   "dialogue.common.back": "Назад.",
   "dialogue.municipality_clerk.start": "Деловодителката Пенка: Записване на кандидати. Първо документите, после лицето — ако остане време по график.",
@@ -361,7 +373,7 @@ export const bg = {
   "dialogue.journalist.complaints.choice.counted": "Всяка жалба ще бъде преброена прецизно. Решаването е отделна обществена поръчка.",
   "dialogue.journalist.complaints.choice.one_stop": "Ще има едно гише. То ще ги праща обратно на същото гише без разкарване.",
   "dialogue.journalist.complaints.choice.not_ours": "Щом е потънала, значи е извън нашите правомощия и под водата.",
-  "dialogue.journalist.ballot_box": "Ралица: Изборната урна е намерена в мазе до туршия. Кой носи отговорност?",
+  "dialogue.journalist.ballot_box": "Ралица: Изборната урна е била прибрана при туршията. Кой носи отговорност?",
   "dialogue.journalist.ballot_box.choice.pickles": "Съхранявана е прозрачно. Краставичките бяха единствените свидетели.",
   "dialogue.journalist.ballot_box.choice.responsibility": "Отговорността е предадена по кръга и вече отново е при първия отговорен.",
   "dialogue.journalist.ballot_box.choice.training": "Урната беше на теренно обучение по местни традиции.",

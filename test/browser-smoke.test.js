@@ -91,21 +91,32 @@ test("browser completes the required Chapter 1 path and restores the ending afte
       game.takeTarget(find(game.currentScene.interactables, "hotspot.square.empty_envelope"));
       game.useInventoryItemOnItem("item.unpaid_bills", "item.empty_envelope");
 
-      await game.changeScene("scene.chapter1.municipality");
-      game.useInventoryItemOnTarget(
-        "item.fake_diploma",
-        find(game.currentScene.npcs, "npc.municipality_clerk")
-      );
-      game.takeTarget(find(game.currentScene.interactables, "hotspot.municipality.stamp_desk"));
-      game.useInventoryItemOnTarget(
-        "item.municipality_stamp",
-        find(game.currentScene.interactables, "hotspot.municipality.candidate_register")
-      );
-      game.useTarget(find(game.currentScene.interactables, "hotspot.municipality.archive_cabinet"));
-
+      const choose = (dialogueId, key) => {
+        const choice = game.content.dialogues[dialogueId].nodes.start.choices.find(c => c.textKey === key);
+        game.applyContentEffect(choice.effect);
+      };
+      choose("dialogue.penka_kiosk", "campaign.kiosk.choice.pamphlets");
+      game.useInventoryItemOnTarget("item.campaign_pamphlets", find(game.currentScene.interactables, "hotspot.square.poster_board"));
+      choose("dialogue.journalist", "registration.ask_evidence");
       await game.changeScene("scene.chapter1.mehana");
-      game.useTarget(find(game.currentScene.interactables, "hotspot.mehana.cellar_hatch"));
-      game.takeTarget(find(game.currentScene.interactables, "hotspot.mehana.ballot_box"));
+      choose("dialogue.mehana_waiter", "registration.kiro_receipt");
+      await game.changeScene("scene.chapter1.village_square");
+      game.useInventoryItemOnTarget("item.suspicious_receipt", find(game.currentScene.npcs, "npc.journalist"));
+      await game.changeScene("scene.chapter1.municipality");
+      game.useInventoryItemOnTarget("item.fake_diploma", find(game.currentScene.npcs, "npc.municipality_clerk"));
+      await game.changeScene("scene.chapter1.mayor_office");
+      game.applyContentEffect(game.content.dialogues["dialogue.mayor"].nodes.stack.choices[0].effect);
+      await game.changeScene("scene.chapter1.municipality");
+      game.useInventoryItemOnTarget("item.fake_diploma", find(game.currentScene.npcs, "npc.municipality_clerk"));
+      await game.useTarget(find(game.currentScene.interactables, "hotspot.municipality.archive_cabinet"));
+      game.inventory.add("item.accordion");
+      const archiveTarget = id => find(game.currentScene.interactables, "hotspot.archive." + id);
+      game.lookTarget(archiveTarget("handle"));
+      game.useInventoryItemOnTarget("item.accordion", archiveTarget("handle"));
+      game.lookTarget(archiveTarget("ledger"));
+      game.takeTarget(archiveTarget("jar"));
+      game.useInventoryItemOnTarget("item.pickle_jar", archiveTarget("ballot_box"));
+      game.takeTarget(archiveTarget("ballot_box"));
 
       await game.changeScene("scene.chapter1.village_square");
       game.selectedVerb = "talk";
@@ -212,6 +223,174 @@ async function availablePort() {
   return port;
 }
 
+test("opening through registration and archive exchange work through real clicks in Bulgarian and English", { timeout: 360_000 }, async (t) => {
+  if (!existsSync(chromium.executablePath())) {
+    t.skip("Playwright Chromium is not installed");
+    return;
+  }
+  const port = await availablePort();
+  const server = spawn(process.execPath, ["tools/dev-server.mjs"], {
+    cwd: projectRoot, env: { ...process.env, PORT: String(port) }, stdio: "ignore"
+  });
+  let browser;
+  try {
+    await waitForServer(`http://127.0.0.1:${port}/`);
+    browser = await chromium.launch({ headless: true });
+    for (const language of ["bg", "en"]) {
+      const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, serviceWorkers: "block" });
+      const page = await context.newPage();
+      await page.goto(`http://127.0.0.1:${port}/?play=1&testHarness=1`);
+      await page.evaluate(() => window.__comradeCandidateTest.ready);
+      // Language is setup; all progression below uses normal mouse input.
+      await page.evaluate(language => window.__comradeCandidateTest.game.setLanguage(language), language);
+      const waitFor = (predicate) => page.waitForFunction(predicate, undefined, { timeout: 25_000 });
+      const verb = name => selectVerb(page, name);
+      const clickTarget = id => clickSceneTarget(page, id);
+      await clickTarget("hotspot.apartment.tv");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.chapter1OpeningHeard);
+      await verb("take");
+      await clickTarget("hotspot.apartment.unpaid_bills");
+      await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.unpaid_bills"));
+      await waitFor(() => !window.__comradeCandidateTest.game.player.actionSequence);
+      await clickTarget("hotspot.apartment.accordion");
+      await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.accordion"));
+      await waitFor(() => !window.__comradeCandidateTest.game.player.actionSequence);
+      await clickTarget("exit.apartment.to_square");
+      await waitFor(() => window.__comradeCandidateTest.game.currentScene.id === "scene.chapter1.village_square");
+      await verb("talk");
+      await clickTarget("hotspot.square.kiosk");
+      await page.locator(".dialogue-panel").waitFor({ timeout: 25_000 });
+      const handover = await page.evaluate(() => window.__comradeCandidateTest.game.t("campaign.kiosk.choice.give_bills"));
+      await page.getByRole("button", { name: handover, exact: true }).click();
+      await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.campaign_pamphlets"));
+      assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.inventory.has("item.unpaid_bills")), false);
+      const pamphletLabel = page.locator('[data-item-id="item.campaign_pamphlets"] .inventory-item-label');
+      assert.equal(await pamphletLabel.isVisible(), true);
+      assert.equal(await pamphletLabel.textContent(), await page.evaluate(() => window.__comradeCandidateTest.game.t("item.campaign_pamphlets.name")));
+      await page.mouse.move(0, 0);
+      const posterBefore = await page.screenshot({ clip: { x: 1090, y: 255, width: 85, height: 160 } });
+      await page.locator('[data-item-id="item.campaign_pamphlets"]').click();
+      const use = await page.evaluate(() => window.__comradeCandidateTest.game.t("ui.inventory.use"));
+      await page.locator(".inventory-item-actions").getByRole("button", { name: use, exact: true }).click();
+      await clickTarget("hotspot.square.poster_board");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.campaignPosted);
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.evaluate(() => window.__comradeCandidateTest.ready);
+      assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.state.flags.campaignPosted), true);
+      await page.mouse.move(0, 0);
+      assert.notDeepEqual(await page.screenshot({ clip: { x: 1090, y: 255, width: 85, height: 160 } }), posterBefore);
+
+      assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.inventory.has("item.campaign_pamphlets")), false);
+      assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.inventory.has("item.fake_diploma")), true);
+      await verb("look");
+      await clickTarget("hotspot.square.poster_board");
+      await waitFor(() => {
+        const { game } = window.__comradeCandidateTest;
+        return game.message === game.t("campaign.poster.posted");
+      });
+      const choice = async key => {
+        await page.locator(".dialogue-panel").waitFor({ timeout: 25_000 });
+        const label = await page.evaluate(key => window.__comradeCandidateTest.game.t(key), key);
+        await page.getByRole("button", { name: label, exact: true }).click();
+      };
+      const talk = async id => { await verb("talk"); await clickTarget(id); };
+      const go = async (id, destination) => {
+        await clickTarget(id);
+        await page.waitForFunction(id => window.__comradeCandidateTest.game.currentScene.id === id, destination);
+      };
+      await talk("npc.journalist");
+      await choice("registration.ask_evidence");
+      await choice("registration.leave");
+      await go("exit.square.to_mehana", "scene.chapter1.mehana");
+      await talk("npc.mehana_waiter");
+      await choice("registration.kiro_receipt");
+      await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.suspicious_receipt"));
+      await go("exit.mehana.to_square", "scene.chapter1.village_square");
+      await talk("npc.journalist");
+      await choice("registration.give_receipt");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.journalistInOffice);
+      await page.reload();
+      await page.evaluate(() => window.__comradeCandidateTest.ready);
+      await go("exit.square.to_municipality", "scene.chapter1.municipality");
+      await talk("npc.municipality_clerk");
+      await choice("registration.present");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.municipalityCredentialsAccepted);
+      await go("exit.municipality.to_mayor_office", "scene.chapter1.mayor_office");
+      assert.equal(await page.evaluate(() => {
+        const g = window.__comradeCandidateTest.game;
+        return g.targetAvailable(g.currentScene.npcs.find(n => n.id === "npc.journalist"));
+      }), true);
+      await talk("npc.mayor");
+      for (const key of ["registration.confront", "registration.listen", "registration.stay_candidate", "registration.watch_stamp"]) await choice(key);
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.mayorDiplomaStamped);
+      assert.equal(await page.evaluate(() => Boolean(window.__comradeCandidateTest.game.state.flags.candidateRegistrationStamped)), false);
+      await choice("registration.leave");
+      await page.reload();
+      await page.evaluate(() => window.__comradeCandidateTest.ready);
+      await go("exit.mayor_office.to_municipality", "scene.chapter1.municipality");
+      await talk("npc.municipality_clerk");
+      await choice("registration.present");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.candidateRegistrationStamped);
+      assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.state.completedQuests.includes("quest.chapter1.fake_diploma")), true);
+
+      await talk("npc.municipality_clerk");
+      await page.locator(".dialogue-panel").waitFor({ timeout: 25_000 });
+      assert.ok((await page.locator(".dialogue-speech-bubble").textContent()).includes(
+        await page.evaluate(() => window.__comradeCandidateTest.game.t("archive.clerk_location"))));
+      await choice("registration.leave");
+      await verb("use");
+      await clickTarget("hotspot.municipality.archive_cabinet");
+      await waitFor(() => window.__comradeCandidateTest.game.currentScene.id === "scene.chapter1.archive");
+      await verb("look");
+      await clickTarget("hotspot.archive.handle");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.archiveHandleInspected);
+      const useItem = async id => {
+        await page.locator('[data-item-id="' + id + '"]').click();
+        await page.locator(".inventory-item-actions").getByRole("button", { name: use, exact: true }).click();
+      };
+      await useItem("item.accordion");
+      await clickTarget("hotspot.archive.handle");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.archiveOpened);
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.evaluate(() => window.__comradeCandidateTest.ready);
+      await verb("take");
+      await clickTarget("hotspot.archive.ballot_box");
+      assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.inventory.has("item.ballot_box")), false);
+      await verb("look");
+      await clickTarget("hotspot.archive.ledger");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.archiveLedgerRead);
+      await verb("take");
+      await clickTarget("hotspot.archive.jar");
+      await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.pickle_jar"));
+      await useItem("item.pickle_jar");
+      await clickTarget("hotspot.archive.ballot_box");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.archiveJarPlaced);
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.evaluate(() => window.__comradeCandidateTest.ready);
+      await verb("take");
+      await clickTarget("hotspot.archive.ballot_box");
+      await waitFor(() => window.__comradeCandidateTest.game.state.flags.ballotBoxRecovered);
+      assert.deepEqual(await page.evaluate(() => {
+        const { game } = window.__comradeCandidateTest;
+        return [game.inventory.has("item.ballot_box"), game.inventory.has("item.pickle_jar"), game.inventory.has("item.accordion"),
+          game.state.completedQuests.includes("quest.chapter1.ballot_box")];
+      }), [true, false, true, true]);
+      const back = await page.evaluate(() => window.__comradeCandidateTest.game.t("archive.back"));
+      assert.equal(await page.getByRole("button", { name: back, exact: true }).count(), 0);
+      await clickTarget("exit.archive.to_municipality");
+      await waitFor(() => window.__comradeCandidateTest.game.currentScene.id === "scene.chapter1.municipality");
+      await context.close();
+    }
+  } finally {
+    await browser?.close();
+    if (server.exitCode === null) server.kill("SIGTERM");
+    await new Promise(resolve => {
+      if (server.exitCode !== null) resolve();
+      else server.once("exit", resolve);
+    });
+  }
+});
+
 async function waitForServer(url) {
   const deadline = Date.now() + 10_000;
   while (Date.now() < deadline) {
@@ -224,4 +403,124 @@ async function waitForServer(url) {
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
   throw new Error(`Timed out waiting for ${url}`);
+}
+
+test("fountain repair supports real clicks, consumed-oil recovery and mid-puzzle reloads", { timeout: 120_000 }, async (t) => {
+  if (!existsSync(chromium.executablePath())) {
+    t.skip("Playwright Chromium is not installed");
+    return;
+  }
+  const port = await availablePort();
+  const server = spawn(process.execPath, ["tools/dev-server.mjs"], {
+    cwd: projectRoot, env: { ...process.env, PORT: String(port) }, stdio: "ignore"
+  });
+  let browser;
+  try {
+    await waitForServer(`http://127.0.0.1:${port}/`);
+    browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, serviceWorkers: "block" });
+    await page.goto(`http://127.0.0.1:${port}/?play=1&testHarness=1`);
+    await page.evaluate(() => window.__comradeCandidateTest.ready);
+    const waitFor = predicate => page.waitForFunction(predicate, undefined, { timeout: 25_000 });
+    const click = id => clickSceneTarget(page, id);
+    const verb = name => selectVerb(page, name);
+    const choice = async key => {
+      const label = await page.evaluate(key => window.__comradeCandidateTest.game.t(key), key);
+      await page.locator(".dialogue-choice-list").getByRole("button", { name: label, exact: true }).click();
+    };
+    const oilAction = async key => {
+      await page.locator('[data-item-id="item.sunflower_oil"]').click();
+      const label = await page.evaluate(key => window.__comradeCandidateTest.game.t(key), key);
+      await page.locator(".inventory-item-actions").getByRole("button", { name: label, exact: true }).click();
+    };
+    await click("exit.apartment.to_square");
+    await waitFor(() => window.__comradeCandidateTest.game.currentScene.id === "scene.chapter1.village_square");
+    await verb("talk");
+    await click("npc.baba_stoyanka");
+    await choice("dialogue.baba.choice.ask_vote");
+    await choice("dialogue.baba.choice.leave");
+    await verb("look");
+    await click("hotspot.square.fountain");
+    await waitFor(() => window.__comradeCandidateTest.game.state.flags.fountainDiagnosed);
+    await verb("talk");
+    await click("hotspot.square.old_men_bench");
+    await waitFor(() => window.__comradeCandidateTest.game.state.flags.fountainOilClue);
+    await click("exit.square.to_mehana");
+    await waitFor(() => window.__comradeCandidateTest.game.currentScene.id === "scene.chapter1.mehana");
+    await verb("take");
+    await click("hotspot.mehana.oil");
+    await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.sunflower_oil"));
+    await oilAction("ui.inventory.use_on_self");
+    await waitFor(() => !window.__comradeCandidateTest.game.inventory.has("item.sunflower_oil"));
+    await verb("talk");
+    await click("npc.mehana_waiter");
+    await choice("fountain.kiro.choice.refill");
+    await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.sunflower_oil"));
+    await click("exit.mehana.to_square");
+    await waitFor(() => window.__comradeCandidateTest.game.currentScene.id === "scene.chapter1.village_square");
+    await oilAction("ui.inventory.use");
+    await click("hotspot.square.fountain");
+    await waitFor(() => window.__comradeCandidateTest.game.state.flags.fountainValveOiled);
+    await page.reload();
+    await page.evaluate(() => window.__comradeCandidateTest.ready);
+    assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.state.flags.fountainValveOiled), true);
+    assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.state.babaStoyankaVote), false);
+    const waterClip = { x: 670, y: 166, width: 45, height: 85 };
+    const before = await page.screenshot({ clip: waterClip });
+    await verb("use");
+    await click("hotspot.square.fountain");
+    await waitFor(() => window.__comradeCandidateTest.game.state.flags.fountainRepaired);
+    // A new animation frame makes the restored/stateful water effect observable.
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const visible = await page.evaluate(() => {
+      const { game } = window.__comradeCandidateTest;
+      return game.renderer.sceneLayerVisible(game.currentScene.effects[0]);
+    });
+    assert.equal(visible, true);
+    assert.notDeepEqual(await page.screenshot({ clip: waterClip }), before);
+    await verb("talk");
+    await click("npc.baba_stoyanka");
+    await choice("fountain.baba.choice.report");
+    await waitFor(() => window.__comradeCandidateTest.game.state.babaStoyankaVote);
+    await page.reload();
+    await page.evaluate(() => window.__comradeCandidateTest.ready);
+    const saved = await page.evaluate(() => {
+      const { game } = window.__comradeCandidateTest;
+      return { repaired: game.state.flags.fountainRepaired, vote: game.state.babaStoyankaVote,
+        influence: game.state.influence, completed: game.state.completedQuests.includes("quest.chapter1.baba_vote") };
+    });
+    assert.deepEqual(saved, { repaired: true, vote: true, influence: 15, completed: true });
+  } finally {
+    await browser?.close();
+    if (server.exitCode === null) server.kill("SIGTERM");
+    await new Promise(resolve => {
+      if (server.exitCode !== null) resolve();
+      else server.once("exit", resolve);
+    });
+  }
+});
+
+async function selectVerb(page, name) {
+        const label = await page.evaluate(name => window.__comradeCandidateTest.game.t(`verb.${name}`), name);
+        for (let step = 0; step < 4; step++) {
+          if ((await page.locator(".hud-verb").textContent()) === label) return;
+          await page.locator(".hud-verb").click();
+        }
+        assert.fail(`Could not select ${name}`);
+}
+async function clickSceneTarget(page, id) {
+        // Inspect hit geometry to choose an unobstructed point; do not invoke actions.
+        const point = await page.evaluate(async id => {
+          const { game } = window.__comradeCandidateTest;
+          const { findTargetAt } = await import("/src/engine/SceneGeometry.js");
+          const candidates = [];
+          for (let y = 80; y < (id === "exit.archive.to_municipality" ? 660 : 580); y += 8) {
+            for (let x = 16; x < 1260; x += 8) {
+              if (findTargetAt(game.currentScene, { x, y }, target => game.targetAvailable(target))?.id === id) candidates.push({ x, y });
+            }
+          }
+          if (!candidates.length) throw new Error(`No exposed click target: ${id}`);
+          return candidates[Math.floor(candidates.length / 2)];
+        }, id);
+        await page.locator("#game").click({ position: point });
 }

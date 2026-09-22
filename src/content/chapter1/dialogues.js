@@ -1,4 +1,9 @@
-export const dialogues = [
+import { wireRegistrationDialogues } from "./registration.js";
+import { babaFountainDialogue, oilRefillRule } from "./fountain.js";
+import { campaignDialogues } from "./campaign.js";
+
+const baseDialogues = [
+  ...campaignDialogues,
   {
     id: "dialogue.municipality_clerk",
     npcId: "npc.municipality_clerk",
@@ -175,212 +180,7 @@ export const dialogues = [
       }
     }
   },
-  {
-    id: "dialogue.baba_stoyanka",
-    npcId: "npc.baba_stoyanka",
-    nodes: {
-      start: {
-        lineKey: "dialogue.baba.start",
-        choices: [
-          {
-            textKey: "dialogue.baba.choice.ask_vote",
-            requirements: {
-              state: { babaStoyankaVote: false }
-            },
-            next: "vote_terms",
-            effect: {
-              effects: [{ type: "startQuest", questId: "quest.chapter1.baba_vote" }]
-            }
-          },
-          { textKey: "dialogue.baba.choice.tradition", next: "tradition" },
-          { textKey: "dialogue.baba.choice.promise", next: "promise" },
-          {
-            textKey: "dialogue.baba.choice.offer_bills",
-            effect: {
-              requirements: {
-                items: ["item.unpaid_bills"],
-                notFlags: ["babaRejectedBills"],
-                state: { babaStoyankaVote: false }
-              },
-              effects: [
-                { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-                { type: "setFlag", key: "babaRejectedBills" },
-                { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
-                { type: "adjustState", key: "suspicion", amount: 1 }
-              ],
-              messageKey: "msg.baba.reject_bills",
-              reject: true
-            }
-          },
-          {
-            textKey: "dialogue.baba.choice.offer_water",
-            effect: {
-              requirements: {
-                items: ["item.glass_of_water"],
-                notFlags: ["babaRejectedWater"],
-                state: { babaStoyankaVote: false }
-              },
-              effects: [
-                { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-                { type: "setFlag", key: "babaRejectedWater" },
-                { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
-                { type: "adjustState", key: "suspicion", amount: 1 }
-              ],
-              messageKey: "msg.baba.reject_water",
-              reject: true
-            }
-          },
-          {
-            textKey: "dialogue.baba.choice.offer_shopska",
-            effect: {
-              requirements: {
-                items: ["item.shopska_salad"],
-                notFlags: ["babaRejectedShopska"],
-                state: { babaStoyankaVote: false }
-              },
-              effects: [
-                { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-                { type: "setFlag", key: "babaRejectedShopska" },
-                { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
-                { type: "adjustState", key: "suspicion", amount: 1 }
-              ],
-              messageKey: "msg.baba.reject_shopska",
-              reject: true
-            }
-          },
-          {
-            textKey: "dialogue.baba.choice.offer_tripe_soup",
-            effect: {
-              requirements: {
-                items: ["item.tripe_soup"],
-                notFlags: ["babaRejectedTripeSoup"],
-                state: { babaStoyankaVote: false }
-              },
-              effects: [
-                { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-                { type: "setFlag", key: "babaRejectedTripeSoup" },
-                { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
-                { type: "adjustState", key: "suspicion", amount: 1 }
-              ],
-              messageKey: "msg.baba.reject_tripe_soup",
-              reject: true
-            }
-          },
-          {
-            textKey: "dialogue.baba.choice.offer_rakia",
-            effect: {
-              requirements: {
-                items: ["item.rakia"],
-                notFlags: ["babaRejectedRakia"],
-                state: { babaStoyankaVote: false }
-              },
-              effects: [
-                { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-                { type: "setFlag", key: "babaRejectedRakia" },
-                { type: "adjustState", key: "suspicion", amount: 1 }
-              ],
-              messageKey: "msg.baba.reject_rakia",
-              reject: true
-            }
-          },
-          {
-            textKey: "dialogue.baba.choice.offer_oil",
-            effect: {
-              requirements: {
-                items: ["item.sunflower_oil"],
-                state: { babaStoyankaVote: false },
-                stateMax: { babaCheapOfferAttempts: 2 }
-              },
-              effects: [
-                { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-                { type: "removeItem", itemId: "item.sunflower_oil" },
-                { type: "setState", key: "babaStoyankaVote", value: true },
-                { type: "setState", key: "babaTrust", value: "traditional" },
-                { type: "adjustState", key: "influence", amount: 15 },
-                { type: "adjustState", key: "suspicion", amount: 4 },
-                { type: "adjustState", key: "publicMood", amount: 3 },
-                { type: "completeQuest", questId: "quest.chapter1.baba_vote" }
-              ],
-              messageKey: "msg.baba.accept_oil"
-            }
-          },
-          {
-            textKey: "dialogue.baba.choice.offer_oil",
-            effect: {
-              requirements: {
-                items: ["item.sunflower_oil"],
-                notFlags: ["babaRequiresBetterGift"],
-                state: { babaStoyankaVote: false },
-                stateMin: { babaCheapOfferAttempts: 3 }
-              },
-              effects: [
-                { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-                { type: "setFlag", key: "babaRequiresBetterGift" },
-                { type: "adjustState", key: "suspicion", amount: 2 }
-              ],
-              messageKey: "msg.baba.reject_late_oil",
-              reject: true
-            }
-          },
-          {
-            textKey: "dialogue.baba.choice.offer_wine",
-            effect: {
-              requirements: {
-                items: ["item.village_wine"],
-                notFlags: ["babaRequiresBetterGift"],
-                state: { babaStoyankaVote: false }
-              },
-              effects: [{ type: "startQuest", questId: "quest.chapter1.baba_vote" }],
-              messageKey: "msg.baba.reject_early_wine",
-              reject: true
-            }
-          },
-          {
-            textKey: "dialogue.baba.choice.offer_wine",
-            effect: {
-              requirements: {
-                items: ["item.village_wine"],
-                flags: ["babaRequiresBetterGift"],
-                state: { babaStoyankaVote: false }
-              },
-              effects: [
-                { type: "removeItem", itemId: "item.village_wine" },
-                { type: "setState", key: "babaStoyankaVote", value: true },
-                { type: "setState", key: "babaTrust", value: "transactional" },
-                { type: "adjustState", key: "influence", amount: 15 },
-                { type: "adjustState", key: "suspicion", amount: 4 },
-                { type: "adjustState", key: "publicMood", amount: 2 },
-                { type: "completeQuest", questId: "quest.chapter1.baba_vote" }
-              ],
-              messageKey: "msg.baba.accept_wine"
-            }
-          },
-          {
-            textKey: "dialogue.baba.choice.confirm_vote",
-            requirements: { state: { babaStoyankaVote: true } },
-            next: "vote_confirmed"
-          },
-          { textKey: "dialogue.baba.choice.leave" }
-        ]
-      },
-      tradition: {
-        lineKey: "dialogue.baba.tradition",
-        choicesFrom: "start"
-      },
-      vote_terms: {
-        lineKey: "dialogue.baba.vote_terms",
-        choicesFrom: "start"
-      },
-      promise: {
-        lineKey: "dialogue.baba.promise",
-        choicesFrom: "start"
-      },
-      vote_confirmed: {
-        lineKey: "dialogue.baba.vote_confirmed",
-        choicesFrom: "start"
-      }
-    }
-  },
+  babaFountainDialogue,
   {
     id: "dialogue.mehana_waiter",
     npcId: "npc.mehana_waiter",
@@ -388,6 +188,12 @@ export const dialogues = [
       start: {
         lineKey: "dialogue.waiter.start",
         choices: [
+          {
+            textKey: "fountain.kiro.choice.refill",
+            requirements: oilRefillRule.requirements,
+            effect: oilRefillRule
+          },
+          { textKey: "fountain.kiro.choice.hint", next: "fountain_oil_hint" },
           {
             textKey: "dialogue.waiter.choice.rakia",
             next: "rakia_serving"
@@ -425,6 +231,7 @@ export const dialogues = [
           { textKey: "dialogue.waiter.choice.leave" }
         ]
       },
+      fountain_oil_hint: { lineKey: "fountain.kiro.hint", choicesFrom: "start" },
       people: {
         lineKey: "dialogue.waiter.people",
         choicesFrom: "start"
@@ -702,3 +509,5 @@ export const dialogues = [
     }
   }
 ];
+
+export const dialogues = wireRegistrationDialogues(baseDialogues);

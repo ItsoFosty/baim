@@ -1,9 +1,39 @@
+import { archiveStages } from "./archive.js";
+import { registrationStages } from "./registration.js";
+import { fountainQuestStages } from "./fountain.js";
+
 export const quests = [
-  { id: "quest.chapter1.main", titleKey: "quest.chapter1.main.title" },
+  {
+    id: "quest.chapter1.main", titleKey: "quest.chapter1.main.title",
+    stages: [
+      {
+        id: "stage.main.hear_election",
+        titleKey: "campaign.quest.opening",
+        requirements: { notFlags: ["chapter1OpeningHeard", "campaignPosted"], state: { hasFakeDiploma: false } }
+      },
+      {
+        id: "stage.main.prepare_campaign",
+        titleKey: "campaign.quest.papers",
+        requirements: { state: { hasFakeDiploma: false } }
+      },
+      {
+        id: "stage.main.collect_pamphlets",
+        titleKey: "campaign.quest.pamphlets",
+        requirements: { notFlags: ["kioskPamphletsIssued", "campaignPosted"] }
+      },
+      {
+        id: "stage.main.post_campaign",
+        titleKey: "campaign.quest.post",
+        requirements: { notFlags: ["campaignPosted"] }
+      },
+      ...registrationStages
+    ]
+  },
   {
     id: "quest.chapter1.fake_diploma",
     titleKey: "quest.chapter1.fake_diploma.title",
     stages: [
+      ...registrationStages.map(stage => ({ ...stage, id: stage.id.replace("registration", "fake_diploma"), requirements: { ...stage.requirements, state: { hasFakeDiploma: true } } })),
       {
         id: "stage.fake_diploma.collect_official_paper",
         titleKey: "quest.chapter1.fake_diploma.stage.collect_official_paper",
@@ -23,7 +53,7 @@ export const quests = [
       }
     ]
   },
-  { id: "quest.chapter1.baba_vote", titleKey: "quest.chapter1.baba_vote.title" },
+  { id: "quest.chapter1.baba_vote", titleKey: "quest.chapter1.baba_vote.title", stages: fountainQuestStages },
   {
     id: "quest.chapter1.tony_vote",
     titleKey: "quest.chapter1.tony_vote.title",
@@ -61,6 +91,7 @@ export const quests = [
     id: "quest.chapter1.journalist",
     titleKey: "quest.chapter1.journalist.title",
     stages: [
+      ...registrationStages.map(stage => ({ ...stage, id: stage.id.replace("registration", "journalist") })),
       {
         id: "stage.journalist.find_reporter",
         titleKey: "quest.chapter1.journalist.stage.find_reporter",
@@ -76,15 +107,6 @@ export const quests = [
   {
     id: "quest.chapter1.ballot_box",
     titleKey: "quest.chapter1.ballot_box.title",
-    stages: [
-      {
-        id: "stage.ballot_box.follow_archive_clue",
-        titleKey: "quest.chapter1.ballot_box.stage.follow_archive_clue",
-        requirements: {
-          flags: ["ballotBoxArchiveClue"],
-          state: { hasBallotBox: false }
-        }
-      }
-    ]
+    stages: archiveStages
   }
 ];

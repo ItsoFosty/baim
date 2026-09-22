@@ -303,6 +303,6 @@ export function findTargetAt(scene, point, targetAvailable = () => true) {
   return targets.find((target) => {
     if (!targetAvailable(target)) return false;
     if (target.polygon) return pointInPolygon(point, target.polygon);
-    return pointInRect(point, target.rect);
+    return Boolean(target.rect) && pointInRect(point, target.rect);
   });
 }

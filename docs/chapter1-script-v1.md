@@ -1,5 +1,11 @@
 # Comrade Candidate — Authoritative Chapter 1 Script v1.0
 
+> Completion work resumed on 16 September 2026. See
+> [the reconciled completion plan](chapter1-completion-plan-160926.md) for current
+> target decisions, including retained three-outcome support and character roles.
+> The implementation-status table below is historical; consult the
+> [gameplay-flow contract](chapter1-gameplay-flow.md) for playable behavior.
+
 Status: Authoritative Chapter 1 design baseline
 Version: 1.0
 

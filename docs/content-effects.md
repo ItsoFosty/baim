@@ -46,7 +46,8 @@ checks follow the same distinction.
 
 ## Requirements And Use Rules
 
-Scene hotspots and NPCs may define `useRules` for the selected Use verb. Explicit inventory targeting
+Scene hotspots and NPCs may define `lookRules` and `talkRules` for state-aware
+inspection and conversation, as well as `useRules` for the selected Use verb. Explicit inventory targeting
 uses `itemUseRules`, where each rule also declares its stable `itemId`. The first rule whose requirements
 all pass is applied:
 
@@ -70,6 +71,7 @@ All requirement groups are optional:
 | Requirement | Pass condition |
 | --- | --- |
 | `items` | Inventory contains every listed stable item ID. |
+| `absentItems` | No listed item is in inventory or any saved dropped-item record. Useful for recoverable supplies without duplicates. |
 | `flags` | Every listed key is truthy in `state.flags`. |
 | `notFlags` | Every listed key is falsy or absent in `state.flags`. |
 | `state` | Every key strictly equals its authored value in the top-level save state. |
@@ -129,3 +131,40 @@ When adding a new requirement or effect type:
 3. Add focused coverage in `test/content-effects.test.js`.
 4. Add or update save, inventory, quest, or localization tests when those contracts change.
 5. Run `npm test`.
+
+## Stateful scene effects
+
+A scene may define `effects` alongside its raster layers. Effects use the same
+visibility flags and depth ordering as scene layers. `waterStream` takes four
+Bezier `points` in scene coordinates, optional `width`, `speed`, `color` and
+`highlight`, and a `zIndex`. `visibleWhenFlag` can reveal it after an interaction; `hiddenWhenFlag` hides a
+layer or effect once the flag is set (missing flags leave it visible).
+The reusable renderer animates the stream without modifying the background asset.
+
+## Registration-chain additions
+
+- `requirements.anyOf`: at least one nested requirement group must pass; other
+  requirements on the same object still apply (AND).
+- Individual effects may have `requirements`; unmet effects are skipped. This
+  permits a unique reward to be omitted when carried, dropped or delivered,
+  without suppressing the rest of a quest reward.
+- Exits may specify `accessRequirements` and `blockedMessageKey`. They remain
+  targetable and explain missing prerequisites rather than silently vanishing.
+- Raster layers may use `visibleWhenTargetId` to follow an NPC/hotspot/exit's
+  availability in the current scene. Layer builder and editor retain this field.
+
+
+### Close-ups and archive interaction support
+- Scene `playerMode: "closeup"` suppresses the walking actor and approach/movement.
+  Inventory, verbs and state-dependent raster layers remain usable.
+- A scene `returnExitId` references an ordinary exit; the top bar exposes its
+  localized name as a return button. Exits without geometry are UI-only.
+- Scene `allowItemDrop: false` and `dropBlockedMessageKey` keep a close-up free
+  of inaccessible dropped-item piles; the player can return to a walkable room.
+- A matched interaction rule may specify `sceneTransition: {sceneId, position}`.
+  Its effects are applied/saved before the destination loads.
+- `takeRules` are checked before the normal take operation: use them for
+  recoverable refusal messages. The target must itself be currently available.
+- Dialogue nodes can use ordered `lineRules: [{requirements, lineKey}]` to
+  choose a progress-dependent greeting, falling back to `lineKey`.
+- `requirements.disabled` retires an interaction while preserving its stable ID.

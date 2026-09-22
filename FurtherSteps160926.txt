@@ -1,0 +1,168 @@
+Chapter 1 action plan — revised 16 September 2026
+
+AUTHORITATIVE TARGET
+The revised docs/chapter-one-visual-storyboard.pdf replaces the old 12-panel
+storyboard in the local menu. It describes intended behavior, not current runtime
+coverage. The approved completion plan remains the detailed dependency contract.
+
+Three outcomes: convincing victory, narrow victory, loss. Registration, receipt
+investigation and ballot-box delivery enable voting. Baba and Tony affect the
+result rather than access to voting. Both supporters guarantee a win; campaign
+quality can reduce its margin. Incomplete campaigns can lose. Kiro provides the
+same expense record when Tony's route is unfinished. No duplicate evidence.
+
+COMPLETED FOUNDATION
+- Opening information, bills-for-diploma/pamphlets and campaign journal guidance.
+- Visible poster before/after state and repeat-safe posting.
+- Baba/Old Men/fountain repair, visible water and recoverable oil supply.
+- Old Men seated artwork and movement restriction behind their bench.
+- Tony competition glass and approved municipality stamp table v9/seal artwork.
+- Revised 17-page PDF and local storyboard viewer, including three outcomes.
+- Prior implementation validation: 220 tests passed. Ordinary full-chapter
+  first-time-player review remains outstanding.
+
+STEP 1 — Lock the remaining contracts and production checklist
+- Keep Aunt Docheva at the kiosk distinct from Clerk Penka.
+- Keep stable IDs, old saves, Chapter 1 scope, resolution and animation pipeline.
+- Maintain a current-versus-planned record after each completed milestone.
+- Before authoring new dialogue, refresh the Bulgarian satire intake; write
+  natural BG/EN content. Production summaries do not substitute for dialogue.
+Acceptance: one dependency map and no contradictory story/outcome requirements.
+
+STEP 2 — Introduce evidence and the early journalist [IMPLEMENTED]
+- Posting introduces the journalist and makes the guard recognize candidacy.
+- Tony's completed challenge awards support and the municipal expense receipt.
+- After the journalist requests evidence, Kiro can supply that same record if
+  it was not obtained through Tony. Handle carried, dropped and delivered states.
+- The journalist checks completed actions and accepts the receipt once.
+- Produce/review journalist artwork and receipt prop/icon as needed for staging.
+Acceptance: Tony-first and Kiro-fallback routes both work with normal input;
+reloads, repeated actions and dropped items cannot duplicate or lose evidence.
+
+STEP 3 — Complete Mayor confrontation and registration [IMPLEMENTED]
+- Present the unstamped diploma; the clerk explains the validation requirement.
+- Stage the evidence confrontation and Mayor's accidental stamping of the stack.
+- Reuse the approved stamp table/seal as scene props; retire self-service stamp
+  progression only when this entire replacement route works.
+- The clerk registers Mitko; complete the diploma quest here, not at fabrication.
+- Produce/review Mayor poses and diploma before/after artwork; add pamphlet icon.
+Acceptance: normal-input registration works in BG/EN; legacy credentials/saves
+remain usable; rewards and registration are repeat-safe.
+
+STEP 4 — Replace cellar recovery with archive/container puzzle [IMPLEMENTED]
+- Clerk supplies the classification clue; inspect the jammed archive cabinet.
+- Use accordion strap to open it, retaining the accordion.
+- Read the ledger; replace the empty ballot box with the pickle jar.
+- Prepare compatible cabinet states, ledger, jar, empty box and inventory icons.
+- Replace the old cellar route only when the new route is complete and tested.
+Acceptance: clues explain the swap; wrong actions do not destroy required items;
+mid-puzzle saves and already-recovered/delivered legacy boxes remain valid.
+
+STEP 5 — Stage voting and implement all three outcome branches
+- Build election-room staging, using approved characters wherever possible.
+- Deliver box; answer Mayor objections through stamped diploma, evidence and
+  classification. Crowd presence/reactions reflect earned support.
+- Define deterministic score thresholds and record their rationale. Protect the
+  both-supporters win guarantee; let incomplete campaigns reach a loss.
+- Show the reasons for the result, especially missing support after a loss.
+- Stage convincing victory, narrow victory and loss distinctly. Creditors appear
+  in all endings; new-Mayor dialogue only plays on wins. Fountain water only
+  appears if repaired. Persist the exact ending; never reopen resolved endings.
+Acceptance: each branch is reachable via ordinary play; all support combinations
+and score boundaries are tested; both-supporter campaigns cannot lose.
+
+STEP 6 — Complete essential presentation in small reviewed batches
+- Missing characters first: journalist, Mayor, kiosk Aunt Docheva as needed.
+- Required props/icons follow the implementation milestones above.
+- Complete election furniture, crowd poses and creditor ending staging.
+- Review existing animations, then produce missing posting, accordion, pouring,
+  drinking, valve, paper-handover, cabinet-pull, jar-swap and box-delivery actions.
+- Use the existing Ludo.ai sprite-sheet import path for Mitko; reviewed sprite
+  exports for other animated roles. Add sound/ambience and UI polish afterwards.
+Acceptance: readable actions, correct perspective/depth and no missing mandatory
+item visuals. Keep approved art; no automatic background or table redraws.
+
+STEP 7 — Player clarity and release verification
+- Every puzzle has an objective, observable clue, useful wrong-action response
+  and stronger hint. Journal stages match actual progress.
+- Run npm test after implementation milestones. Add meaningful tests for changed
+  geometry, quests, inventory, dialogue effects, localization and save behavior.
+- Play the complete chapter through normal clicks in BG/EN; cover route order,
+  save/reload milestones, dropped items, challenge retries and all three endings.
+- Arrange a first-time-player review; fix blockers before optional art revisions.
+Acceptance: no dead ends, consistent saved outcomes and a comprehensible chapter.
+
+NEXT EXECUTION TASK
+Step 5: election-room staging and the three outcome branches. Steps 2–4 are playable.
+Remaining presentation includes receipt/diploma artwork and the dedicated Mayor
+stamp animation; the confrontation currently uses staged dialogue and state.
+
+AUTHORIZATION / LIMITS
+User approved the completion work and the three-outcome storyboard revision.
+No large final-art batch, renderer switch, resolution change, stable-ID rename,
+Chapter 2 expansion or GitHub publication is implied. The original uploaded PDF
+is preserved under assets_src/chapter1/storyboards/reference/.
+
+REVISION VALIDATION
+- npm test: 220 passed, zero failures/skips after publishing changes.
+- Browser check: existing menu link opens the revised PDF viewer.
+- PDF URL: HTTP 200, application/pdf; layout and three-outcome text checked.
+
+ART / ROOM FOLLOW-UP
+- User approved separate Mayor office staging (supersedes the earlier single-room
+  staging assumption). Added scene.chapter1.mayor_office and a labelled door in
+  the municipality's leftmost service bay, with a return exit and walk mask.
+- Created journalist and Mayor standing cutouts. Journalist has an imperfect,
+  aspirational early-1990s hairstyle. Mayor is staged in his office; journalist
+  art replaces her old debug figure at the existing runtime appearance point.
+- This is room/art implementation only. Early journalist appearance, evidence
+  transfer, Mayor dialogue and accidental validation remain Steps 2–3.
+- Validation after room/art integration: 222 tests passed; door entry, return and
+  office save/reload verified in the browser. Confrontation logic remains next.
+
+REGISTRATION REPLACEMENT COMPLETE
+- Campaign posting reveals the journalist and permits municipal entry.
+- Tony awards the unique receipt; Kiro provides the evidence-request fallback.
+- Receipt handover visibly relocates the journalist to the Mayor office.
+- Clerk inspection precedes the confrontation. Mayor dialogue validates the
+  carried diploma with the journalist present; it does not itself register Mitko.
+- Clerk accepts the validated diploma and completes registration/diploma quest.
+- Self-service seal progression removed. Existing registered saves remain valid;
+  early paper-creation saves regain their unfinished diploma quest.
+- Full suite: 227 tests passed. After adding a door-gate regression, the focused
+  suite passed all 37 tests. BG/EN fresh-game mouse-input routes cover the full
+  registration chain and reloads after handover and validation.
+- Archive recovery has now replaced the cellar route; the final interview remains.
+
+
+ARCHIVE REPLACEMENT COMPLETE — STORYBOARD PAGES 10–11
+- Clerk registration feedback and subsequent conversation direct Mitko to the
+  right-hand archive cabinet, under transparent containers for seasonal use.
+- Use the cabinet after registration to open a close-up. Inspect its jammed
+  handle, then use the accordion strap; the accordion stays in inventory.
+- Read the ledger, take the pickle jar, use it on the empty ballot box, then
+  take the box. The replacement jar stays behind and cannot be reclaimed.
+- Added painted open/closed drawer, ledger, jar and empty box; both movable
+  objects have inventory icons. Approved municipality art remains intact.
+- Wrong actions are recoverable. Mid-puzzle saves preserve progress. Dropped
+  jars remain recoverable where left; dropping inside the close-up is blocked.
+- Existing recovered/carried/dropped/delivered legacy boxes stay valid and
+  cannot be awarded again. Old cellar hotspot IDs remain, without recovery.
+- Clerk hints, journal stages and the later journalist question match this route
+  in BG/EN. Drawer opening and exchange currently change painted states;
+  dedicated pulling/swapping character animation remains Step 6.
+- Validation: npm test — 234 passed, zero failures/skips. BG/EN normal-click
+  journeys cover registration, clerk archive directions, opening, ledger,
+  refused early collection, jar exchange, reloads and return to the hall.
+- Browser art review: open drawer, ledger, removable props, icons and return
+  navigation render successfully; no browser errors in the visual check.
+
+
+DEV MENU / ARCHIVE NAVIGATION FOLLOW-UP
+- Mayor’s Office Editor and Archive Editor added to the development home.
+- Both editors load source geometry and layers and support saving edits.
+- Archive editor previews closed/open/exchanged/collected states independently
+  of the player save; its close-up has no walk-grid tool.
+- Removed the archive’s top-bar return button. Click the open drawer’s front
+  handle to return to Penka. Before opening, Look inspects the jammed handle,
+  Use returns to Penka, and using the accordion opens the drawer.

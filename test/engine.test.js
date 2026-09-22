@@ -21,7 +21,7 @@ import { characterDefinitions } from "../src/content/art/characters.js";
 import { externalAnimationV1 } from "../src/content/art/externalAnimationRuntime.generated.js";
 import { distance } from "../src/engine/geometry.js";
 import { AssetLoader, imageAssetPaths } from "../src/engine/AssetLoader.js";
-import { normalizeEditorObjectSource } from "../src/engine/SceneEditor.js";
+import { SceneEditor, normalizeEditorObjectSource } from "../src/engine/SceneEditor.js";
 import { makePng } from "../tools/character-frame-utils.mjs";
 import {
   EXTERNAL_WALK_LOOP_MOTION_MAX,
@@ -52,8 +52,11 @@ test("inventory preload discovery includes every authored high-resolution item i
   const paths = Object.values(assetManifest.items).flatMap((itemAssets) => imageAssetPaths(itemAssets));
   assert.deepEqual(paths.sort(), [
     assetManifest.items["item.accordion"].icon,
+    assetManifest.items["item.ballot_box"].icon,
+    assetManifest.items["item.pickle_jar"].icon,
     assetManifest.items["item.empty_envelope"].icon,
     assetManifest.items["item.glass_of_water"].icon,
+    assetManifest.items["item.municipality_stamp"].icon,
     assetManifest.items["item.sunflower_oil"].icon,
     assetManifest.items["item.unpaid_bills"].icon
   ].sort());
@@ -385,6 +388,11 @@ test("scene hit testing excludes unavailable collected targets and can reach obj
 
 test("chapter scenes define explicit walk geometry for production art", () => {
   for (const scene of chapter1.scenes) {
+    if (scene.playerMode === "closeup") {
+      assert.equal(scene.walkPolygons.length, 0);
+      assert.ok(scene.exits.length);
+      continue;
+    }
     assert.ok(scene.walkMask?.rows?.length || scene.walkPolygons.length > 0, `${scene.id} needs walk geometry`);
     assert.equal(isWalkable(scene, scene.playerStart), true);
   }
@@ -3185,3 +3193,59 @@ class MemoryStorage {
     delete this.values[key];
   }
 }
+
+test("the old men's bench blocks walking behind its seated figures but remains approachable", () => {
+  const scene = chapter1.scenes.find(scene => scene.id === "scene.chapter1.village_square");
+  for (let x = 490; x <= 610; x += 20) {
+    for (let y = 330; y <= 430; y += 20) assert.equal(isWalkable(scene, { x, y }), false);
+  }
+  const from = { x: 300, y: 540 };
+  const approach = nearestReachableWalkablePoint(scene, from, { x: 530, y: 400 });
+  assert.ok(approach);
+  assert.ok(distance(approach, { x: 530, y: 400 }) < 110);
+  const path = findWalkPath(scene, from, approach);
+  assert.ok(path.length);
+  for (let i = 1; i < path.length; i++) {
+    for (let t = 0; t <= 1; t += 0.05) {
+      const p = { x: path[i - 1].x + (path[i].x - path[i - 1].x) * t,
+        y: path[i - 1].y + (path[i].y - path[i - 1].y) * t };
+      assert.equal(p.x >= 480 && p.x < 620 && p.y < 440, false);
+    }
+  }
+});
+
+test("the pre-campaign notice covers Mitko's portrait until posting, including old saves", () => {
+  const scene = chapter1.scenes.find(scene => scene.id === "scene.chapter1.village_square");
+  const layer = scene.foregroundLayers.find(layer => layer.id === "layer.square.poster_before");
+  const editedScene = {};
+  SceneEditor.prototype.applyLayersToRuntime.call({ layerSource: {}, layers: [layer], game: { currentScene: editedScene } });
+  assert.equal(editedScene.foregroundLayers[0].hiddenWhenFlag, "campaignPosted");
+  const renderer = Object.create(Renderer.prototype);
+  for (const flags of [undefined, {}, { campaignPosted: false }]) {
+    renderer.game = { state: { flags } };
+    assert.equal(renderer.sceneLayerVisible(layer), true);
+  }
+  renderer.game.state.flags = { campaignPosted: true };
+  assert.equal(renderer.sceneLayerVisible(layer), false);
+});
+
+test("relocated stamp station targets the visible seal and releases its old right-hand area", () => {
+  const scene = chapter1.scenes.find(scene => scene.id === "scene.chapter1.municipality");
+  const target = scene.interactables.find(target => target.id === "hotspot.municipality.stamp_desk");
+  const seal = scene.foregroundLayers.find(layer => layer.asset === "municipalitySeal");
+  assert.equal(pointInPolygon({ x: seal.left + 5, y: seal.top + seal.height / 2 }, target.polygon), true);
+  assert.equal(pointInPolygon({ x: 690, y: 430 }, target.polygon), false);
+});
+
+test("corner stamp table sits behind the register without stealing its covered click area", () => {
+  const scene = chapter1.scenes.find(scene => scene.id === "scene.chapter1.municipality");
+  const layers = scene.foregroundLayers;
+  const register = layers.find(layer => layer.asset === "candidateRegister");
+  const table = layers.find(layer => layer.asset === "stampTable");
+  const seal = layers.find(layer => layer.asset === "municipalitySeal");
+  const order = [register, table, seal].sort((a, b) => b.zIndex - a.zIndex);
+  assert.deepEqual(order.map(layer => layer.asset), ["stampTable", "municipalitySeal", "candidateRegister"]);
+  const target = scene.interactables.find(target => target.id === "hotspot.municipality.stamp_desk");
+  assert.equal(pointInPolygon({ x: 518, y: 400 }, target.polygon), false);
+  assert.equal(pointInPolygon({ x: seal.left + 5, y: seal.top + seal.height - 3 }, target.polygon), true);
+});

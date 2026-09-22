@@ -1,9 +1,14 @@
 export function requirementsMet(requirements = {}, context = {}) {
+  if (requirements.disabled) return false;
   const state = context.state || {};
   const flags = state.flags || {};
   const inventory = context.inventory;
+  if (requirements.anyOf?.length && !requirements.anyOf.some(rule => requirementsMet(rule, context))) return false;
 
   if ((requirements.items || []).some((itemId) => !inventory?.has(itemId))) return false;
+  if ((requirements.absentItems || []).some((itemId) => (
+    inventory?.has(itemId) || (state.droppedItems || []).some((record) => record.itemId === itemId)
+  ))) return false;
   if ((requirements.flags || []).some((flag) => !flags[flag])) return false;
   if ((requirements.notFlags || []).some((flag) => Boolean(flags[flag]))) return false;
   if (requirements.anyStateTrue?.length && !requirements.anyStateTrue.some((key) => Boolean(state[key]))) return false;
@@ -22,6 +27,7 @@ export function applyEffects(effects = [], context = {}) {
   state.flags ||= {};
 
   for (const effect of effects) {
+    if (effect.requirements && !requirementsMet(effect.requirements, context)) continue;
     if (effect.type === "setFlag") {
       state.flags[effect.key] = effect.value ?? true;
     } else if (effect.type === "setState") {

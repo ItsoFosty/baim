@@ -31,12 +31,33 @@ export class SaveSystem {
 function migrateSave(save) {
   const normalized = {
     ...save,
+    flags: { ...(save.flags || {}) },
     inventory: Array.isArray(save.inventory) ? save.inventory : [],
     droppedItems: Array.isArray(save.droppedItems) ? save.droppedItems : [],
     activeQuests: Array.isArray(save.activeQuests) ? save.activeQuests : [],
     completedQuests: Array.isArray(save.completedQuests) ? save.completedQuests : [],
     expiredQuests: Array.isArray(save.expiredQuests) ? save.expiredQuests : []
   };
+  // Preserve earned registration in old saves, including saves from before the
+  // registration flags existed. Never reopen a resolved chapter.
+  if (!normalized.chapter1Completed) {
+    if (normalized.hasBallotBox || normalized.inventory.includes("item.ballot_box") || normalized.droppedItems.some(record => record.itemId === "item.ballot_box") || normalized.flags.ballotBoxRecovered || normalized.ballotBoxDelivered) {
+      normalized.flags.candidateRegistrationStamped = true;
+      normalized.flags.ballotBoxRecovered = true;
+      normalized.hasBallotBox = true;
+      const boxQuest = "quest.chapter1.ballot_box";
+      normalized.activeQuests = normalized.activeQuests.filter(id => id !== boxQuest);
+      if (!normalized.completedQuests.includes(boxQuest)) normalized.completedQuests.push(boxQuest);
+    }
+    if (normalized.flags.candidateRegistrationStamped) {
+      normalized.flags.mayorDiplomaStamped = true;
+      normalized.flags.journalistInOffice = false;
+    } else if (normalized.hasFakeDiploma) {
+      const diplomaQuest = "quest.chapter1.fake_diploma";
+      normalized.completedQuests = normalized.completedQuests.filter(id => id !== diplomaQuest);
+      if (!normalized.activeQuests.includes(diplomaQuest) && !normalized.expiredQuests.includes(diplomaQuest)) normalized.activeQuests.push(diplomaQuest);
+    }
+  }
   const journalistQuestId = "quest.chapter1.journalist";
   if (
     normalized.hasBallotBox
@@ -49,7 +70,9 @@ function migrateSave(save) {
   }
   const babaQuestId = "quest.chapter1.baba_vote";
   if (
-    !normalized.babaStoyankaVote
+    !normalized.chapter1Completed
+    && !normalized.expiredQuests.includes(babaQuestId)
+    && !normalized.babaStoyankaVote
     && !normalized.activeQuests.includes(babaQuestId)
     && !normalized.completedQuests.includes(babaQuestId)
   ) {

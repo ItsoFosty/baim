@@ -22,6 +22,13 @@
 - Baba Stoyanka: seated painted cutout integrated at the village-square bus stop; the layer is
   calibrated to `122px`, approximately 20% smaller than Bai Mitko's calculated height at the bench
   depth, and its dialogue hotspot is aligned with the visible character.
+- Old Men Chorus: two seated painted characters now occupy the existing square bench,
+  using its stable Look/Talk/Use hotspot and fountain clues. Static pair at `99px` height;
+  character animation remains future work. The walk mask excludes the area
+  occupied by and behind the pair.
+- Mitko's competition glass: separate transparent painted prop on the left mehana table,
+  visible during Tony's active challenge and aligned with the existing own-glass hotspot.
+  The water inventory icon and puzzle logic are unchanged.
 - Bai Mitko runtime animation: the active Ludo.ai sprite-sheet path provides east walk
   start/loop/short/stop, six idle variants, three talk variants, rejection, and take. West mirrors
   east. North/south walk and additional look/use/puzzle actions remain deferred.
@@ -46,8 +53,26 @@ The next runtime art should move closer to the approved Bai Mitko model sheet:
 
 The current village square stays as a runtime proof and layout reference, not final locked art direction.
 
+- Kiosk campaign board: a weathered-paper layer covers Mitko's portrait until
+  `campaignPosted`; the Look hint points to kiosk printing. Posting reveals the
+  original approved portrait without changing the background file.
+
+- Municipality stamp station: oak table turned 5 degrees clockwise from v2,
+  reduced another 10% (141.1 to 126.99px), then fitted at (505, 352)
+  using the uploaded corner screenshot. Register draws over the overlapping left
+  side of the table; seal and exposed click area remain accessible.
+  The v5 redraw further lowers the rear edge and foreshortens the tabletop while preserving
+  the front drawer placement through a fixed source crop. The v6 correction
+  extends the rear legs to the floor and removes the inconsistent lower braces. Matching ink pad and forms, with a separate
+  burgundy-and-brass seal at the existing interaction. Taking the seal hides only
+  that prop; its matching image also appears in inventory.
+
 ## Current Integrated Runtime Assets
 
+- `assets/chapter1/scenes/mehana/competition-glass-v1.png`
+- `assets/chapter1/characters/old_men_chorus/seated-pair-v1.png`
+- `assets/chapter1/scenes/municipality/stamp-table-v9.png`
+- `assets/chapter1/scenes/municipality/municipality-seal-v1.png`
 - `assets/chapter1/scenes/apartment/background.png`
 - `assets/chapter1/scenes/village_square/background.png`
 - `assets/chapter1/scenes/mehana/background.png` (medium-cartoon character-readability V2)
@@ -82,3 +107,38 @@ The current village square stays as a runtime proof and layout reference, not fi
 - Journalist final character art and animation
 - UI skin
 - Remaining inventory item icons
+
+
+## Archive close-up — 16 September
+Added `assets/chapter1/scenes/archive/{open,closed,jar,box}-v1.png`.
+Open background includes the ledger. Jar and empty box are alpha cutouts with
+inventory icons. Scene layers are authored in
+`assets_src/chapter1/scenes/archive/layers.json`; original generations and
+built-in imagegen prompts are preserved beside that file. The municipality’s
+approved wide background is unchanged. Opening and substitution currently use
+state changes; bespoke pull/swap animation remains outstanding.
+
+## Polling-station direction sign
+Replaced the square exit's rounded debug panel with a painted cream/burgundy
+wooden arrow signpost, with readable Bulgarian and English lettering.
+Runtime: assets/chapter1/scenes/village_square/election-sign-v1.png.
+Original generation and prompt: assets_src/chapter1/scenes/village_square/
+election-sign-v1.png and election-sign-v1-prompt.md (built-in imagegen).
+Placement and silhouette hotspot are editable through the square's source
+layers/object geometry. Visibility follows exit.square.to_election_booth, so
+the existing interview gate, chapter-completion rule and destination persist.
+Browser review confirmed legibility and normal-click entry to the polling room.
+
+## Journalist shading refinement
+User requested slightly richer detail and shadows to match Bai Mitko’s rendering.
+Updated both square and office references to
+assets/chapter1/characters/journalist/standing-v2.png, preserving the previous
+standing-v1.png. The runtime canvas remains 257×800 and both scene placements
+remain unchanged. Refined hair, facial/collar contact shadows, fabric folds and
+leather highlights; existing character identity, hairstyle, outfit and pose retained.
+Source, chroma import and imagegen prompt are under
+assets_src/chapter1/mayor-office-v1/journalist-v2-*.
+The built-in tool baked a checkerboard rather than alpha, so a background-only
+chroma generation was processed with the existing chromaKeyGreenToAlpha utility.
+Browser review confirmed the new transparent asset in both locations beside Mitko.
+This is a painted sprite refinement; no animation sequences were added.

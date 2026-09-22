@@ -4,6 +4,7 @@ import { canExitToStop, eastWestFallbackFacing, stopExitFrameForPlayer } from ".
 import { externalAnimationV1 } from "../content/art/externalAnimationRuntime.generated.js";
 import { intoxicationSway } from "./IntoxicationSystem.js";
 import { sceneZDepthT } from "./DepthMath.js";
+import { drawSceneEffect } from "./SceneEffects.js";
 
 const PLAYER_SHADOW_FULL_SIZE_Y_OFFSET = -4;
 
@@ -132,7 +133,7 @@ export class Renderer {
     const scene = this.game.currentScene;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     const hasRealBackground = this.drawBackground(scene);
-    const actors = !this.game.editMode || this.game.sceneEditor?.shouldRenderPlayer()
+    const actors = scene.playerMode !== "closeup" && (!this.game.editMode || this.game.sceneEditor?.shouldRenderPlayer())
       ? [this.game.player]
       : [];
     this.drawSceneZLayers(scene, actors);
@@ -422,7 +423,10 @@ export class Renderer {
         : []),
       ...(scene.foregroundLayers || [])
         .filter((layer) => this.sceneLayerVisible(layer))
-        .map((layer) => ({ kind: "layer", layer, zIndex: Number(layer.zIndex) }))
+        .map((layer) => ({ kind: "layer", layer, zIndex: Number(layer.zIndex) })),
+      ...(scene.effects || [])
+        .filter((effect) => this.sceneLayerVisible(effect))
+        .map((effect) => ({ kind: "effect", effect, zIndex: Number(effect.zIndex) }))
     ].sort((a, b) => {
       const az = Number.isFinite(a.zIndex) ? a.zIndex : 100;
       const bz = Number.isFinite(b.zIndex) ? b.zIndex : 100;
@@ -433,6 +437,7 @@ export class Renderer {
       else if (entry.kind === "hover") this.drawHoveredTarget(entry.target);
       else if (entry.kind === "droppedItemsPile") this.drawDroppedItemsPile(scene, entry.target);
       else if (entry.kind === "debugTarget") this.drawDebugTarget(entry.target);
+      else if (entry.kind === "effect") drawSceneEffect(this.ctx, entry.effect, (this.game.lastTime || 0) / 1000);
       else this.drawSceneRasterLayer(scene, entry.layer);
     }
   }
@@ -496,6 +501,17 @@ export class Renderer {
   }
 
   sceneLayerVisible(layer) {
+    if (this.game.editMode) {
+      const preview = this.game.sceneEditor?.layerPreviewVisible?.(layer);
+      if (typeof preview === "boolean") return preview;
+    }
+    if (layer?.visibleWhenTargetId) {
+      const scene = this.game.currentScene;
+      const target = [...(scene?.npcs || []), ...(scene?.interactables || []), ...(scene?.exits || [])]
+        .find(target => target.id === layer.visibleWhenTargetId);
+      if (!target || !this.game.targetAvailable(target)) return false;
+    }
+    if (layer?.hiddenWhenFlag && this.game.state?.flags?.[layer.hiddenWhenFlag]) return false;
     if (layer?.visibleWhenFlag && !this.game.state?.flags?.[layer.visibleWhenFlag]) return false;
     if (layer?.hiddenWhenItemOwned && this.game.inventory?.has(layer.hiddenWhenItemOwned)) return false;
     if (layer?.hiddenWhenState && this.game.state?.[layer.hiddenWhenState]) return false;

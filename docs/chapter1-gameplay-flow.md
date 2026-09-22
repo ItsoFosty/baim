@@ -1,5 +1,15 @@
 # Chapter 1 Gameplay Flow Contract
 
+## Completion pass — 16 September 2026
+
+The [reconciled completion plan](chapter1-completion-plan-160926.md) defines the
+approved target scenario. The opening/campaign, receipt investigation, Mayor
+validation, clerk registration and archive exchange are now playable. The
+implementation sections dated 16 September below supersede the historical
+graybox route diagrams and milestone descriptions. The mehana cellar no longer
+awards a ballot box. Support quests remain optional; final election staging is
+the next implementation milestone.
+
 ## Status
 
 This document is the canonical implemented graybox progression contract for Chapter 1. All story
@@ -20,6 +30,20 @@ before his creditors catch up with his new public identity.
 
 The player may reach the election with a weak campaign and lose. Chapter completion means resolving
 the election, not necessarily winning it.
+
+## Baba support: fountain repair
+
+Ask Baba about her vote, inspect the fountain, and ask the Old Men on the bench.
+Take sunflower oil from the mehana, use it on the fountain, then Use the fountain
+to turn the lubricated valve. Visible water confirms success. Tell Baba about the
+repair to earn her vote and complete `quest.chapter1.baba_vote` once. Discovery
+can happen in a different order; clues are guidance rather than artificial gates.
+
+Gifts no longer buy her vote or damage trust. They are returned with repair hints.
+If the oil was consumed, ask Kiro for a replacement. A bottle already carried or
+dropped prevents duplicates. Existing saves keep already-earned votes; finished
+elections do not reopen the support quest. The journal tracks diagnosis, oil,
+operation and reporting; repeated failed valve use supplies a stronger hint.
 
 ## Canonical Player Flow
 
@@ -104,16 +128,10 @@ takes priority over the generic NPC response only after the challenge has starte
 5. Wrong combinations and dropped components do not consume either unique component. The normal dropped-
    item recovery system remains available until assembly succeeds.
 
-This route and the remaining Step 2 sequence are playable end to end. The municipality credential check
-runs in the painted, layered `scene.chapter1.municipality`: arriving without the diploma gives a clear,
-repeatable hint, while presenting it through dialogue or directly to the clerk persistently records
-acceptance without consuming the diploma. The player then takes the self-service municipality stamp,
-uses it on the candidate register, and may inspect the archive cabinet. The archive starts
-`quest.chapter1.ballot_box` and persistently directs the player to the Mehana cellar. Recovering the
-ballot box is also playable: the clue makes the cellar hatch relevant, opening it reveals the box,
-and taking it completes `quest.chapter1.ballot_box` without affecting either support route. The recovered
-box reveals Ralitsa Microphonova on the square. Her three-question interview opens the graybox polling
-station, where the player confirms the point of no return and receives one of three persisted outcomes.
+The paper-combination route remains available as a fallback, but producing a
+diploma no longer completes registration. Follow the receipt/Mayor/clerk route
+below. The clerk then directs Mitko to the archive close-up, described below.
+Recovery enables the journalist’s final interview and the existing election gate.
 
 ## Quest Roles
 
@@ -229,7 +247,8 @@ Return to Main Menu.
 
 ## Recoverable Failure Rules
 
-- Baba's damaged-trust route remains recoverable with village wine.
+- Baba support comes from fountain repair regardless of legacy damaged-trust values.
+  Kiro replaces consumed oil; dropped oil remains recoverable in its scene.
 - Tony's challenge remains retryable until his vote is secured; refusal or a failed trick cannot make
   the quest permanently impossible.
 - Failed diploma assembly does not destroy unique required components.
@@ -270,3 +289,59 @@ recoverable puzzle routes, bilingual finale keys, and ending persistence. A Play
 test also runs the required diploma, municipality, ballot-box, journalist, and election path from a
 fresh save, then reloads the persisted ending. As of 2026-09-04, `npm test` passes all 201 tests.
 Final-art acceptance remains a separate milestone.
+
+## Registration replacement — 16 September 2026
+
+This section supersedes the older self-service seal progression above.
+
+1. Obtain diploma and pamphlets at the kiosk (legacy bills/envelope crafting is
+   still accepted). Creating the diploma no longer completes its quest.
+2. Post pamphlets. Journalist appears by the kiosk; municipal entry opens.
+3. Win Tony's challenge for support and the receipt, or ask the journalist what
+   evidence she needs and request the same expense record from Kiro. Carried,
+   dropped and already-delivered receipts cannot be duplicated.
+4. Give the receipt to the journalist. She leaves the square for the office.
+5. Show the diploma to the clerk, before or after collecting the receipt. She
+   checks it but cannot register Mitko without the Mayor's validation.
+6. Enter the Mayor's office with the diploma. The journalist is visibly present.
+   Talk: expense question → explanation → reject the minor post → paper stack →
+   Mayor stamps. This sets mayorDiplomaStamped, not registration.
+7. Return the diploma to the clerk. She registers Mitko, completes the diploma
+   quest, and directs him to the archive. The reporter returns to the square.
+
+The old seal is now a scene prop; even a legacy inventory seal cannot complete
+registration. Existing registered saves retain their earned registration; older
+paper-creation-only saves regain the unfinished diploma quest. Finished endings
+are not reopened. Save/reload preserves the reporter's location and validation.
+
+The archive close-up below replaces cellar recovery. The post-recovery final
+interview remains playable until the finale staging milestone. The stamping moment is presently
+staged through dialogue and persistent state; dedicated animation remains art
+production work. No supporter quest is a registration gate.
+
+
+## Archive implementation — 16 September 2026
+
+1. After clerk registration, Use the right-hand archive cabinet. It opens
+   `scene.chapter1.archive`, a fixed close-up. Click the open drawer’s front handle to return to Penka.
+2. Look at the jammed handle to discover the strap clue. Use the closed handle
+   to step back to Penka if you need to fetch the accordion.
+3. Use `item.accordion` on the handle. The drawer opens; the accordion is retained.
+4. Look at or Use the ledger. One transparent seasonal container must remain in
+   the designated storage position; an equivalent replacement is allowed.
+5. Take `item.pickle_jar`, then Use it on the empty `item.ballot_box`.
+6. Take the released box. Complete the ballot-box quest and continue with the
+   journalist’s final interview in the square.
+
+The jar is visibly removed when taken and reappears in the designated storage
+area after placement. It cannot be taken back. The box disappears only when
+collected. Reloads retain each stage. The clerk offers the next relevant hint.
+
+No invisible items can be dropped into the close-up: step back into the hall to
+drop baggage. A jar dropped elsewhere remains in that room’s recoverable pile
+and cannot respawn in the cabinet. Existing legacy boxes, including dropped
+ones, preserve recovery and registration. The old cellar IDs remain retired,
+so a legacy cellar-open flag never creates a second box.
+
+Opening and exchange use painted state changes. Dedicated character action
+animation is still a presentation task, as is the Mayor’s stamping animation.

@@ -4,6 +4,12 @@ export const assetManifest = {
   baseResolution: { width: 1280, height: 720 },
   runtimeSceneResolution: { width: 1280, height: 720 },
   scenes: {
+    "scene.chapter1.archive": {
+      background: "assets/chapter1/scenes/archive/open-v1.png",
+      closed: "assets/chapter1/scenes/archive/closed-v1.png",
+      jar: "assets/chapter1/scenes/archive/jar-v1.png",
+      box: "assets/chapter1/scenes/archive/box-v1.png"
+    },
     "scene.chapter1.apartment": {
       background: "assets/chapter1/scenes/apartment/background.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png",
@@ -14,7 +20,11 @@ export const assetManifest = {
       windowOpenBack: "assets/chapter1/scenes/apartment/window-open-0.png"
     },
     "scene.chapter1.village_square": {
+      electionSign: "assets/chapter1/scenes/village_square/election-sign-v1.png",
+      journalistStanding: "assets/chapter1/characters/journalist/standing-v2.png",
       background: "assets/chapter1/scenes/village_square/background.png",
+      oldMenChorusSeated: "assets/chapter1/characters/old_men_chorus/seated-pair-v1.png",
+      posterBefore: "assets/chapter1/scenes/village_square/poster-before-v1.png",
       babaStoyankaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v1.png",
       kioskPapersPile: "assets/chapter1/scenes/village_square/kiosk-papers-pile-v1.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
@@ -26,19 +36,28 @@ export const assetManifest = {
       mehanaWaiterIdle: "assets/chapter1/characters/mehana_waiter/idle-v1.png",
       tonyFridgeSeated: "assets/chapter1/characters/tony_fridge/seated-v1.png",
       kaliakraOil: "assets/chapter1/scenes/mehana/kaliakra-oil-v1.png",
+      mitkoCompetitionGlass: "assets/chapter1/scenes/mehana/competition-glass-v1.png",
       waterJug: "assets/chapter1/scenes/mehana/water-jug-v1.png",
       todayNewspaper: "assets/chapter1/scenes/mehana/newspaper-v3.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.municipality": {
-      background: "assets/chapter1/scenes/municipality/background-style-match-medium-v1.png",
+      background: "assets/chapter1/scenes/municipality/background-mayor-door-v1.png",
       archiveCabinet: "assets/chapter1/scenes/municipality/archive-cabinet-v6.png",
+      stampTable: "assets/chapter1/scenes/municipality/stamp-table-v9.png",
+      municipalitySeal: "assets/chapter1/scenes/municipality/municipality-seal-v1.png",
       candidateRegister: "assets/chapter1/scenes/municipality/candidate-register-v4.png",
       penkaChair: "assets/chapter1/scenes/municipality/penka-chair-v1.png",
       penkaSeated: "assets/chapter1/scenes/municipality/penka-seated-bordeaux-polka-v2.png",
       penkaDesk: "assets/chapter1/scenes/municipality/penka-desk-v10.png",
       securityOfficer: "assets/chapter1/scenes/municipality/policeman-security-guard-v2.png",
       securityTable: "assets/chapter1/scenes/municipality/security-table-v6.png",
+      droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
+    },
+    "scene.chapter1.mayor_office": {
+      journalistStanding: "assets/chapter1/characters/journalist/standing-v2.png",
+      background: "assets/chapter1/scenes/mayor_office/background-v1.png",
+      mayorStanding: "assets/chapter1/characters/mayor/standing-v1.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.election_booth": {
@@ -52,6 +71,11 @@ export const assetManifest = {
     }
   },
   items: {
+    "item.pickle_jar": { icon: "assets/chapter1/scenes/archive/jar-v1.png" },
+    "item.ballot_box": { icon: "assets/chapter1/scenes/archive/box-v1.png" },
+    "item.municipality_stamp": {
+      icon: "assets/chapter1/scenes/municipality/municipality-seal-v1.png"
+    },
     "item.accordion": {
       icon: "assets/chapter1/items/accordion.png"
     },

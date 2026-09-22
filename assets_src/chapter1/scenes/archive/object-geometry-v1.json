@@ -1,0 +1,141 @@
+{
+  "id": "objectGeometry.chapter1.archive.v1",
+  "sceneId": "scene.chapter1.archive",
+  "sourceBackground": {
+    "path": "assets/chapter1/scenes/archive/open-v1.png",
+    "width": 1280,
+    "height": 720
+  },
+  "world": {
+    "width": 1280,
+    "height": 720
+  },
+  "objects": [
+    {
+      "id": "exit.archive.to_municipality",
+      "polygon": [
+        {
+          "x": 495,
+          "y": 553
+        },
+        {
+          "x": 800,
+          "y": 553
+        },
+        {
+          "x": 800,
+          "y": 655
+        },
+        {
+          "x": 495,
+          "y": 655
+        }
+      ]
+    },
+    {
+      "id": "hotspot.archive.handle",
+      "polygon": [
+        {
+          "x": 475,
+          "y": 270
+        },
+        {
+          "x": 785,
+          "y": 270
+        },
+        {
+          "x": 785,
+          "y": 390
+        },
+        {
+          "x": 475,
+          "y": 390
+        }
+      ]
+    },
+    {
+      "id": "hotspot.archive.ledger",
+      "polygon": [
+        {
+          "x": 213,
+          "y": 272
+        },
+        {
+          "x": 463,
+          "y": 272
+        },
+        {
+          "x": 463,
+          "y": 467
+        },
+        {
+          "x": 213,
+          "y": 467
+        }
+      ]
+    },
+    {
+      "id": "hotspot.archive.jar",
+      "polygon": [
+        {
+          "x": 550,
+          "y": 252
+        },
+        {
+          "x": 707,
+          "y": 252
+        },
+        {
+          "x": 707,
+          "y": 462
+        },
+        {
+          "x": 550,
+          "y": 462
+        }
+      ]
+    },
+    {
+      "id": "hotspot.archive.ballot_box",
+      "polygon": [
+        {
+          "x": 750,
+          "y": 178
+        },
+        {
+          "x": 1033,
+          "y": 178
+        },
+        {
+          "x": 1033,
+          "y": 468
+        },
+        {
+          "x": 750,
+          "y": 468
+        }
+      ]
+    },
+    {
+      "id": "hotspot.archive.replacement",
+      "polygon": [
+        {
+          "x": 1000,
+          "y": 270
+        },
+        {
+          "x": 1157,
+          "y": 270
+        },
+        {
+          "x": 1157,
+          "y": 480
+        },
+        {
+          "x": 1000,
+          "y": 480
+        }
+      ]
+    }
+  ]
+}

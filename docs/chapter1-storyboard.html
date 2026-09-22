@@ -14,27 +14,593 @@
     nav a { padding: 10px 16px; border: 1px solid #b69c77; border-radius: 6px; color: inherit; text-decoration: none; }
     nav a:hover { background: #48392d; }
     a:focus-visible { outline: 3px solid #f4c77b; outline-offset: 4px; }
-    figure { margin: 0; }
-    img { display: block; width: 100%; height: auto; background: #f6ecd9; }
-    figcaption { margin-top: 12px; color: #d8cbb8; }
+    figure { margin: 0 0 32px; }
+    img { display: block; width: 100%; height: auto; background: #f4efe4; }
+    figcaption { margin: 8px 0; color: #d8cbb8; }
+    summary { cursor: pointer; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+    main a { color: #f4c77b; }
   </style>
 </head>
 <body>
   <header>
     <nav aria-label="Storyboard navigation">
       <a href="../">← Back to Main / <span lang="bg">Към главното меню</span></a>
-      <a href="../assets_src/chapter1/storyboards/chapter1-storyboard-v1.png">Open full image / <span lang="bg">Отвори цялото изображение</span></a>
-      <a href="../assets_src/chapter1/storyboards/chapter1-storyboard-v1.png" download>Download PNG / <span lang="bg">Изтегли PNG</span></a>
+      <a href="./chapter-one-visual-storyboard.pdf" download>Download PDF / <span lang="bg">Изтегли PDF</span></a>
     </nav>
     <h1>Chapter 1 Storyboard / <span lang="bg">Сториборд — Глава 1</span></h1>
     <p>Comrade Candidate / <span lang="bg">Другарят Кандидат</span></p>
+    <p>Revised 16 September 2026 · 17 pages · Convincing victory, narrow victory, or loss.<br><span lang="bg">Обновен на 16 септември 2026 г. · 17 страници · Убедителна победа, крехка победа или загуба.</span></p>
+    <p>Planned story and draft staging; some sequences await implementation.<br><span lang="bg">Планиран сюжет и примерна постановка; част от сцените предстои да бъдат реализирани.</span></p>
   </header>
   <main>
-    <figure>
-      <a href="../assets_src/chapter1/storyboards/chapter1-storyboard-v1.png" aria-label="Open full storyboard image / Отвори целия сториборд">
-        <img src="../assets_src/chapter1/storyboards/chapter1-storyboard-v1.png" width="1536" height="1024" alt="Twelve illustrated panels: apartment, village campaign, Baba's support, diploma, tavern challenge, accordion distraction, water trick, registration, archive clue, ballot-box recovery, interview, and three election outcomes. / Дванадесет илюстрирани кадъра: апартамент, кампания, подкрепата на Баба, диплома, надпиване, акордеон, номерът с водата, регистрация, архивна следа, намиране на урната, интервю и три изборни резултата.">
-      </a>
-      <figcaption>Concept storyboard of the playable chapter. Campaign routes can be played in any order; support affects the result.<br><span lang="bg">Концептуален сториборд на игралната глава. Редът на кампанията е свободен; подкрепата влияе на резултата.</span></figcaption>
+    <figure id="page-1">
+      <img src="./storyboard-pages/page-01.webp" width="1800" height="1140" loading="eager" alt="Page 1 / Страница 1">
+      <figcaption>Page 1 / Страница 1 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>VISUAL STORY TREATMENT / SEPTEMBER 2026
+Другарят Кандидат
+COMRADE CANDIDATE  /  Chapter One  /  From unpaid bills to the mayor’s chair
+01 / APARTMENT
+02 / VILLAGE SQUARE
+03 / MEHANA
+Broke, in debt and armed with an accordion, Bai Mitko enters a
+same-day mayoral election. A real repair earns him credibility; a drinking
+trick earns him an ally; the Mayor’s own bureaucracy makes him eligible
+to win.
+Бай Митко е без пари, но с акордеон. За един ден трябва да стане кандидат, да спечели
+подкрепа, да намери урната и да победи кмета със собствените му правила.
+THE COMPLETE CHAPTER
+6 canonical quests
+11 story beats + 3 outcomes
+9 items across campaign routes
+Bulgarian + English summaries
+Script v1.0 + approved completion plan, 16 September
+2026. Location references and draft concepts. No
+countdown or puzzle dead ends; an incomplete
+campaign can lose.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+01
+</pre></details>
+    </figure>
+    <figure id="page-2">
+      <img src="./storyboard-pages/page-02.webp" width="1800" height="1140" loading="lazy" alt="Page 2 / Страница 2">
+      <figcaption>Page 2 / Страница 2 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>QUEST STRUCTURE
+Reading order below is a suggested playthrough; preparation and supporter puzzles can interleave.
+MAIN
+Become Mayor
+quest.chapter1.main
+Pages 3-13
+PAPERWORK
+Become an official candidate
+quest.chapter1.fake_diploma
+Pages 4-5, 9
+BABA
+Earn Baba’s support
+Old Men’s clue → oil → fountain repair
+quest.chapter1.baba_vote
+Pages 6
+TONY
+Win Tony’s challenge
+Water + accordion → own drink → support + receipt
+quest.chapter1.tony_vote
+Pages 7
+JOURNALIST
+Expose the expense contradiction
+quest.chapter1.journalist
+Pages 8-9
+BALLOT BOX
+Recover election equipment
+Registration → strap → cabinet → jar exchange
+quest.chapter1.ballot_box
+Pages 10-11
+Six quests. Three election outcomes.
+Opening → registration and box recovery → election result
+Bills → Aunt Docheva → posters → Mayor’s stamp → Clerk
+Posted campaign + receipt from Tony or Kiro → Mayor
+FINALE GATE Registered candidate + Journalist has receipt + ballot box delivered
+Support aﬀects the result, not entry. Both supporters guarantee a win; campaign quality sets the margin. Incomplete campaigns can lose. See page 17.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+02
+</pre></details>
+    </figure>
+    <figure id="page-3">
+      <img src="./storyboard-pages/page-03.webp" width="1800" height="1140" loading="lazy" alt="Page 3 / Страница 3">
+      <figcaption>Page 3 / Страница 3 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 01 / APARTMENT
+Three bills and an accordion
+Три сметки и един акордеон
+SUPPLIED LOCATION REFERENCE / ACTION STAGING DESCRIBED BELOW
+Wide room → TV and bills → accordion → door. Sound: TV announcement, knock, a short accordion wheeze.
+STORY SUMMARY
+On election morning, a TV announcement and a
+creditor at the door give Mitko a practical reason to
+run for Mayor. Registration is today; voting is
+tonight.
+По телевизията обявяват избори, а на вратата хлопа
+кредитор. Митко решава да стане кмет: там поне има
+заплата.
+01 / SETUP
+Inspect the TV or campaign poster. The main quest begins; the
+knock adds comic urgency.
+02 / PLAYER ACTION
+Take the unpaid bills from the table and the accordion by the
+door. Leave for the Square.
+03 / PAYOFF
+Debt becomes campaign material; the accordion will solve two
+later puzzles.
+OUTCOME / Main quest active. Bills + accordion acquired. The apartment stays accessible until the finale.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+03
+</pre></details>
+    </figure>
+    <figure id="page-4">
+      <img src="./storyboard-pages/page-04.webp" width="1800" height="1140" loading="lazy" alt="Page 4 / Страница 4">
+      <figcaption>Page 4 / Страница 4 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 02 / SQUARE / KIOSK
+SUPPLIED LOCATION REFERENCE / ACTION STAGING DESCRIBED BELOW
+STORY SUMMARY
+01 / DISCOVER
+02 / PLAYER ACTION
+03 / PAYOFF
+Receive the fake diploma and campaign pamphlets.
+Registration still requires validation.
+OUTCOME / Bills consumed. Fake diploma + pamphlets received. This quest completes only at registration.
+Aunt Docheva manufactures competence
+Леля Дочева поправя липсата на диплома
+Square establishing view → kiosk window → bills fed into printer → diploma and pamphlets. Aunt Docheva is not yet
+depicted in the supplied image.
+The election notice demands proof of administrative
+competence. Aunt Docheva uses Mitko’s bills to
+produce a diploma and campaign pamphlets.
+За кандидатурата трябва диплома. Леля Дочева взема
+данните от сметките, обръща листовете и осигурява
+нужната квалификация.
+Read the election notice. Talk to Aunt Docheva at the kiosk; she
+explains the qualiﬁcation requirement.
+Give unpaid bills to Aunt Docheva. She uses the name, address
+and blank reverse sides.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+04
+</pre></details>
+    </figure>
+    <figure id="page-5">
+      <img src="./storyboard-pages/page-05.webp" width="1800" height="1140" loading="lazy" alt="Page 5 / Страница 5">
+      <figcaption>Page 5 / Страница 5 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 03 / SQUARE / POSTER BOARD
+A candidate becomes visible
+Кандидатът вече е на стената
+SUPPLIED LOCATION REFERENCE / ACTION STAGING DESCRIBED BELOW
+Wide Square → hand presses pamphlet onto board → Journalist arrives → glance toward Municipality. Existing
+screenshot is location reference, not a before/after state.
+STORY SUMMARY
+Posting the pamphlets turns a private scheme into a
+public campaign. The Journalist appears and the
+Guard recognizes Mitko as a candidate.
+Митко разлепва агитационните материали. Журналистката
+се появява, а охраната вече го разпознава като кандидат.
+01 / PLAYER ACTION
+Use campaign pamphlets on the poster board in the Square.
+02 / VISIBLE CHANGE
+Mitko’s campaign material appears on the board. The Journalist
+enters the hub.
+03 / UNLOCK
+Municipality access becomes available. No bribe, disguise or
+extra Guard quest is needed.
+OUTCOME / Campaign posted. Journalist quest becomes available; Municipality entry opens.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+05
+</pre></details>
+    </figure>
+    <figure id="page-6">
+      <img src="./storyboard-pages/page-06.webp" width="1800" height="1140" loading="lazy" alt="Page 6 / Страница 6">
+      <figcaption>Page 6 / Страница 6 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 04 / SQUARE ↔ MEHANA
+Baba wants one working thing
+Баба иска нещо да проработи
+SUPPLIED LOCATION REFERENCE / ACTION STAGING DESCRIBED BELOW
+Baba at bus stop → dry valve → oil application → hesitant stream → approving reaction. Suggested staging; supplied
+image shows the unrepaired location.
+STORY SUMMARY
+Baba Stoyanka will trade her support for a small,
+completed repair. The Old Men identify the
+fountain’s rusted valve and suggest cooking oil.
+01 / CLUE
+Ask Baba for her vote. Inspect the squeaking valve; the Old
+Men explain that water still reaches it.
+02 / PLAYER ACTION
+Get sunflower oil from the Mehana. Use it on the fountain valve,
+then operate the fountain.
+03 / PAYOFF
+A weak but visible stream appears. Baba publicly supports
+Mitko; the repaired state persists.
+Баба Стоянка не иска обещания. Иска вода от фонтана.
+Старците знаят проблема, а в механата има олио.
+OUTCOME / Baba support secured. Fountain repaired. This support aﬀects the result; it does not gate election entry.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+06
+</pre></details>
+    </figure>
+    <figure id="page-7">
+      <img src="./storyboard-pages/page-07.webp" width="1800" height="1140" loading="lazy" alt="Page 7 / Страница 7">
+      <figcaption>Page 7 / Страница 7 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 05 / MEHANA
+Tony measures political capacity
+Тони измерва политическия капацитет
+SUPPLIED LOCATION REFERENCE / ACTION STAGING DESCRIBED BELOW
+Table two-shot → water jug → accordion phrase → Tony turns away → Mitko’s glass → receipt. The substitution is
+automatic after the correct item use.
+STORY SUMMARY
+Tony’s test is a drinking challenge. Mitko uses the
+accordion to make him sentimental, then substitutes
+water into his own drink.
+Тони признава кандидат, който издържа на масата. Митко
+го разчувства с акордеона и подменя собственото си питие
+с вода.
+01 / PREPARE
+Accept the challenge and obtain a glass of water from the jug.
+02 / PLAYER ACTION
+Use the accordion on Tony. When he turns away, use water on
+Mitko’s own drink.
+03 / PAYOFF
+The drinking sequence plays. Tony backs Mitko; a suspicious
+municipal receipt appears under the glass.
+OUTCOME / Tony support + receipt. Early water use is refused; a loss resets immediately. Water is refillable.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+07
+</pre></details>
+    </figure>
+    <figure id="page-8">
+      <img src="./storyboard-pages/page-08.webp" width="1800" height="1140" loading="lazy" alt="Page 8 / Страница 8">
+      <figcaption>Page 8 / Страница 8 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 06 / SQUARE / JOURNALIST
+A receipt changes the story
+Една касова бележка сменя темата
+SUPPLIED LOCATION REFERENCE / ACTION STAGING DESCRIBED BELOW
+STORY SUMMARY
+Журналистката проверява свършеното. Бележката от
+механата показва, че кметът е отчел почерпката като
+поддръжка на фонтана.
+01 / REACT
+Talk to the Journalist after posting campaign material. Her
+questions reflect repairs, supporters and diploma.
+02 / PLAYER ACTION
+03 / PAYOFF
+She takes the receipt and goes to the Municipality to demand
+the Mayor’s explanation.
+OUTCOME / Receipt transferred to Journalist. Her quest completes and the Mayor confrontation becomes possible.
+The Journalist checks Mitko’s actions. A
+receipt from Tony or Kiro lists the Mayor’s
+Mehana expenses as fountain maintenance.
+Show Tony’s receipt, or ask Kiro for the same expense
+record after the Journalist requests evidence.
+Receipt → fountain expense contradiction → Municipality. If Tony’s support is missing, Kiro supplies the same record;
+evidence is never duplicated.
+Без подкрепата на Тони: след искането на журналистката Киро предоставя същия документ.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+08
+</pre></details>
+    </figure>
+    <figure id="page-9">
+      <img src="./storyboard-pages/page-09.webp" width="1800" height="1140" loading="lazy" alt="Page 9 / Страница 9">
+      <figcaption>Page 9 / Страница 9 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 07 / MUNICIPALITY
+The Mayor stamps his own problem
+Кметът подпечатва собствения си проблем
+DRAFT CONCEPT / NOT APPROVED GAME ART
+Clerk’s rejecting hand → office confrontation → stamp impact → diploma reveal → registration. Two draft frames show the
+rejection and reversal.
+REJECTED → STAMPED → REGISTERED
+The Mayor defeats his own gatekeeping. The official stamp is a story action, not a new
+collectible.
+STORY SUMMARY
+The Clerk rejects the diploma without the Mayor’s
+validation. During the receipt confrontation, he
+proudly stamps the entire paper stack, including
+Mitko’s diploma.
+Деловодителката иска заверка. Докато защитава разходите
+си, кметът подпечатва цялата купчина, включително
+дипломата на съперника.
+01 / OBSTACLE
+Enter after posting pamphlets. Present the diploma: the Clerk
+requires the Mayor’s stamp.
+02 / REVERSAL
+Accompany the Journalist. The Mayor offers a minor post;
+Mitko stays in the race. The Mayor stamps the mixed stack.
+03 / PAYOFF
+The Journalist notices the validation. The Clerk registers Mitko
+and discovers the ballot box is unavailable.
+OUTCOME / Candidate registered. Fake-diploma quest complete. Ballot-box quest starts. No separate stamp item puzzle.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+09
+</pre></details>
+    </figure>
+    <figure id="page-10">
+      <img src="./storyboard-pages/page-10.webp" width="1800" height="1140" loading="lazy" alt="Page 10 / Страница 10">
+      <figcaption>Page 10 / Страница 10 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 08 / MUNICIPALITY / ARCHIVE
+The accordion opens the archive
+Акордеонът отваря архива
+DRAFT CONCEPT / NOT APPROVED GAME ART
+Cabinet handle → strap loop → anticipation and pull → door opens → inventory shelf. Art continuity fix: the ballot box
+must be empty here; the draft incorrectly shows papers inside.
+STORY SUMMARY
+The Clerk traces the missing box to an absurd
+inventory category. In the archive, a jammed cabinet
+has a strong handle but needs extra leverage.
+Урната се води прозрачен сезонен съд. Шкафът в архива е
+заял, но здравият ремък на акордеона решава въпроса.
+01 / CLUE
+After registration, the Clerk explains the container classification
+and sends Mitko to the archive.
+02 / PLAYER ACTION
+Inspect the cabinet. Use the accordion; Mitko loops its strap
+around the handle and pulls.
+03 / REVEAL
+The open cabinet gives access to the ledger, pickle jar and
+ballot-box storage.
+OUTCOME / Archive opened. Accordion retained. Read the ledger before attempting the container exchange.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+10
+</pre></details>
+    </figure>
+    <figure id="page-11">
+      <img src="./storyboard-pages/page-11.webp" width="1800" height="1140" loading="lazy" alt="Page 11 / Страница 11">
+      <figcaption>Page 11 / Страница 11 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 09 / ARCHIVE / STORAGE
+One transparent container remains
+Един прозрачен съд трябва да остане
+DRAFT CONCEPT / NOT APPROVED GAME ART
+Ledger insert → compare jar and box → jar placed in classified slot → box lifted. The reused archive frame establishes the
+props; the swap needs its own future action shot.
+STORY SUMMARY
+The ledger cares about container classification, not
+purpose. A pickle jar can occupy the ballot box’s
+storage position and satisfy the rule.
+Правилникът не различава урна от буркан. Митко оставя
+буркана на нейното място и взема урната за изборите.
+01 / READ THE RULE
+The ledger requires one transparent seasonal container to
+remain in storage.
+02 / PLAYER ACTION
+Take the pickle jar, then place it in the ballot box’s classified
+position.
+03 / PAYOFF
+Take the ballot box. The jar stays in storage, so the inventory
+requirement remains satisfied.
+OUTCOME / Ballot box acquired; archive quest complete. There is no additional release-form or stamp puzzle.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+11
+</pre></details>
+    </figure>
+    <figure id="page-12">
+      <img src="./storyboard-pages/page-12.webp" width="1800" height="1140" loading="lazy" alt="Page 12 / Страница 12">
+      <figcaption>Page 12 / Страница 12 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 10 / ELECTION BOOTH / SEPARATE SCENE
+The election turns on the paperwork
+Изборите се решават по документите
+DRAFT CONCEPT / NOT APPROVED GAME ART
+Box on central table → arrivals → Mayor objection/reaction shots → Clerk and Journalist reveal evidence → ballots →
+result.
+STORY SUMMARY
+Mitko delivers the box. The Mayor objects, but the
+Clerk and Journalist answer with his own stamp,
+classifications and expense records. The villagers
+vote.
+Митко носи урната. Кметът оспорва всичко, но собствените
+му документи оборват възраженията. Селото гласува.
+01 / ASSEMBLE
+02 / CONFRONT
+Qualifications: stamped diploma. Removed box: ledger rule. Jar
+replacement: identical classification.
+03 / PAYOFF
+Deliver the ballot box. Crowd composition and
+reactions reﬂect the supporters actually earned.
+Voting resolves to convincing victory, narrow victory or
+loss. Both supporters guarantee a win; campaign
+quality determines its margin. See page 17.
+OUTCOME / Registration + evidence + delivered box enable voting. Support and campaign quality determine one of three results.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+12
+</pre></details>
+    </figure>
+    <figure id="page-13">
+      <img src="./storyboard-pages/page-13.webp" width="1800" height="1140" loading="lazy" alt="Page 13 / Страница 13">
+      <figcaption>Page 13 / Страница 13 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>BEAT 11 / ENDING / MUNICIPALITY AND FOUNTAIN
+SUPPLIED LOCATION REFERENCE / ACTION STAGING DESCRIBED BELOW
+Proposed closing composition: creditors enter → Mitko looks toward Municipality → fountain insert → end card. Square
+image is a location reference.
+STORY SUMMARY
+01 / REACTION
+02 / FINAL JOKE
+03 / CLOSE
+The result changes. The debt remains.
+Резултатът се променя. Дългът остава.
+Victory: creditors address Mitko as Mr. Mayor. Loss:
+the incumbent stays in oﬃce; Mitko still faces his
+creditors. The closing scene reﬂects the saved result.
+При победа Митко става кмет, но дългът остава.
+При загуба досегашният кмет запазва поста.
+Финалът отразява резултата и свършеното през
+деня.
+Show celebration, relief or defeat according to the result.
+Creditors arrive in every outcome. Use the existing
+new-oﬃce joke only after a victory.
+Show water only if repaired. Save the exact outcome
+and close Chapter 1; resolved endings stay resolved.
+OUTCOME / Save convincing victory, narrow victory or loss. Mitko becomes Mayor only in the two winning branches.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+13
+</pre></details>
+    </figure>
+    <figure id="page-14">
+      <img src="./storyboard-pages/page-14.webp" width="1800" height="1140" loading="lazy" alt="Page 14 / Страница 14">
+      <figcaption>Page 14 / Страница 14 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>INVENTORY CONTINUITY
+Every object earns its place
+ITEM
+OBTAINED
+USED
+STORY RESULT
+Unpaid bills
+item.unpaid_bills
+Consumed → diploma + pamphlets
+Accordion
+item.accordion
+Apartment
+Tony; archive cabinet
+Distracts Tony; strap opens cabinet; retained
+Sunflower oil
+item.sunflower_oil
+Mehana
+Fountain valve
+Lubricate, then operate the fountain
+Glass of water
+item.glass_of_water
+Mehana jug
+Mitko’s own drink
+Use after distraction; refillable
+Fake diploma
+item.fake_diploma
+Mayor / Clerk
+Accidentally stamped → candidate registration
+Campaign pamphlets
+item.campaign_pamphlets
+Poster board
+Public campaign; Journalist + Guard unlock
+Suspicious receipt
+item.suspicious_receipt
+Journalist
+Transferred to her → Mayor confrontation
+Pickle jar
+item.pickle_jar
+Archive cabinet
+Ballot storage position
+Stays in storage as substitute container
+Ballot box
+item.ballot_box
+Archive storage
+Election Booth
+Recovered after jar exchange; delivered
+Continuity: required objects cannot be permanently lost before use. Wrong actions give clues; Tony’s challenge resets; the apartment remains available until the finale.
+Nine items across campaign routes; oil and water serve supporter quests. No separate stamp or release-form puzzle.
+Apartment
+Aunt Docheva’s kiosk
+Aunt Docheva
+Aunt Docheva
+Tony / Kiro fallback
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+14
+</pre></details>
+    </figure>
+    <figure id="page-15">
+      <img src="./storyboard-pages/page-15.webp" width="1800" height="1140" loading="lazy" alt="Page 15 / Страница 15">
+      <figcaption>Page 15 / Страница 15 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>OPTIONAL STORY TEXTURE
+A village that reacts to the player
+These are optional interactions, not additional quests or dependencies.
+APARTMENT
+Window, mirror, wardrobe, repeated creditor
+knocks and TV flavor. These establish Mitko and
+teach looking around.
+SQUARE
+Statue, election notices, old posters, bus delays,
+fountain observations, Penka comments and the
+Old Men Chorus.
+MEHANA
+Radio, goat portrait, décor, Tony’s barks and
+harmless failed drinking animations. Some script
+props are absent from the reference image.
+MUNICIPALITY
+Broken ticket machine, tagged plastic plant, former-Mayor portraits,
+absurd door labels and Clerk refusals.
+ELECTION BOOTH
+Workers’ barks, crowd reactions and alternate Journalist phrasing. Meters
+can color the result, but cannot invalidate the completed path.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+15
+</pre></details>
+    </figure>
+    <figure id="page-16">
+      <img src="./storyboard-pages/page-16.webp" width="1800" height="1140" loading="lazy" alt="Page 16 / Страница 16">
+      <figcaption>Page 16 / Страница 16 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>SCRIPT AND PRODUCTION NOTES
+The story is fixed. The staging is a draft.
+This board summarizes the Chapter 1 design; it is not a claim that every scene is playable today.
+EXISTING SCRIPT LINES
+SQUARE / KIOSK
+„Дипломи не правя. Поправям липсата им.“
+“I don’t make diplomas. I correct their absence.”
+SQUARE ↔ MEHANA
+„Не е много вода. Ама е повече от обещание.“
+“It isn’t much water. But it’s more than a promise.”
+ENDING / MUNICIPALITY AND FOUNTAIN
+„Частният дълг беше проблем. Сега вече е управленска програма.“
+“Private debt was a problem. Now it’s a governing program.”
+SOURCE &amp; ART RECORD
+Quest coverage: src/content/chapter1/quests.js (all six
+stable IDs).
+Locations: user-supplied room.png, squear.png and
+pub.png, preserved as provided.
+Later scenes: one generated four-frame concept sheet.
+New NPC appearances and staging are provisional.
+Story: script v1 + approved completion plan (16 September
+2026); three-outcome revision.
+ENDING CONTRACT Convincing victory / narrow victory / loss. Both supporters guarantee a win. Save the exact result; end Chapter 1.
+No Chapter 2 or Parliament material follows.
+Quotes retain the existing script. Outcome rules and
+the Kiro evidence fallback follow the approved
+completion plan. No new topical dialogue was authored.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+16
+</pre></details>
+    </figure>
+    <figure id="page-17">
+      <img src="./storyboard-pages/page-17.webp" width="1800" height="1140" loading="lazy" alt="Page 17 / Страница 17">
+      <figcaption>Page 17 / Страница 17 / 17</figcaption>
+      <details><summary>Page text / <span lang="bg">Текст на страницата</span></summary><pre>OUTCOME BRANCHES / РАЗКЛОНЕНИЯ НА ФИНАЛА
+One election. Three possible results.
+Едни избори. Три възможни резултата.
+COMMON ENTRY / ОБЩО УСЛОВИЕ
+Registered candidate + receipt delivered to the Journalist + ballot box delivered. Supporter quests
+remain available before voting. Kiro supplies the receipt if Tony’s route is unﬁnished.
+Регистрация + документ при журналистката + доставена урна. Подкрепата влияе на
+резултата, без да блокира изборите.
+DESIGN GUARANTEE: completing both supporter quests cannot produce a loss. Exact score
+thresholds still require balancing and tests.
+ГАРАНЦИЯ: подкрепата и на Баба, и на Тони осигурява победа.
+01 / CONVINCING VICTORY
+УБЕДИТЕЛНА ПОБЕДА
+A strong campaign earns a clear mandate.
+Staging: broad celebration; Mitko stands
+conﬁdently; the Mayor concedes angrily.
+Save: convincing victory. Creditors address the
+new Mayor.
+Силната кампания носи ясна победа. Следват
+общо празнуване и появата на кредиторите.
+02 / NARROW VICTORY
+КРЕХКА ПОБЕДА
+Enough support to win, with a smaller margin.
+A completed campaign still wins when meters
+reduce its margin.
+Staging: tense count, then relief.
+Save: narrow victory. The debt remains.
+Гласовете стигат за победа с малка преднина.
+Напрежението отстъпва на облекчение.
+03 / LOSS
+ЗАГУБА
+An incomplete campaign can lose. Explain the
+missing support and campaign weaknesses.
+Staging: incumbent celebrates; Mitko faces his
+creditors.
+Save: loss; do not grant the mayoral role.
+Незавършената кампания може да загуби.
+Финалът показва причините; Митко не става
+кмет.
+ДРУГАРЯТ КАНДИДАТ / COMRADE CANDIDATE • REVIEWED PLAN / 16 SEPT 2026 • STORYBOARD DRAFT
+17
+</pre></details>
     </figure>
   </main>
 </body>

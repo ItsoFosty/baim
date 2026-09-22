@@ -77,6 +77,27 @@
       "left": 809.75,
       "width": 310.5,
       "height": 419.75
+    },
+    {
+      "id": "layer.municipality.stamp_table",
+      "enabled": true,
+      "asset": "stampTable",
+      "output": "assets/chapter1/scenes/municipality/stamp-table-v9.png",
+      "zIndex": 112,
+      "left": 505,
+      "top": 352,
+      "width": 126.99
+    },
+    {
+      "id": "layer.municipality.seal_on_table",
+      "enabled": true,
+      "asset": "municipalitySeal",
+      "output": "assets/chapter1/scenes/municipality/municipality-seal-v1.png",
+      "zIndex": 111,
+      "left": 565.795,
+      "top": 362.8,
+      "height": 21.42,
+      "hiddenWhenState": "hasMunicipalityStamp"
     }
   ]
 }

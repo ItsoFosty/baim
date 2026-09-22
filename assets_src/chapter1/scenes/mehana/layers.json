@@ -77,6 +77,18 @@
       "top": 405,
       "left": 400,
       "width": 120
+    },
+    {
+      "id": "layer.mehana.mitko_competition_glass",
+      "enabled": true,
+      "asset": "mitkoCompetitionGlass",
+      "output": "assets/chapter1/scenes/mehana/competition-glass-v1.png",
+      "zIndex": 18,
+      "top": 396,
+      "left": 378,
+      "height": 38,
+      "visibleWhenFlag": "tonyChallengeStarted",
+      "hiddenWhenState": "tonyVote"
     }
   ]
 }

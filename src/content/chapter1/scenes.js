@@ -1,8 +1,17 @@
+import { archiveObjectGeometry } from "./sceneObjectGeometry.generated.js";
+import { archiveScene, archiveEntryRules } from "./archive.js";
+import { wireRegistrationScenes } from "./registration.js";
+import { babaGiftRules, fountainLookRules, fountainUseRules, fountainItemRules, oldMenRules } from "./fountain.js";
 import { apartmentWalkGeometry, mehanaWalkGeometry, municipalityWalkGeometry, villageSquareWalkGeometry } from "./walkMasks.generated.js";
 import { apartmentObjectGeometry, mehanaObjectGeometry, municipalityObjectGeometry, villageSquareObjectGeometry } from "./sceneObjectGeometry.generated.js";
 import { sceneLayerGeometry } from "./sceneLayers.generated.js";
+import { openingLookRules, kioskPaperRule, campaignPostedRule, campaignPosterRules } from "./campaign.js";
+import { mayorOfficeScene } from "./mayorOffice.js";
+import { mayorOfficeObjectGeometry } from "./sceneObjectGeometry.generated.js";
 
 const rawScenes = [
+  archiveScene,
+  mayorOfficeScene,
   {
     id: "scene.chapter1.apartment",
     titleKey: "scene.chapter1.apartment.title",
@@ -131,7 +140,9 @@ const rawScenes = [
         kind: "hotspot",
         nameKey: "hotspot.tv.name",
         rect: { x: 0, y: 285, w: 125, h: 160 },
-        lookKey: "look.apartment.tv"
+        lookKey: "look.apartment.tv",
+        lookRules: openingLookRules,
+        useRules: openingLookRules
       },
       {
         id: "hotspot.apartment.wardrobe",
@@ -152,13 +163,20 @@ const rawScenes = [
         kind: "hotspot",
         nameKey: "hotspot.campaign_poster.name",
         rect: { x: 500, y: 160, w: 150, h: 155 },
-        lookKey: "look.apartment.poster"
+        lookKey: "look.apartment.poster",
+        lookRules: openingLookRules
       }
     ],
     npcs: []
   },
   {
     id: "scene.chapter1.village_square",
+    effects: [{
+      id: "effect.chapter1.village_square.fountain_water",
+      type: "waterStream", visibleWhenFlag: "fountainRepaired", zIndex: 100,
+      points: [{ x: 704, y: 168 }, { x: 694, y: 182 }, { x: 682, y: 212 }, { x: 684, y: 242 }],
+      width: 3, speed: 0.7
+    }],
     titleKey: "scene.chapter1.village_square.title",
     palette: { sky: "#829aa1", wall: "#8a7657", floor: "#48443a" },
     movementSpeed: 80,
@@ -169,7 +187,7 @@ const rawScenes = [
     anchors: {
       baiMitkoSpawn: { x: 300, y: 540 },
       babaBench: { x: 520, y: 455 },
-      journalist: { x: 1085, y: 510 },
+      journalist: { x: 965, y: 525 },
       oldMenChorus: { x: 565, y: 450 },
       fountain: { x: 650, y: 500 },
       mehanaDoor: { x: 120, y: 465 },
@@ -206,9 +224,8 @@ const rawScenes = [
         id: "exit.square.to_election_booth",
         kind: "exit",
         nameKey: "exit.to_election_booth",
-        rect: { x: 230, y: 290, w: 140, h: 120 },
+        rect: { x: 205, y: 448, w: 190, h: 195 },
         requirements: { state: { journalistInterviewCompleted: true, chapter1Completed: false } },
-        debugVisual: { kind: "sign", fill: "#efe0bd", accent: "#9b302f", labelKey: "exit.to_election_booth" },
         targetSceneId: "scene.chapter1.election_booth",
         targetPosition: { x: 230, y: 525 }
       }
@@ -231,6 +248,9 @@ const rawScenes = [
         nameKey: "hotspot.poster_board.name",
         rect: { x: 1080, y: 245, w: 140, h: 235 },
         lookKey: "look.square.poster_board",
+        lookRules: [campaignPostedRule, { messageKey: "campaign.poster.hint" }],
+        useRules: [campaignPostedRule, { messageKey: "campaign.poster.hint" }],
+        itemUseRules: campaignPosterRules,
         actions: {
           look: {
             approach: { x: 976, y: 625 },
@@ -245,14 +265,20 @@ const rawScenes = [
         kind: "hotspot",
         nameKey: "hotspot.fountain.name",
         rect: { x: 405, y: 225, w: 360, h: 300 },
-        lookKey: "look.square.fountain"
+        lookKey: "look.square.fountain",
+        lookRules: fountainLookRules,
+        useRules: fountainUseRules,
+        itemUseRules: fountainItemRules
       },
       {
         id: "hotspot.square.kiosk",
         kind: "hotspot",
         nameKey: "hotspot.kiosk.name",
         rect: { x: 1010, y: 185, w: 245, h: 370 },
-        lookKey: "look.square.kiosk"
+        lookKey: "campaign.kiosk.look",
+        dialogueId: "dialogue.penka_kiosk",
+        useDialogueId: "dialogue.penka_kiosk",
+        itemUseRules: [{ itemId: "item.unpaid_bills", ...kioskPaperRule }]
       },
       {
         id: "hotspot.square.statue",
@@ -266,7 +292,10 @@ const rawScenes = [
         kind: "hotspot",
         nameKey: "hotspot.old_men_bench.name",
         rect: { x: 480, y: 365, w: 150, h: 70 },
-        lookKey: "look.square.old_men_bench"
+        lookKey: "look.square.old_men_bench",
+        lookRules: oldMenRules,
+        talkRules: oldMenRules,
+        useRules: oldMenRules
       },
       {
         id: "hotspot.square.election_notice",
@@ -295,138 +324,17 @@ const rawScenes = [
         itemRejectKey: "msg.inventory.npc_reject.baba_stoyanka",
         dialogueId: "dialogue.baba_stoyanka",
         lookKey: "look.npc.baba_stoyanka",
-        itemUseRules: [
-          {
-            itemId: "item.glass_of_water",
-            requirements: {
-              notFlags: ["babaRejectedWater"],
-              state: { babaStoyankaVote: false }
-            },
-            effects: [
-              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-              { type: "setFlag", key: "babaRejectedWater" },
-              { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
-              { type: "adjustState", key: "suspicion", amount: 1 }
-            ],
-            messageKey: "msg.baba.reject_water",
-            reject: true
-          },
-          {
-            itemId: "item.shopska_salad",
-            requirements: {
-              notFlags: ["babaRejectedShopska"],
-              state: { babaStoyankaVote: false }
-            },
-            effects: [
-              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-              { type: "setFlag", key: "babaRejectedShopska" },
-              { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
-              { type: "adjustState", key: "suspicion", amount: 1 }
-            ],
-            messageKey: "msg.baba.reject_shopska",
-            reject: true
-          },
-          {
-            itemId: "item.tripe_soup",
-            requirements: {
-              notFlags: ["babaRejectedTripeSoup"],
-              state: { babaStoyankaVote: false }
-            },
-            effects: [
-              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-              { type: "setFlag", key: "babaRejectedTripeSoup" },
-              { type: "adjustState", key: "babaCheapOfferAttempts", amount: 1, min: 0, max: 4 },
-              { type: "adjustState", key: "suspicion", amount: 1 }
-            ],
-            messageKey: "msg.baba.reject_tripe_soup",
-            reject: true
-          },
-          {
-            itemId: "item.rakia",
-            requirements: {
-              notFlags: ["babaRejectedRakia"],
-              state: { babaStoyankaVote: false }
-            },
-            effects: [
-              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-              { type: "setFlag", key: "babaRejectedRakia" },
-              { type: "adjustState", key: "suspicion", amount: 1 }
-            ],
-            messageKey: "msg.baba.reject_rakia",
-            reject: true
-          },
-          {
-            itemId: "item.sunflower_oil",
-            requirements: {
-              state: { babaStoyankaVote: false },
-              stateMax: { babaCheapOfferAttempts: 2 }
-            },
-            effects: [
-              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-              { type: "removeItem", itemId: "item.sunflower_oil" },
-              { type: "setState", key: "babaStoyankaVote", value: true },
-              { type: "setState", key: "babaTrust", value: "traditional" },
-              { type: "adjustState", key: "influence", amount: 15 },
-              { type: "adjustState", key: "suspicion", amount: 4 },
-              { type: "adjustState", key: "publicMood", amount: 3 },
-              { type: "completeQuest", questId: "quest.chapter1.baba_vote" }
-            ],
-            messageKey: "msg.baba.accept_oil"
-          },
-          {
-            itemId: "item.sunflower_oil",
-            requirements: {
-              notFlags: ["babaRequiresBetterGift"],
-              state: { babaStoyankaVote: false },
-              stateMin: { babaCheapOfferAttempts: 3 }
-            },
-            effects: [
-              { type: "startQuest", questId: "quest.chapter1.baba_vote" },
-              { type: "setFlag", key: "babaRequiresBetterGift" },
-              { type: "adjustState", key: "suspicion", amount: 2 }
-            ],
-            messageKey: "msg.baba.reject_late_oil",
-            reject: true
-          },
-          {
-            itemId: "item.village_wine",
-            requirements: {
-              notFlags: ["babaRequiresBetterGift"],
-              state: { babaStoyankaVote: false }
-            },
-            effects: [{ type: "startQuest", questId: "quest.chapter1.baba_vote" }],
-            messageKey: "msg.baba.reject_early_wine",
-            reject: true
-          },
-          {
-            itemId: "item.village_wine",
-            requirements: {
-              flags: ["babaRequiresBetterGift"],
-              state: { babaStoyankaVote: false }
-            },
-            effects: [
-              { type: "removeItem", itemId: "item.village_wine" },
-              { type: "setState", key: "babaStoyankaVote", value: true },
-              { type: "setState", key: "babaTrust", value: "transactional" },
-              { type: "adjustState", key: "influence", amount: 15 },
-              { type: "adjustState", key: "suspicion", amount: 4 },
-              { type: "adjustState", key: "publicMood", amount: 2 },
-              { type: "completeQuest", questId: "quest.chapter1.baba_vote" }
-            ],
-            messageKey: "msg.baba.accept_wine"
-          }
-        ]
+        itemUseRules: babaGiftRules
       },
       {
         id: "npc.journalist",
         kind: "npc",
         nameKey: "npc.journalist.name",
-        rect: { x: 1030, y: 300, w: 105, h: 210 },
-        speechAnchor: { x: 1082, y: 275 },
+        rect: { x: 930, y: 305, w: 80, h: 220 },
+        speechAnchor: { x: 965, y: 280 },
         itemRejectKey: "msg.inventory.npc_reject.journalist",
         dialogueId: "dialogue.journalist",
         lookKey: "look.npc.journalist",
-        debugVisual: { fill: "#6b263d", accent: "#d7b35f", labelKey: "npc.journalist.name" },
         requirements: {
           flags: ["ballotBoxRecovered"],
           state: { chapter1Completed: false }
@@ -542,6 +450,7 @@ const rawScenes = [
         lookKey: "look.mehana.oil",
         takeItemId: "item.sunflower_oil",
         flagOnTake: "hasSunflowerOil",
+        requirements: { state: { hasSunflowerOil: false }, absentItems: ["item.sunflower_oil"] },
         useRules: [
           {
             requirements: { items: ["item.sunflower_oil"] },
@@ -589,27 +498,7 @@ const rawScenes = [
         nameKey: "hotspot.mehana.cellar_hatch.name",
         rect: { x: 815, y: 585, w: 270, h: 130 },
         lookKey: "look.mehana.cellar_hatch",
-        useRules: [
-          {
-            requirements: { notFlags: ["ballotBoxArchiveClue"] },
-            effects: [],
-            messageKey: "msg.mehana.cellar_no_reason",
-            reject: true
-          },
-          {
-            requirements: {
-              flags: ["ballotBoxArchiveClue"],
-              notFlags: ["mehanaCellarOpened"]
-            },
-            effects: [{ type: "setFlag", key: "mehanaCellarOpened" }],
-            messageKey: "msg.mehana.cellar_opened"
-          },
-          {
-            requirements: { flags: ["mehanaCellarOpened"] },
-            effects: [],
-            messageKey: "msg.mehana.cellar_already_open"
-          }
-        ]
+        useRules: [{ messageKey: "archive.cellar_retired", reject: true }]
       },
       {
         id: "hotspot.mehana.ballot_box",
@@ -617,19 +506,7 @@ const rawScenes = [
         nameKey: "item.ballot_box.name",
         rect: { x: 850, y: 510, w: 160, h: 110 },
         lookKey: "look.mehana.ballot_box",
-        takeItemId: "item.ballot_box",
-        hiddenWhenItemOwned: "item.ballot_box",
-        flagOnTake: "hasBallotBox",
-        takeMessageKey: "msg.mehana.ballot_box_recovered",
-        requirements: {
-          flags: ["mehanaCellarOpened"],
-          state: { hasBallotBox: false }
-        },
-        takeEffects: [
-          { type: "setFlag", key: "ballotBoxRecovered" },
-          { type: "completeQuest", questId: "quest.chapter1.ballot_box" },
-          { type: "startQuest", questId: "quest.chapter1.journalist" }
-        ]
+        requirements: { disabled: true }
       }
     ],
     npcs: [
@@ -734,7 +611,7 @@ const rawScenes = [
       baiMitkoSpawn: { x: 260, y: 520 },
       clerkCounter: { x: 820, y: 475 },
       candidateRegister: { x: 498, y: 495 },
-      stampDesk: { x: 620, y: 475 },
+      stampDesk: { x: 575, y: 485 },
       archiveCabinet: { x: 1141, y: 490 },
       exit: { x: 135, y: 505 }
     },
@@ -747,6 +624,14 @@ const rawScenes = [
         rect: { x: 30, y: 300, w: 170, h: 245 },
         targetSceneId: "scene.chapter1.village_square",
         targetPosition: { x: 850, y: 505 }
+      },
+      {
+        id: "exit.municipality.to_mayor_office",
+        kind: "exit",
+        nameKey: "exit.to_mayor_office",
+        rect: { x: 679, y: 225, w: 65, h: 225 },
+        targetSceneId: "scene.chapter1.mayor_office",
+        targetPosition: { x: 270, y: 550 }
       }
     ],
     interactables: [
@@ -793,7 +678,7 @@ const rawScenes = [
         id: "hotspot.municipality.stamp_desk",
         kind: "hotspot",
         nameKey: "hotspot.municipality.stamp_desk.name",
-        rect: { x: 540, y: 340, w: 170, h: 125 },
+        rect: { x: 534, y: 352, w: 98, h: 114 },
         lookKey: "look.municipality.stamp_desk",
         takeItemId: "item.municipality_stamp",
         flagOnTake: "hasMunicipalityStamp",
@@ -809,39 +694,7 @@ const rawScenes = [
         nameKey: "hotspot.municipality.archive_cabinet.name",
         rect: { x: 1080, y: 205, w: 175, h: 285 },
         lookKey: "look.municipality.archive_cabinet",
-        useRules: [
-          {
-            requirements: { notFlags: ["municipalityCredentialsAccepted"] },
-            effects: [],
-            messageKey: "msg.municipality.archive_credentials_first",
-            reject: true
-          },
-          {
-            requirements: {
-              flags: ["municipalityCredentialsAccepted"],
-              notFlags: ["candidateRegistrationStamped"]
-            },
-            effects: [],
-            messageKey: "msg.municipality.archive_stamp_first",
-            reject: true
-          },
-          {
-            requirements: {
-              flags: ["candidateRegistrationStamped"],
-              notFlags: ["ballotBoxArchiveClue"]
-            },
-            effects: [
-              { type: "setFlag", key: "ballotBoxArchiveClue" },
-              { type: "startQuest", questId: "quest.chapter1.ballot_box" }
-            ],
-            messageKey: "msg.municipality.ballot_box_clue"
-          },
-          {
-            requirements: { flags: ["ballotBoxArchiveClue"] },
-            effects: [],
-            messageKey: "msg.municipality.ballot_box_clue_repeat"
-          }
-        ]
+        useRules: archiveEntryRules
       }
     ],
     npcs: [
@@ -952,7 +805,9 @@ const rawScenes = [
   }
 ];
 
-export const scenes = applySceneObjectGeometry(rawScenes, {
+export const scenes = applySceneObjectGeometry(wireRegistrationScenes(rawScenes), {
+  [mayorOfficeObjectGeometry.sceneId]: mayorOfficeObjectGeometry,
+  [archiveObjectGeometry.sceneId]: archiveObjectGeometry,
   [apartmentObjectGeometry.sceneId]: apartmentObjectGeometry,
   [villageSquareObjectGeometry.sceneId]: villageSquareObjectGeometry,
   [mehanaObjectGeometry.sceneId]: mehanaObjectGeometry,

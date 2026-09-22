@@ -1,0 +1,5 @@
+# mayor v1
+
+Built-in imagegen; reference: /home/ubuntu/git/baim/assets_src/chapter1/storyboards/registration-preview-v1/preview.png
+
+High-resolution hand-painted 2D cartoon adventure art, warm ochre and muted earth tones, clean expressive outlines, lively exaggerated but believable anatomy, Bulgarian provincial early 1990s. Match supplied reference style. Fictional characters only. Create one isolated FULL BODY STANDING Mayor figure on genuinely transparent RGBA background. Exact identity of grey-haired moustached heavy-set Mayor from reference: inflated pear-shaped silhouette, round cheeks, large nose, grey side-part hair and grey moustache, brown subtle checked three-piece suit, cream shirt, burgundy patterned tie, polished worn brown shoes, small generic brass lapel pin. Three-quarter facing left, self-satisfied proud expression, one hand resting on waistcoat, other loosely gesturing open palm at waist. Warm expressive cartoon portrait proportions matching reference. Standing, NOT seated, no desk or chair or documents, no ground plane, no text, all feet and hands in frame with generous transparent margins. One figure only, minimal contact shadow.

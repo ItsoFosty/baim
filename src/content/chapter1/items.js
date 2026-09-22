@@ -50,8 +50,7 @@ export const items = [
           { type: "removeItem", itemId: "item.empty_envelope" },
           { type: "addItem", itemId: "item.fake_diploma" },
           { type: "setState", key: "hasFakeDiploma", value: true },
-          { type: "adjustState", key: "suspicion", amount: 4 },
-          { type: "completeQuest", questId: "quest.chapter1.fake_diploma" }
+          { type: "adjustState", key: "suspicion", amount: 4 }
         ],
         messageKey: "msg.fake_diploma.assembled"
       }

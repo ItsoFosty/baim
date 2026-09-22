@@ -1044,6 +1044,10 @@ export class Game {
       return;
     }
     const messageKey = actionSequence.sequence?.messageKey;
+    if (actionSequence.verb === VERBS.LOOK && actionSequence.target?.lookRules?.length) {
+      this.lookTarget(actionSequence.target);
+      return;
+    }
     if (messageKey) this.setStatusMessage(this.t(messageKey));
   }
 
@@ -1071,6 +1075,7 @@ export class Game {
       this.clearInventoryInteraction();
       this.renderUi();
     }
+    if (this.currentScene?.playerMode === "closeup") return;
     this.player.pendingInteraction = null;
     const destination = isWalkable(this.currentScene, point)
       ? point
@@ -1113,7 +1118,7 @@ export class Game {
 
   shouldApproachTargetBeforeAction(target, clickPoint = null) {
     if (target.kind === "exit") return false;
-    if (this.currentScene?.playerMode === "seated") return false;
+    if (["seated", "closeup"].includes(this.currentScene?.playerMode)) return false;
     const actionSequence = this.actionSequenceForTarget(target, this.selectedVerb);
     const actionApproach = this.actionSequenceApproachPoint(actionSequence);
     if (actionApproach) {
@@ -1312,6 +1317,10 @@ export class Game {
       return;
     }
     if (target.kind === "exit") {
+      if (!requirementsMet(target.accessRequirements, this.effectContext())) {
+        this.setStatusMessage(this.t(target.blockedMessageKey), { reject: true });
+        return;
+      }
       this.changeScene(target.targetSceneId, target.targetPosition);
       return;
     }
@@ -1329,10 +1338,12 @@ export class Game {
     const actionSequence = forcedActionSequence || this.actionSequenceForTarget(target, this.selectedVerb);
     if (actionSequence && this.startInteractionActionSequence(target, this.selectedVerb, actionSequence)) return;
     if (this.selectedVerb === VERBS.LOOK) {
-      this.setStatusMessage(this.t(target.lookKey || target.nameKey));
+      this.lookTarget(target);
       return;
     }
     if (this.selectedVerb === VERBS.TALK) {
+      const rule = firstMatchingRule(target.talkRules, this.effectContext());
+      if (rule) return this.applyContentEffect(rule, { speakerTarget: target.kind === "npc" ? target : null });
       if (target.talkKey && this.setNpcSpeechMessage(target, this.t(target.talkKey))) return;
       if (target.dialogueId) {
         this.dialogue.start(target.dialogueId);
@@ -1354,7 +1365,16 @@ export class Game {
     this.setStatusMessage(this.t("msg.no_use"), { reject: true });
   }
 
+  lookTarget(target) {
+    const rule = firstMatchingRule(target.lookRules, this.effectContext());
+    if (rule) return this.applyContentEffect(rule);
+    this.setStatusMessage(this.t(target.lookKey || target.nameKey));
+  }
+
   takeTarget(target, options = {}) {
+    if (!this.targetAvailable(target)) return false;
+    const rule = firstMatchingRule(target.takeRules, this.effectContext());
+    if (rule) return this.applyContentEffect(rule);
     if (this.inventory.has(target.takeItemId)) {
       this.setStatusMessage(this.t("msg.already_taken"), { reject: true });
       return;
@@ -1492,6 +1512,7 @@ export class Game {
     this.player.speed = this.sceneMovementSpeed(this.currentScene);
     this.save();
     if (options.render !== false) this.renderUi();
+    if (definition.sceneTransition) return this.changeScene(definition.sceneTransition.sceneId, definition.sceneTransition.position);
     return true;
   }
 
@@ -1757,6 +1778,10 @@ export class Game {
         icon.alt = "";
         icon.draggable = false;
         itemButton.appendChild(icon);
+      } else {
+        const label = element("span", "inventory-item-label");
+        label.textContent = itemName;
+        itemButton.appendChild(label);
       }
       const tooltip = element("span", "inventory-tooltip");
       tooltip.id = tooltipId;
@@ -1829,6 +1854,10 @@ export class Game {
 
   dropInventoryItem(item) {
     if (!item?.id || !this.inventory.has(item.id)) return false;
+    if (this.currentScene.allowItemDrop === false) {
+      this.setStatusMessage(this.t(this.currentScene.dropBlockedMessageKey));
+      return false;
+    }
     this.state.droppedItems ||= [];
     const restoresToScene = this.itemRestoresToScene(item.id);
     if (restoresToScene) {
@@ -1896,6 +1925,12 @@ export class Game {
     menuButton.classList.toggle("active", this.paused);
     menuButton.setAttribute("aria-pressed", String(this.paused));
     left.append(menuButton);
+    const returnExit = this.currentScene.exits.find(exit => exit.id === this.currentScene.returnExitId);
+    if (returnExit) left.append(button(this.t(returnExit.nameKey), () => {
+      this.clearStatusMessage();
+      this.clearInventoryInteraction();
+      this.performTargetAction(returnExit);
+    }));
     right.append(
       button(this.t("verb.look"), () => this.selectVerb(VERBS.LOOK)),
       button(this.t("verb.talk"), () => this.selectVerb(VERBS.TALK)),
@@ -2102,6 +2137,8 @@ export class Game {
         <a href="./?edit=1&scene=scene.chapter1.village_square">Village Square Editor</a>
         <a href="./?edit=1&scene=scene.chapter1.mehana">Mehana Editor</a>
         <a href="./?edit=1&scene=scene.chapter1.municipality">Municipality Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.mayor_office">Mayor’s Office Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.archive">Archive Editor</a>
       </div>
       <div class="dev-status-list">
         <div class="dev-status">
@@ -2556,7 +2593,7 @@ node tools/build-external-runtime-staging.js</pre>
     const isNpcDialogue = Boolean(dialogue?.npcId);
     if (node.lineKey && !isNpcDialogue) {
       const line = document.createElement("p");
-      line.textContent = this.t(node.lineKey);
+      line.textContent = this.t(firstMatchingRule(node.lineRules, this.effectContext())?.lineKey || node.lineKey);
       panel.appendChild(line);
     }
     if (node.entries?.length) {
@@ -2583,7 +2620,8 @@ node tools/build-external-runtime-staging.js</pre>
     const dialogue = this.content.dialogues[this.dialogue.current?.id];
     if (!dialogue?.npcId) return null;
     const npc = this.currentScene.npcs?.find((candidate) => candidate.id === dialogue.npcId);
-    return this.createNpcSpeechBubble(npc, this.t(node.lineKey), "dialogue-speech-bubble");
+    const lineKey = firstMatchingRule(node.lineRules, this.effectContext())?.lineKey || node.lineKey;
+    return this.createNpcSpeechBubble(npc, this.t(lineKey), "dialogue-speech-bubble");
   }
 
   createNpcReactionBubble() {

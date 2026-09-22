@@ -248,6 +248,16 @@ button.active {
   pointer-events: none;
 }
 
+.inventory-item-label {
+  display: block;
+  padding: 5px;
+  color: #fff0d0;
+  font-size: 12px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
 .inventory-item:hover,
 .inventory-item:focus-visible,
 .inventory-item.selected,

@@ -183,3 +183,7 @@ The reusable renderer animates the stream without modifying the background asset
   `ambience` uses frequency/volume. Audio is user-enabled, not an autoplay gate.
 - Content review presets run in memory-only save storage; they cannot mutate the
   normal save. See `src/engine/ReviewState.js`.
+
+Accordion audio follow-up: `soundCue.instrument: "accordion"` selects detuned reed
+ranks. Notes may be frequencies or `{ frequency, at, duration }` events for a short
+phrase. The saved `audioVolume` range is 0–1; the menu exposes it as 0–100%.

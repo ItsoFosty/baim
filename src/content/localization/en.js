@@ -5,6 +5,7 @@ import { campaignEn } from "./chapter1Campaign.js";
 import { fountainEn } from "./chapter1Fountain.js";
 
 export const en = {
+  "ui.sound.volume": "Volume",
   "ui.sound.on": "Sound: on",
   "ui.sound.off": "Sound: off",
 

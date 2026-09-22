@@ -110,3 +110,17 @@ Browser checks: public HTTPS room and editor load with no page errors; BG/EN
 ending controls remain reachable at 1280×720, 640×360 and 390×844 viewport sizes.
 Sound opt-in creates a running audio context and polling-room ambience; mute
 works. Human art approval and first-time-player review remain outstanding.
+
+## Accordion and volume follow-up
+
+The accordion now plays an original 2.1-second synthesized reed melody when used
+on Mitko or performed for an NPC, including Tony's distraction. Detuned reed
+ranks give it an accordion-like timbre; this is synthesized audio, not a recording.
+Using the accordion strap on the archive does not play music. Repeating an action
+restarts the phrase instead of layering multiple melodies.
+
+The pause menu has a localized Volume slider immediately below Sound on/off.
+It controls all cues and ambience, defaults to 60%, updates live, and persists in
+normal saves. Zero volume and muting both remain silent. Old saves get the default.
+Browser validation exercised the actual inventory action and slider; offline audio
+rendering confirmed a non-silent, unclipped signal at full volume.

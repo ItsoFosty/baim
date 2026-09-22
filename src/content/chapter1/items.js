@@ -1,35 +1,36 @@
+import { accordionCue } from "./audio.js";
 export const items = [
   {
     id: "item.accordion",
     nameKey: "item.accordion.name",
     descriptionKey: "item.accordion.desc",
-    selfUseRules: [{ effects: [], messageKey: "msg.self.accordion" }],
+    selfUseRules: [{ soundCue: accordionCue, effects: [], messageKey: "msg.self.accordion" }],
     targetUseRules: [
       {
         targetIds: ["npc.baba_stoyanka"],
         requirements: { state: { babaStoyankaVote: false } },
-        effects: [],
+        soundCue: accordionCue, effects: [],
         messageKey: "msg.accordion_baba_before_vote"
       },
       {
         targetIds: ["npc.baba_stoyanka"],
         requirements: { state: { babaStoyankaVote: true } },
-        effects: [],
+        soundCue: accordionCue, effects: [],
         messageKey: "msg.accordion_baba_after_vote"
       },
       {
         targetIds: ["npc.mehana_waiter"],
-        effects: [],
+        soundCue: accordionCue, effects: [],
         messageKey: "msg.accordion_kiro"
       },
       {
         targetTags: ["animal"],
-        effects: [],
+        soundCue: accordionCue, effects: [],
         messageKey: "msg.accordion_animal"
       },
       {
         targetKinds: ["npc"],
-        effects: [],
+        soundCue: accordionCue, effects: [],
         messageKey: "msg.accordion_generic_npc"
       }
     ]

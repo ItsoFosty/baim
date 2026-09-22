@@ -1,3 +1,4 @@
+import { accordionCue } from "./audio.js";
 import { electionObjectGeometry } from "./sceneObjectGeometry.generated.js";
 import { electionScene } from "./election.js";
 import { archiveObjectGeometry } from "./sceneObjectGeometry.generated.js";
@@ -556,7 +557,7 @@ const rawScenes = [
               state: { tonyVote: false }
             },
             effects: [{ type: "setFlag", key: "tonyDistracted" }],
-            messageKey: "msg.accordion_tony"
+            soundCue: accordionCue, messageKey: "msg.accordion_tony"
           },
           {
             itemId: "item.glass_of_water",

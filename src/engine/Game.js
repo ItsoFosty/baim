@@ -70,6 +70,7 @@ export class Game {
     this.saveSystem = preset ? createReviewSaveSystem(DEFAULT_SAVE, preset, chapter1) : new SaveSystem();
     this.state = this.saveSystem.load();
     this.audio = new AudioSystem();
+    this.audio.setVolume(this.state.audioVolume);
     this.localization = new Localization(strings, this.state.language);
     this.content = buildContentIndex(chapter1);
     this.debugSceneGeometry = this.readDebugGeometrySetting();
@@ -1625,6 +1626,7 @@ export class Game {
     this.localization.setLanguage(this.state.language);
     this.currentScene = this.sceneWithDroppedItems(this.content.scenes[this.state.currentSceneId]);
     this.audio?.setAmbience(null);
+    this.audio?.setVolume(this.state.audioVolume);
     this.audio?.setEnabled(Boolean(this.state.audioEnabled));
     this.droppedItemsOpen = false;
     this.clearInventoryInteraction();
@@ -2615,6 +2617,26 @@ node tools/build-external-runtime-staging.js</pre>
     });
     soundButton.setAttribute("aria-pressed", String(Boolean(this.state.audioEnabled)));
     pause.appendChild(soundButton);
+    const volumeLabel = element("label", "sound-volume");
+    const volumeText = element("span");
+    volumeText.textContent = this.t("ui.sound.volume");
+    const volume = document.createElement("input");
+    volume.type = "range";
+    volume.min = "0";
+    volume.max = "100";
+    volume.step = "1";
+    volume.value = String(Math.round(this.audio.volume * 100));
+    volume.setAttribute("aria-label", this.t("ui.sound.volume"));
+    const value = document.createElement("output");
+    value.textContent = `${volume.value}%`;
+    volume.addEventListener("input", () => {
+      this.state.audioVolume = Number(volume.value) / 100;
+      this.audio.setVolume(this.state.audioVolume);
+      value.textContent = `${volume.value}%`;
+      this.save();
+    });
+    volumeLabel.append(volumeText, volume, value);
+    pause.appendChild(volumeLabel);
     const questViews = {
       outstanding: this.quests.active(),
       completed: this.quests.completed()

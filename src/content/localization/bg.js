@@ -5,6 +5,7 @@ import { campaignBg } from "./chapter1Campaign.js";
 import { fountainBg } from "./chapter1Fountain.js";
 
 export const bg = {
+  "ui.sound.volume": "Сила на звука",
   "ui.sound.on": "Звук: включен",
   "ui.sound.off": "Звук: изключен",
 

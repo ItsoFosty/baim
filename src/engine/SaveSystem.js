@@ -31,6 +31,7 @@ export class SaveSystem {
 function migrateSave(save) {
   const normalized = {
     ...save,
+    audioVolume: Number.isFinite(Number(save.audioVolume)) ? Math.max(0, Math.min(1, Number(save.audioVolume))) : 0.6,
     flags: { ...(save.flags || {}) },
     inventory: Array.isArray(save.inventory) ? save.inventory : [],
     droppedItems: Array.isArray(save.droppedItems) ? save.droppedItems : [],

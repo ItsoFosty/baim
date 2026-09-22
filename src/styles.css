@@ -1256,3 +1256,6 @@ button.active {
 .ending-epilogue { margin: 14px 0 !important; padding: 12px; border-left: 3px solid #b99b56; background: #29241c; line-height: 1.45; }
 .ending-languages { display: flex; gap: 6px; margin-top: 10px; }
 .ending-languages button { padding: 4px 10px; font-size: 13px; }
+.sound-volume { display: flex; align-items: center; gap: 12px; margin: 12px 0 18px; }
+.sound-volume input { flex: 1; min-width: 80px; accent-color: #d9b86e; }
+.sound-volume output { min-width: 4ch; text-align: right; }

@@ -1,6 +1,21 @@
 import { externalAnimationV1 } from "../content/art/externalAnimationV1.generated.js";
 
 const EDITOR_SCENES = {
+  "scene.chapter1.mayor_office": {
+    walkGeometryPath: "assets_src/chapter1/scenes/mayor_office/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/mayor_office/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/mayor_office/layers.json", actions: []
+  },
+  "scene.chapter1.archive": {
+    objectGeometryPath: "assets_src/chapter1/scenes/archive/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/archive/layers.json", actions: [],
+    layerPreviews: [
+      { label: "Open drawer", layers: ["layer.archive.jar", "layer.archive.box"] },
+      { label: "Closed drawer", layers: ["layer.archive.closed"] },
+      { label: "Jar placed", layers: ["layer.archive.box", "layer.archive.replacement"] },
+      { label: "Box collected", layers: ["layer.archive.replacement"] }
+    ]
+  },
   "scene.chapter1.apartment": {
     walkGeometryPath: "assets_src/chapter1/scenes/apartment/walk-geometry-v1.json",
     objectGeometryPath: "assets_src/chapter1/scenes/apartment/object-geometry-v1.json",
@@ -26,6 +41,18 @@ const EDITOR_SCENES = {
     objectGeometryPath: "assets_src/chapter1/scenes/village_square/object-geometry-v1.json",
     layerPath: "assets_src/chapter1/scenes/village_square/layers.json",
     actions: []
+  },
+  "scene.chapter1.mehana": {
+    walkGeometryPath: "assets_src/chapter1/scenes/mehana/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/mehana/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/mehana/layers.json",
+    actions: []
+  },
+  "scene.chapter1.municipality": {
+    walkGeometryPath: "assets_src/chapter1/scenes/municipality/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/municipality/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/municipality/layers.json",
+    actions: []
   }
 };
 
@@ -35,8 +62,9 @@ const EDGE_HIT_RADIUS = 8;
 export class SceneEditor {
   constructor(game) {
     this.game = game;
-    this.mode = "walk";
+    this.mode = game.currentScene.playerMode === "closeup" ? "objects" : "walk";
     this.cell = "c";
+    this.layerPreviewIndex = 0;
     this.status = "Loading editor source...";
     this.panelSide = "left";
     this.walkSource = null;
@@ -68,6 +96,11 @@ export class SceneEditor {
     }));
   }
 
+  layerPreviewVisible(layer) {
+    const preview = this.config?.layerPreviews?.[this.layerPreviewIndex];
+    return preview ? preview.layers.includes(layer.id) : null;
+  }
+
   get layers() {
     return (this.layerSource?.layers || []).filter((layer) => layer.enabled !== false);
   }
@@ -81,7 +114,7 @@ export class SceneEditor {
     try {
       const suffix = `?editor=${Date.now()}`;
       const [walkSource, objectSource, layerSource, actionAnimationSource] = await Promise.all([
-        fetch(this.config.walkGeometryPath + suffix).then((response) => response.json()),
+        this.config.walkGeometryPath ? fetch(this.config.walkGeometryPath + suffix).then((response) => response.json()) : Promise.resolve(null),
         fetch(this.config.objectGeometryPath + suffix).then((response) => response.json()),
         fetch(this.config.layerPath + suffix).then((response) => response.json()),
         this.config.actionAnimationPath
@@ -89,10 +122,10 @@ export class SceneEditor {
           : Promise.resolve(null)
       ]);
       this.walkSource = walkSource;
-      this.objectSource = objectSource;
+      this.objectSource = normalizeEditorObjectSource(objectSource);
       this.layerSource = layerSource;
       this.actionAnimationSource = actionAnimationSource;
-      this.rows = walkSource.raster.rows.slice();
+      this.rows = walkSource?.raster.rows.slice() || [];
       this.selectedObjectId = this.objects[0]?.id || null;
       this.selectedLayerId = this.layers[0]?.id || null;
       this.selectedActionId = this.config.actions?.[0]?.id || null;
@@ -123,10 +156,17 @@ export class SceneEditor {
     const selectedAction = this.selectedActionDefinition();
     const selectedActionConfig = this.selectedActionAnimationConfig();
     panel.innerHTML = `
-      <div class="scene-editor-title">Scene Edit Mode</div>
+      <div class="scene-editor-header">
+        <div class="scene-editor-title">Scene Edit Mode</div>
+        <button type="button" data-editor="home">Back to Main</button>
+      </div>
+      ${this.config.layerPreviews ? `<label>Preview
+        <select data-editor="preview">${this.config.layerPreviews.map((preview, index) =>
+          `<option value="${index}"${index === this.layerPreviewIndex ? " selected" : ""}>${escapeHtml(preview.label)}</option>`).join("")}</select>
+      </label>` : ""}
       <label>Tool
         <select data-editor="mode">
-          <option value="walk"${this.mode === "walk" ? " selected" : ""}>Walkable raster</option>
+          ${this.config.walkGeometryPath ? `<option value="walk"${this.mode === "walk" ? " selected" : ""}>Walkable raster</option>` : ""}
           <option value="objects"${this.mode === "objects" ? " selected" : ""}>Object polygons</option>
           <option value="layers"${this.mode === "layers" ? " selected" : ""}>Layer positions</option>
           ${this.config.actions?.length ? `<option value="actions"${this.mode === "actions" ? " selected" : ""}>Actions</option>` : ""}
@@ -148,7 +188,7 @@ export class SceneEditor {
         <input data-editor="layer-z" type="number" step="0.1" value="${escapeHtml(selectedLayer?.zIndex ?? 0)}">
       </label>
       <div class="scene-editor-layer-grid">
-        ${["left", "top", "right", "bottom"].map((key) => `<label>${key}<input data-editor="layer-field" data-field="${key}" type="number" step="1" value="${escapeHtml(layerFieldValue(selectedLayer, key))}"></label>`).join("")}
+        ${["left", "top", "right", "bottom", "width", "height"].map((key) => `<label>${key}<input data-editor="layer-field" data-field="${key}" type="number" step="1" value="${escapeHtml(layerFieldValue(selectedLayer, key))}"></label>`).join("")}
       </div>
       <div class="scene-editor-layer-position">${escapeHtml(layerPositionText(selectedLayer))}</div>
       <div class="scene-editor-actions">
@@ -187,6 +227,13 @@ export class SceneEditor {
       <div class="scene-editor-status">${escapeHtml(this.status)}</div>
     `;
     stopPanelEvents(panel);
+    panel.querySelector('[data-editor="preview"]')?.addEventListener("change", event => {
+      this.layerPreviewIndex = Number(event.target.value);
+      this.game.renderUi();
+    });
+    panel.querySelector('[data-editor="home"]')?.addEventListener("click", () => {
+      globalThis.location.href = "./";
+    });
     panel.querySelector('[data-editor="mode"]').addEventListener("change", (event) => {
       this.mode = event.target.value;
       if (this.mode === "objects" && !this.selectedObjectId) this.selectedObjectId = this.objects[0]?.id || null;
@@ -795,6 +842,16 @@ function rectToPolygon(rect) {
   ];
 }
 
+export function normalizeEditorObjectSource(source) {
+  return {
+    ...source,
+    objects: (source?.objects || []).map((entry) => {
+      const polygon = entry.polygon || rectToPolygon(entry.rect);
+      return polygon?.length ? { ...entry, polygon: polygon.map(roundPoint) } : { ...entry };
+    })
+  };
+}
+
 function roundPoint(point) {
   return { x: Math.round(point.x), y: Math.round(point.y) };
 }
@@ -959,9 +1016,12 @@ function runtimeLayerFromSource(layer) {
     zIndex: Number(layer.zIndex)
   };
   if (layer.visibleWhenFlag) result.visibleWhenFlag = String(layer.visibleWhenFlag);
+  if (layer.visibleWhenTargetId) result.visibleWhenTargetId = String(layer.visibleWhenTargetId);
+  if (layer.hiddenWhenFlag) result.hiddenWhenFlag = String(layer.hiddenWhenFlag);
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);
+  if (layer.hiddenWhenState) result.hiddenWhenState = String(layer.hiddenWhenState);
   if (layer.visibleDuringAction) result.visibleDuringAction = structuredClone(layer.visibleDuringAction);
-  for (const key of ["top", "left", "right", "bottom"]) {
+  for (const key of ["top", "left", "right", "bottom", "width", "height"]) {
     if (Number.isFinite(Number(layer[key]))) result[key] = Number(layer[key]);
   }
   if (!Number.isFinite(Number(result.top)) && !Number.isFinite(Number(result.bottom))) result.top = 0;

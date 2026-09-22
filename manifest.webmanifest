@@ -1,0 +1,36 @@
+{
+  "id": "./",
+  "name": "Другарят Кандидат / Comrade Candidate",
+  "short_name": "Другарят Кандидат",
+  "description": "A high-resolution Bulgarian point-and-click adventure.",
+  "lang": "bg",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#16130f",
+  "theme_color": "#16130f",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "./assets/app/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/app/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/app/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

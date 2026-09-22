@@ -2,6 +2,31 @@
 
 This is a placeholder seed bank for fictionalized Bulgarian satire. All examples are fictional. Do not use real politician names, real party logos, copied headlines, copied jokes, or direct real-person accusations.
 
+## 2026-08-23 intake: journalist and election finale
+
+Recent source mechanisms reviewed:
+
+- The Bulgarian Ombudsman's 2025 annual report describes recurring complaints about administrative
+  services, infrastructure, and delayed or ineffective institutional responses.
+- A 2026 BTA report describes election-device logistics being assigned to municipalities, providing an
+  evergreen comic mechanism in which responsibility travels between institutions more efficiently than
+  the equipment itself.
+
+Sources:
+
+- [Bulgarian Ombudsman — 2025 annual report](https://www.ombudsman.bg/en/p/annual-reports-38)
+- [BTA — municipalities and polling-device logistics](https://www.bta.bg/en/news/bulgaria/1051979-central-election-commission-tasks-municipalities-with-storing-video-surveillance)
+
+Fictionalized seeds used:
+
+- Complaints are counted with great precision while resolving them belongs to a future procurement.
+- A one-stop service desk redirects a citizen back to itself, eliminating unnecessary walking but not delay.
+- Responsibility for a misplaced ballot box completes a full institutional circuit and returns to its first
+  owner.
+- Election equipment is described as attending field training in local tradition.
+
+These are system-level jokes detached from real people, parties, municipalities, and individual cases.
+
 ## scene.chapter1.apartment
 
 Recent-news-inspired jokes can enter through:
@@ -113,6 +138,35 @@ Evergreen
 Risk:
 Safe. Fictional campaign joke.
 
+### Implemented Seed: Degree In Overdue Administration
+
+Placement:
+Apartment unpaid bills, village-kiosk envelope, `quest.chapter1.fake_diploma`
+
+Mechanism:
+
+- Bai Mitko needs candidate credentials before the municipality will take him seriously.
+- An overdue household bill supplies official formatting and a red mark; an empty envelope supplies
+  administrative confidence.
+- Combining the two creates a fictional diploma in Local Government and Applied Persuasion.
+- The joke targets faith in forms, templates, and official appearance. It does not imitate a real diploma,
+  institution, graduate, or document-fraud case.
+
+Intake sources:
+
+- [Bulgarian Ministry of Education administrative services and application forms](https://www.mon.bg/mon/administrativno-obsluzhvane/administrativni-uslugi-i-obraztsi-na-zayavleniya/)
+- [Bulgarian Ministry of Education page for standardized diploma forms](https://www.mon.bg/dokumentatsiya/normativni-aktove/zapovedi/zapoved-za-edinni-obrazczi-na-diplomi/)
+
+Transformation:
+Only the general mechanisms of standardized forms, supporting documents, certification, and administrative
+recognition are retained. The puzzle, qualification, paper components, institution, and result are fictional.
+
+Freshness:
+Evergreen.
+
+Risk:
+Safe. No real credential or verification method is reproduced.
+
 ## scene.chapter1.village_square
 
 Recent-news-inspired jokes can enter through:
@@ -131,6 +185,42 @@ Bulgarian absurdity that fits:
 - visible civic decay under optimistic slogans
 - village gossip as political analysis
 - old promises pasted over older promises
+
+### Implemented Seed: Baba's Household Price List
+
+Placement:
+Baba Stoyanka dialogue / `quest.chapter1.baba_vote`
+
+Mechanism:
+
+- The explicit `Let's discuss your vote` / `Да поговорим за гласа ти` choice starts
+  `quest.chapter1.baba_vote` and advances to Baba's terms without closing the dialogue.
+- Bai Mitko mistakes a sequence of cheap household objects for escalating political persuasion.
+- Baba rejects the objects according to practical household logic, not ideology.
+- Kiro always sells takeaway village wine so the fallback item is discoverable instead of being
+  hidden behind an invisible state condition.
+- Shop-bought rakia and prematurely offered wine receive explicit rejections and remain in inventory;
+  these responses steer the player toward oil without silently hiding a purchased item.
+- Sunflower oil is acceptable before Bai Mitko insults her repeatedly; afterward it counts only as
+  interest on the damaged relationship.
+- A bottle of fictional village wine becomes the relationship-repair item, keeping the puzzle rooted
+  in hospitality rather than a current real-world scheme.
+
+Intake sources:
+
+- [BNT overview of recurring controlled-vote mechanisms](https://bntnews.bg/news/pari-sreshtu-glas-kakvi-sa-novite-shemi-za-kupuvane-na-glasove-1388867news.html)
+- [BNT report noting checks involving firewood supply during election enforcement](https://bntnews.bg/news/akcii-sreshtu-kupeniya-vot-v-blagoevgrad-i-sliven-1388456news.html)
+- [BNR report on public concern around staple-food prices](https://bnr.bg/post/102175939/pet-grajdanski-organizacii-obaviha-kampania-za-grajdanski-kontrol-na-cenite)
+
+Transformation:
+Only the broad mechanisms—transactional politics, household scarcity, and escalating expectations—are
+retained. All characters, objects, dialogue, thresholds, and outcomes are fictional and evergreen.
+
+Freshness:
+Evergreen core with replaceable contemporary inspiration.
+
+Risk:
+Safe. No real person, party, locality, accusation, amount, or reported incident is represented.
 
 ### Seed: Repair Of The Repair
 
@@ -312,6 +402,68 @@ Evergreen
 Risk:
 Safe. Fictional character logic.
 
+### Implemented Seed: Capacity Under Musical Oversight
+
+Placement:
+Tony challenge, Kiro clue, Bai Mitko's glass / `quest.chapter1.tony_vote`
+
+Mechanism:
+
+- Tony treats a glass-for-glass drinking contest as proof that a candidate has governing capacity.
+- He watches Bai Mitko's own glass as a self-appointed election observer, making the obstacle visible
+  before the player attempts the trick.
+- Refusing is a consequence-free strategic delay. It exposes Kiro's optional preparation clue and the
+  same challenge remains available later.
+- Kiro explains that an old wedding tune makes Tony close his eyes and sing. The accordion therefore
+  suspends Tony's supervision long enough to replace the rakia in Mitko's glass with water.
+- The swap prepares the result but does not award the vote. A final conversation with Tony completes
+  the contest and secures his support.
+
+Intake sources:
+
+- [BTA report describing expert selection, implementation control, and insufficient contractor capacity](https://www.bta.bg/bg/news/1124431-bta-obyavi-obshtestvena-porachka-po-krasiva-balgariya-za-remont-na-obshtite-pr)
+- [BTA report describing technical control, construction oversight, and compliance requirements](https://www.bta.bg/bg/news/bulgaria/oficial-messages/1066889-api-obyavi-obshtestvena-porachka-za-stroitelen-nadzor-pri-izgrazhdaneto-na-1-km-)
+
+Transformation:
+Only the language mechanisms of capacity, oversight, control, and procedural compliance are retained.
+They are transformed into an impossible tavern qualification administered by fictional characters.
+No real project, person, locality, allegation, or reported outcome appears in the puzzle.
+
+Freshness:
+Evergreen. The contemporary source material informs the bureaucratic rhythm, not the puzzle facts.
+
+Risk:
+Safe. Fictional, character-driven, and not dependent on a current headline.
+
+### Implemented Seed: One Accordion, Many Memories
+
+Placement:
+Accordion inventory targeting / Baba, Kiro, generic NPC, and future animal reactions
+
+Mechanism:
+
+- The accordion remains a quest tool for Tony, but it is also a reusable social verb.
+- Baba briefly remembers dancing in her youth, then returns to her practical demand for a useful household
+  item. Music adds character without bypassing her vote puzzle.
+- Kiro hears a new opportunity to add a fee.
+- Other people receive an evergreen memory response, while future targets tagged `animal` react through a
+  separate non-verbal joke.
+- All non-Tony reactions keep the accordion and do not alter quest progress.
+
+Intake source:
+
+- [BTA coverage of Bulgarian community amateur groups preserving music and dance traditions](https://www.bta.bg/bg/news/lik/1145484-nad-750-samodeytsi-ot-razgradska-oblast-shte-pokazhat-traditsii-i-tvorchestvo-na)
+
+Transformation:
+Only the broad association between community music, shared memory, and living local tradition is retained.
+Every character, memory, joke, and gameplay consequence is fictional and evergreen.
+
+Freshness:
+Evergreen.
+
+Risk:
+Safe. No real participant, performance, locality, or reported event is represented.
+
 ### Seed: Neutral Mehana
 
 Placement:
@@ -335,7 +487,59 @@ Evergreen
 Risk:
 Safe. Fictional local-business satire.
 
+### Seed: Advisory Menu, Final Bill
+
+Placement:
+Mehana waiter opening line and food-order responses
+
+Real-world mechanism:
+Public frustration with restaurant prices, unclear value, and the ritual authority of the final bill.
+
+Fictional transformation:
+The menu is treated as a non-binding consultation, while the bill behaves like an official decision.
+
+BG:
+`Менюто е ориентировъчно. Сметката е окончателна.`
+
+EN:
+`The menu is advisory. The bill is final.`
+
+Freshness:
+Evergreen
+
+Risk:
+Safe. No real venue, price, person, or copied complaint is referenced.
+
 ## scene.chapter1.municipality
+
+### Implemented Intake: Self-Service Obstruction
+
+Placement:
+Clerk Penka, stamp desk, candidate register, and archive cabinet
+
+Mechanism:
+
+- The clerk asks the citizen for a credential instead of consulting another municipal record.
+- Once accepted, a reform has made stamping self-service: the citizen now performs one part of the
+  obstruction personally.
+- The stamped register grants the archive permission to reveal a transfer note for the missing ballot
+  box, fictionalized as temporary transparent storage near pickle jars in the Mehana cellar.
+
+Intake sources:
+
+- [Bulgarian Ombudsman 2025 annual report](https://www.ombudsman.bg/storage/pub/files/20260401144356_%D0%9E%D0%BC%D0%B1%D1%83%D0%B4%D1%81%D0%BC%D0%B0%D0%BD%20%D0%B4%D0%BE%D0%BA%D0%BB%D0%B0%D0%B4%202026%20%D0%BF%D1%80%D0%B5%D0%B3%D0%BB%D0%B5%D0%B4%20%D1%81%D0%BB%D0%B5%D0%B4%20%D0%BF%D0%B5%D1%87%D0%B0%D1%82_5a7a004f-f47a-41c1-8c9a-4618e96971e7.pdf)
+- [Sega overview of delayed anti-bureaucracy measures](https://www.segabg.com/hot/category-bulgaria/samo-14-235-merki-sreshtu-izlishnata-byurokraciya-sa-izpulneni)
+
+Transformation:
+Only the broad mechanisms—slow service, duplicated document demands, reform lag, and ritual trust in
+paper—are retained. Penka, the candidate system, stamp sequence, archive entry, and ballot-box transfer
+are fictional and evergreen.
+
+Freshness:
+Evergreen core with replaceable contemporary inspiration.
+
+Risk:
+Safe. No real official, municipality, credential, complaint, or administrative case is represented.
 
 Recent-news-inspired jokes can enter through:
 

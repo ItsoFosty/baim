@@ -1,6 +1,12 @@
 # Comrade Candidate — Authoritative Chapter 1 Script v1.0
 
-Status: Authoritative Chapter 1 design baseline  
+> Completion work resumed on 16 September 2026. See
+> [the reconciled completion plan](chapter1-completion-plan-160926.md) for current
+> target decisions, including retained three-outcome support and character roles.
+> The implementation-status table below is historical; consult the
+> [gameplay-flow contract](chapter1-gameplay-flow.md) for playable behavior.
+
+Status: Authoritative Chapter 1 design baseline
 Version: 1.0
 
 Future implementation may polish dialogue, jokes, visuals, and optional interactions, but changes to mandatory quest dependencies, canonical puzzle solutions, scene progression, the Mayor objective, or stable IDs require explicit review.
@@ -231,9 +237,9 @@ Contains:
 
 ## 5. Named kiosk NPC
 
-**Name:** Пенка Дочева  
-**Display name BG:** Леля Пенка от будката  
-**Display name EN:** Aunt Penka at the Kiosk  
+**Name:** Пенка Дочева
+**Display name BG:** Леля Пенка от будката
+**Display name EN:** Aunt Penka at the Kiosk
 **Recommended stable ID:** `npc.penka_kiosk`
 
 ### Personality

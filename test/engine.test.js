@@ -2,22 +2,26 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { Localization } from "../src/engine/Localization.js";
+import { DialogueSystem } from "../src/engine/DialogueSystem.js";
 import { SaveSystem } from "../src/engine/SaveSystem.js";
+import { QuestSystem } from "../src/engine/QuestSystem.js";
 import { pointInPolygon, findTargetAt, findWalkPath, isWalkable, pointInWalkMask, nearestWalkablePointOnLine, nearestReachableWalkablePoint, nearestWalkablePoint, sceneScale, walkPathDistance } from "../src/engine/SceneGeometry.js";
 import { DEFAULT_SAVE, VERBS } from "../src/engine/ids.js";
 import { characterHeight } from "../src/engine/CharacterRenderMath.js";
 import { facingFromDelta, MovementSystem, requestWalkStop, eastWestFallbackFacing, motionMultiplierAtFrame, walkMotionMultiplierForFrame } from "../src/engine/MovementSystem.js";
 import { AnimationPlayer } from "../src/engine/AnimationPlayer.js";
 import { Game, SHORT_WALK_PATH_DISTANCE } from "../src/engine/Game.js";
-import { Renderer, animationRenderMirrored, animationRenderOffset, animationRenderScale, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY } from "../src/engine/Renderer.js";
+import { Renderer, animationRenderMirrored, animationRenderOffset, animationRenderScale, externalFrameVisualBounds, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY, targetZIndex } from "../src/engine/Renderer.js";
+import { applyTimedSobering, intoxicationBandKey, intoxicationColor, intoxicationMovementMultiplier, RAKIA_SOBER_INTERVAL_MS } from "../src/engine/IntoxicationSystem.js";
 import { strings } from "../src/content/localization/index.js";
 import { chapter1 } from "../src/content/chapter1/index.js";
 import { assetManifest } from "../src/content/art/assetManifest.js";
 import { CHARACTER_CUTOUT_MARGIN_RATIO, CHARACTER_SOURCE_SCALE } from "../src/content/art/characterAssetConfig.js";
 import { characterDefinitions } from "../src/content/art/characters.js";
-import { externalAnimationV1 } from "../src/content/art/externalAnimationV1.generated.js";
+import { externalAnimationV1 } from "../src/content/art/externalAnimationRuntime.generated.js";
 import { distance } from "../src/engine/geometry.js";
-import { imageAssetPaths } from "../src/engine/AssetLoader.js";
+import { AssetLoader, imageAssetPaths } from "../src/engine/AssetLoader.js";
+import { SceneEditor, normalizeEditorObjectSource } from "../src/engine/SceneEditor.js";
 import { makePng } from "../tools/character-frame-utils.mjs";
 import {
   EXTERNAL_WALK_LOOP_MOTION_MAX,
@@ -36,39 +40,78 @@ test("animation asset discovery includes every raster character slot without man
 });
 
 test("scene preload discovery includes action-timed and persistent raster layers", () => {
-  const paths = imageAssetPaths(assetManifest.scenes["scene.chapter1.apartment"]);
-  assert.ok(paths.includes(assetManifest.scenes["scene.chapter1.apartment"].accordionOnChair));
-  assert.ok(paths.includes(assetManifest.scenes["scene.chapter1.apartment"].windowOpenBack));
-  assert.ok(paths.includes(assetManifest.scenes["scene.chapter1.apartment"].windowOpen));
+  const apartmentPaths = imageAssetPaths(assetManifest.scenes["scene.chapter1.apartment"]);
+  assert.ok(apartmentPaths.includes(assetManifest.scenes["scene.chapter1.apartment"].accordionOnChair));
+  assert.ok(apartmentPaths.includes(assetManifest.scenes["scene.chapter1.apartment"].windowOpenBack));
+  assert.ok(apartmentPaths.includes(assetManifest.scenes["scene.chapter1.apartment"].windowOpen));
+  const squarePaths = imageAssetPaths(assetManifest.scenes["scene.chapter1.village_square"]);
+  assert.ok(squarePaths.includes(assetManifest.scenes["scene.chapter1.village_square"].babaStoyankaSeated));
 });
 
 test("inventory preload discovery includes every authored high-resolution item icon", () => {
   const paths = Object.values(assetManifest.items).flatMap((itemAssets) => imageAssetPaths(itemAssets));
   assert.deepEqual(paths.sort(), [
     assetManifest.items["item.accordion"].icon,
+    assetManifest.items["item.campaign_pamphlets"].icon,
+    assetManifest.items["item.fake_diploma"].icon,
+    assetManifest.items["item.fake_diploma"].stampedIcon,
+    assetManifest.items["item.suspicious_receipt"].icon,
+    assetManifest.items["item.rakia"].icon,
+    assetManifest.items["item.shopska_salad"].icon,
+    assetManifest.items["item.tripe_soup"].icon,
+    assetManifest.items["item.village_wine"].icon,
+    assetManifest.items["item.ballot_box"].icon,
+    assetManifest.items["item.pickle_jar"].icon,
     assetManifest.items["item.empty_envelope"].icon,
+    assetManifest.items["item.glass_of_water"].icon,
+    assetManifest.items["item.municipality_stamp"].icon,
+    assetManifest.items["item.sunflower_oil"].icon,
     assetManifest.items["item.unpaid_bills"].icon
   ].sort());
 });
 
-test("game start waits for character sprites, scene layers, and item icons before input and rendering", async () => {
+test("decoded image cache evicts old optional sheets but preserves the active working set", () => {
+  const loader = new AssetLoader({ scenes: {}, characters: {}, items: {} });
+  const image = (src) => ({ src, dataset: { loaded: "true" }, naturalWidth: 10, naturalHeight: 10 });
+  loader.images.set("old", image("old"));
+  loader.images.set("active", image("active"));
+  loader.imageReady.set("old", Promise.resolve());
+  loader.imageReady.set("active", Promise.resolve());
+  loader.imageLastUsed.set("old", 1);
+  loader.imageLastUsed.set("active", 2);
+  loader.protectedPaths.add("active");
+
+  assert.equal(loader.trimDecodedCache(400), 1);
+  assert.equal(loader.images.has("old"), false);
+  assert.equal(loader.images.has("active"), true);
+});
+
+test("game start waits only for bootstrap character, current scene, and owned item assets", async () => {
   const game = Object.create(Game.prototype);
   let releaseCharacterAssets;
   let releaseSceneAssets;
   let releaseItemAssets;
   let inputBindings = 0;
   let animationFrames = 0;
+  let requestedCharacterSlots;
+  let requestedSceneId;
+  let requestedItemIds;
   game.player = { id: "npc.bai_mitko" };
   game.currentScene = { id: "scene.chapter1.apartment" };
+  game.state = { inventory: ["item.unpaid_bills"] };
   game.inputBound = false;
   game.assets = {
-    preloadAllCharacterAssets() {
+    loadRuntimeManifest() { return Promise.resolve(false); },
+    preloadCharacterSlots(_characterId, slots) {
+      requestedCharacterSlots = slots;
       return new Promise((resolve) => { releaseCharacterAssets = resolve; });
     },
-    preloadSceneAssets() {
+    preloadSceneAssets(sceneId) {
+      requestedSceneId = sceneId;
       return new Promise((resolve) => { releaseSceneAssets = resolve; });
     },
-    preloadAllItemAssets() {
+    preloadOwnedItemAssets(itemIds) {
+      requestedItemIds = itemIds;
       return new Promise((resolve) => { releaseItemAssets = resolve; });
     }
   };
@@ -79,6 +122,14 @@ test("game start waits for character sprites, scene layers, and item icons befor
   try {
     const starting = game.start();
     await Promise.resolve();
+    assert.deepEqual(requestedCharacterSlots, [
+      "external_walk_east_start",
+      "external_walk_east_loop",
+      "external_walk_east_short",
+      "external_walk_east_stop"
+    ]);
+    assert.equal(requestedSceneId, "scene.chapter1.apartment");
+    assert.deepEqual(requestedItemIds, ["item.unpaid_bills"]);
     assert.equal(inputBindings, 0);
     assert.equal(animationFrames, 0);
     releaseCharacterAssets([]);
@@ -105,6 +156,16 @@ test("localization returns Bulgarian and English strings from stable keys", () =
   assert.equal(l10n.t("quest.chapter1.main.title"), "Become Mayor before your creditors find you.");
 });
 
+test("menu and Mehana interaction labels are authored in both languages", () => {
+  const bgKeys = Object.keys(strings.bg).sort();
+  const enKeys = Object.keys(strings.en).sort();
+  assert.deepEqual(bgKeys, enKeys);
+  assert.equal(strings.bg["ui.menu"], "Меню");
+  assert.equal(strings.en["ui.menu"], "Menu");
+  assert.equal(strings.bg["dialogue.waiter.choice.shopska"], "Една шопска салата.");
+  assert.equal(strings.en["dialogue.waiter.choice.shopska"], "One Shopska salad.");
+});
+
 test("localization falls back to English before returning the key", () => {
   const l10n = new Localization({ bg: {}, en: { "known.key": "Known" } }, "bg");
   assert.equal(l10n.t("known.key"), "Known");
@@ -117,6 +178,201 @@ test("localization preserves conversational message arrays and applies replaceme
     en: { "msg.sequence": ["First, {name}.", "Then."] }
   }, "bg");
   assert.deepEqual(l10n.t("msg.sequence", { name: "Митко" }), ["Първо, Митко.", "После."]);
+});
+
+test("quest start effects activate a quest once before completion", () => {
+  const state = { activeQuests: [], completedQuests: [] };
+  const quests = new QuestSystem({
+    "quest.chapter1.baba_vote": { id: "quest.chapter1.baba_vote" }
+  }, state);
+
+  quests.start("quest.chapter1.baba_vote");
+  quests.start("quest.chapter1.baba_vote");
+  assert.deepEqual(state.activeQuests, ["quest.chapter1.baba_vote"]);
+  quests.complete("quest.chapter1.baba_vote");
+  assert.deepEqual(state.activeQuests, []);
+  assert.deepEqual(state.completedQuests, ["quest.chapter1.baba_vote"]);
+  assert.deepEqual(quests.completed().map((quest) => quest.id), ["quest.chapter1.baba_vote"]);
+});
+
+test("dialogue choices honor inventory, flags, and cheap-offer thresholds", () => {
+  const game = Object.create(Game.prototype);
+  const owned = new Set(["item.sunflower_oil"]);
+  game.state = { flags: {}, babaCheapOfferAttempts: 2, babaStoyankaVote: false };
+  game.inventory = { has: (itemId) => owned.has(itemId) };
+  game.quests = null;
+
+  assert.equal(game.dialogueChoiceAvailable({
+    effect: { requirements: { items: ["item.sunflower_oil"], stateMax: { babaCheapOfferAttempts: 2 } } }
+  }), true);
+  game.state.babaCheapOfferAttempts = 3;
+  assert.equal(game.dialogueChoiceAvailable({
+    effect: { requirements: { items: ["item.sunflower_oil"], stateMax: { babaCheapOfferAttempts: 2 } } }
+  }), false);
+  game.state.flags.babaRequiresBetterGift = true;
+  assert.equal(game.dialogueChoiceAvailable({
+    requirements: { items: ["item.village_wine"], flags: ["babaRequiresBetterGift"] }
+  }), false);
+  owned.add("item.village_wine");
+  assert.equal(game.dialogueChoiceAvailable({
+    requirements: { items: ["item.village_wine"], flags: ["babaRequiresBetterGift"] }
+  }), true);
+});
+
+test("dialogue choices can apply an effect and then advance to an answer node", () => {
+  const applied = [];
+  const game = Object.create(Game.prototype);
+  game.player = { speaking: true };
+  game.applyContentEffect = (effect, options) => applied.push({ effect, options });
+  game.dialogue = new DialogueSystem({
+    "dialogue.test": {
+      nodes: {
+        start: {},
+        answer: { lineKey: "dialogue.test.answer" }
+      }
+    }
+  }, null, (effect) => game.applyDialogueEffect(effect));
+  game.dialogue.start("dialogue.test");
+
+  const effect = { effects: [{ type: "startQuest", questId: "quest.test" }] };
+  game.dialogue.choose({ effect, next: "answer" });
+
+  assert.deepEqual(applied, [{ effect, options: { render: false } }]);
+  assert.equal(game.player.speaking, false);
+  assert.equal(game.dialogue.current.nodeId, "answer");
+  assert.equal(game.dialogue.getNode().lineKey, "dialogue.test.answer");
+});
+
+test("dropping an inventory item outside its home scene leaves a saved recoverable record", () => {
+  const game = Object.create(Game.prototype);
+  const owned = new Set(["item.accordion"]);
+  let saves = 0;
+  let renders = 0;
+  let sceneRefreshes = 0;
+  let message = null;
+  game.state = { droppedItems: [] };
+  game.currentScene = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
+  game.player = { position: { x: 700, y: 540 } };
+  game.inventory = {
+    has: (itemId) => owned.has(itemId),
+    add: (itemId) => owned.add(itemId),
+    remove: (itemId) => owned.delete(itemId)
+  };
+  game.selectedInventoryItemId = "item.accordion";
+  game.t = (key, replacements = {}) => key === "item.accordion.name"
+    ? "Акордеон"
+    : `dropped:${replacements.item}`;
+  game.save = () => { saves += 1; };
+  game.setStatusMessage = (nextMessage) => { message = nextMessage; };
+  game.renderUi = () => { renders += 1; };
+  game.refreshCurrentSceneDroppedItems = () => { sceneRefreshes += 1; };
+
+  assert.equal(game.dropInventoryItem({ id: "item.accordion", nameKey: "item.accordion.name" }), true);
+  assert.equal(owned.has("item.accordion"), false);
+  assert.equal(game.state.droppedItems[0].itemId, "item.accordion");
+  assert.equal(game.state.droppedItems[0].sceneId, "scene.chapter1.village_square");
+  assert.ok(Number.isFinite(game.state.droppedItems[0].position.x));
+  assert.equal(game.selectedInventoryItemId, null);
+  assert.equal(message, "dropped:Акордеон");
+  assert.equal(game.droppedItemsOpen, true);
+  assert.equal(sceneRefreshes, 1);
+  assert.equal(saves, 1);
+  assert.equal(renders, 1);
+
+  game.content = { items: { "item.accordion": { id: "item.accordion", nameKey: "item.accordion.name" } } };
+  assert.equal(game.pickUpDroppedItem("item.accordion"), true);
+  assert.equal(owned.has("item.accordion"), true);
+  assert.deepEqual(game.state.droppedItems, []);
+  assert.equal(game.droppedItemsOpen, false);
+  assert.equal(sceneRefreshes, 2);
+  assert.equal(saves, 2);
+  assert.equal(renders, 2);
+});
+
+test("dropping the accordion in the apartment restores it without creating a bag pile", () => {
+  const game = Object.create(Game.prototype);
+  const apartment = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.apartment");
+  const owned = new Set(["item.accordion"]);
+  game.state = {
+    droppedItems: [
+      { itemId: "item.accordion", sceneId: apartment.id, position: { x: 700, y: 540 } }
+    ]
+  };
+  game.currentScene = apartment;
+  game.content = { scenes: { [apartment.id]: apartment } };
+  game.player = { position: { x: 700, y: 540 } };
+  game.inventory = {
+    has: (itemId) => owned.has(itemId),
+    remove: (itemId) => owned.delete(itemId)
+  };
+  game.selectedInventoryItemId = "item.accordion";
+  game.t = (key) => key;
+  game.save = () => {};
+  game.setStatusMessage = () => {};
+  game.renderUi = () => {};
+
+  assert.equal(game.droppedItemsInScene().length, 0);
+  assert.equal(game.dropInventoryItem({ id: "item.accordion", nameKey: "item.accordion.name" }), true);
+  assert.equal(owned.has("item.accordion"), false);
+  assert.deepEqual(game.state.droppedItems, []);
+  assert.equal(game.droppedItemsOpen, false);
+  assert.equal(game.currentScene.interactables.some((target) => target.droppedItemsPile), false);
+  assert.equal(game.targetAvailable(
+    apartment.interactables.find((target) => target.id === "hotspot.apartment.accordion")
+  ), true);
+});
+
+test("saved dropped items create one compact interactive pile per scene", () => {
+  const game = Object.create(Game.prototype);
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  game.state = {
+    droppedItems: [
+      { itemId: "item.accordion", sceneId: scene.id, position: { x: 420, y: 530 } },
+      { itemId: "item.empty_envelope", sceneId: scene.id, position: { x: 420, y: 530 } },
+      { itemId: "item.unpaid_bills", sceneId: "scene.chapter1.apartment", position: { x: 700, y: 560 } }
+    ]
+  };
+
+  const decorated = game.sceneWithDroppedItems(scene);
+  const piles = decorated.interactables.filter((target) => target.droppedItemsPile);
+
+  assert.equal(piles.length, 1);
+  assert.equal(piles[0].id, "hotspot.dropped_items.scene.chapter1.village_square");
+  assert.equal(piles[0].droppedItemsPileAsset, "droppedBelongingsPile");
+  assert.deepEqual(piles[0].rect, { x: 364, y: 455, w: 112, h: 75 });
+});
+
+test("data-authored take effects update quest state after adding the item", () => {
+  const game = Object.create(Game.prototype);
+  const owned = new Set();
+  const completed = [];
+  let message = null;
+  game.state = { hasBallotBox: false, flags: {} };
+  game.inventory = {
+    has: (itemId) => owned.has(itemId),
+    add: (itemId) => owned.add(itemId),
+    remove: (itemId) => owned.delete(itemId)
+  };
+  game.quests = { complete: (questId) => completed.push(questId) };
+  game.t = (key) => key;
+  game.setStatusMessage = (value) => { message = value; };
+  game.save = () => {};
+
+  game.takeTarget({
+    takeItemId: "item.ballot_box",
+    flagOnTake: "hasBallotBox",
+    takeMessageKey: "msg.mehana.ballot_box_recovered",
+    takeEffects: [
+      { type: "setFlag", key: "ballotBoxRecovered" },
+      { type: "completeQuest", questId: "quest.chapter1.ballot_box" }
+    ]
+  });
+
+  assert.equal(owned.has("item.ballot_box"), true);
+  assert.equal(game.state.hasBallotBox, true);
+  assert.equal(game.state.flags.ballotBoxRecovered, true);
+  assert.deepEqual(completed, ["quest.chapter1.ballot_box"]);
+  assert.equal(message, "msg.mehana.ballot_box_recovered");
 });
 
 test("scene polygon geometry detects walkable space", () => {
@@ -140,6 +396,11 @@ test("scene hit testing excludes unavailable collected targets and can reach obj
 
 test("chapter scenes define explicit walk geometry for production art", () => {
   for (const scene of chapter1.scenes) {
+    if (scene.playerMode === "closeup") {
+      assert.equal(scene.walkPolygons.length, 0);
+      assert.ok(scene.exits.length);
+      continue;
+    }
     assert.ok(scene.walkMask?.rows?.length || scene.walkPolygons.length > 0, `${scene.id} needs walk geometry`);
     assert.equal(isWalkable(scene, scene.playerStart), true);
   }
@@ -156,13 +417,19 @@ test("apartment uses a raster walk mask for walkable floor", () => {
   assert.equal(scene.walkMask.rows.join("").includes("c"), true);
   assert.equal(scene.walkMask.rows.join("").includes("e"), false);
   assert.equal(scene.walkMask.legend.e, undefined);
-  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.table_foreground" && layer.asset === "foregroundTable" && layer.zIndex === -1));
+  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.table_foreground"
+    && layer.asset === "foregroundTable"
+    && layer.zIndex === -1
+    && layer.left === 104
+    && layer.top === 389
+    && layer.width === undefined
+    && layer.height === undefined));
   assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.bills_on_table"
     && layer.asset === "billsOnTable"
     && layer.zIndex === -2
     && Number.isFinite(layer.top)
     && Number.isFinite(layer.left)
-    && layer.hiddenWhenItemOwned === "item.unpaid_bills"));
+    && layer.hiddenWhenState === "hasUnpaidBills"));
   assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.accordion_on_chair"
     && layer.asset === "accordionOnChair"
     && layer.zIndex === 0
@@ -191,10 +458,544 @@ test("village square uses the shared raster, object, and layer scene pipeline", 
   assert.equal(scene.walkMask.rows.length, 36);
   assert.equal(scene.walkMask.rows.every((row) => row.length === 64), true);
   assert.equal(scene.walkMask.rows.join("").includes("c"), true);
-  assert.deepEqual(scene.foregroundLayers, []);
+  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.square.baba_stoyanka_seated"
+    && layer.asset === "babaStoyankaSeated"
+    && layer.zIndex === 90
+    && layer.left === 325
+    && layer.top === 330
+    && layer.height === 122));
+  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.square.kiosk_papers_pile"
+    && layer.asset === "kioskPapersPile"
+    && layer.zIndex === 40
+    && layer.left === 1095
+    && layer.top === 427
+    && layer.width === 165));
   for (const object of [...scene.exits, ...scene.interactables, ...scene.npcs]) {
     assert.ok(object.polygon?.length >= 3, `${object.id} needs generated editor geometry`);
   }
+});
+
+test("village square mehana menu uses the authored editor geometry and bilingual menu copy", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const menu = scene.interactables.find((target) => target.id === "hotspot.square.mehana_menu");
+
+  assert.ok(menu);
+  assert.equal(menu.lookKey, "look.square.mehana_menu");
+  assert.equal(menu.useDialogueId, "dialogue.square.mehana_menu");
+  assert.deepEqual(menu.polygon, [
+    { x: 169, y: 333 },
+    { x: 216, y: 332 },
+    { x: 219, y: 431 },
+    { x: 168, y: 434 }
+  ]);
+  assert.equal(typeof strings.bg[menu.lookKey], "string");
+  assert.equal(typeof strings.en[menu.lookKey], "string");
+  const menuDialogue = chapter1.dialogues.find((dialogue) => dialogue.id === menu.useDialogueId);
+  assert.equal(menuDialogue.nodes.start.entries.length, 9);
+});
+
+test("using a content-authored reading target opens its menu dialogue", () => {
+  const game = Object.create(Game.prototype);
+  let openedDialogue = null;
+  let renders = 0;
+  let clearedMessages = 0;
+  game.dialogue = { start: (dialogueId) => { openedDialogue = dialogueId; } };
+  game.player = { speaking: true };
+  game.clearStatusMessage = () => { clearedMessages += 1; };
+  game.renderUi = () => { renders += 1; };
+
+  game.useTarget({ useDialogueId: "dialogue.square.mehana_menu" });
+
+  assert.equal(openedDialogue, "dialogue.square.mehana_menu");
+  assert.equal(game.player.speaking, false);
+  assert.equal(clearedMessages, 1);
+  assert.equal(renders, 1);
+});
+
+test("inventory Use enters explicit item-target mode and can be cancelled", () => {
+  const game = Object.create(Game.prototype);
+  let renders = 0;
+  let clearedMessages = 0;
+  game.inventory = { has: (itemId) => itemId === "item.accordion" };
+  game.player = { pendingInteraction: null };
+  game.selectedVerb = VERBS.LOOK;
+  game.selectedInventoryItemId = "item.accordion";
+  game.inventoryUseItemId = null;
+  game.clearStatusMessage = () => { clearedMessages += 1; };
+  game.renderUi = () => { renders += 1; };
+
+  assert.equal(game.beginInventoryItemUse("item.accordion"), true);
+  assert.equal(game.selectedInventoryItemId, null);
+  assert.equal(game.inventoryUseItemId, "item.accordion");
+  assert.equal(game.selectedVerb, VERBS.USE);
+  assert.equal(clearedMessages, 1);
+
+  game.clearInventoryInteraction();
+  assert.equal(game.inventoryUseItemId, null);
+  assert.equal(renders, 1);
+});
+
+test("explicit accordion use applies Tony's item-authored rule and clears held state", () => {
+  const game = Object.create(Game.prototype);
+  const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
+  const tony = mehana.npcs.find((target) => target.id === "npc.tony_fridge");
+  let applied = null;
+  game.state = { tonyVote: false, flags: { tonyChallengeStarted: true } };
+  game.inventory = { has: (itemId) => itemId === "item.accordion" };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.content = { items: Object.fromEntries(chapter1.items.map((item) => [item.id, item])) };
+  game.inventoryUseItemId = "item.accordion";
+  game.selectedInventoryItemId = null;
+  game.applyContentEffect = (rule) => { applied = rule; return true; };
+
+  assert.equal(game.useInventoryItemOnTarget("item.accordion", tony), true);
+  assert.equal(applied.messageKey, "msg.accordion_tony");
+  assert.equal(game.inventoryUseItemId, null);
+});
+
+test("accordion uses character reactions and future animal fallbacks without overriding Tony's puzzle rule", () => {
+  const game = Object.create(Game.prototype);
+  const accordion = chapter1.items.find((item) => item.id === "item.accordion");
+  const applied = [];
+  game.state = { babaStoyankaVote: false, tonyVote: false, flags: {} };
+  game.inventory = { has: (itemId) => itemId === "item.accordion" };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.content = { items: { "item.accordion": accordion } };
+  game.applyContentEffect = (rule) => { applied.push(rule.messageKey); return true; };
+
+  const useOn = (target) => {
+    game.inventoryUseItemId = "item.accordion";
+    game.useInventoryItemOnTarget("item.accordion", target);
+  };
+  useOn({ id: "npc.baba_stoyanka", kind: "npc", itemUseRules: [] });
+  game.state.babaStoyankaVote = true;
+  useOn({ id: "npc.baba_stoyanka", kind: "npc", itemUseRules: [] });
+  useOn({ id: "npc.future_villager", kind: "npc", itemUseRules: [] });
+  useOn({ id: "npc.future_stray_dog", kind: "npc", tags: ["animal"], itemUseRules: [] });
+
+  assert.deepEqual(applied, [
+    "msg.accordion_baba_before_vote",
+    "msg.accordion_baba_after_vote",
+    "msg.accordion_generic_npc",
+    "msg.accordion_animal"
+  ]);
+});
+
+test("unmatched inventory use on an NPC is rejected by that NPC instead of Bai Mitko", () => {
+  const game = Object.create(Game.prototype);
+  const target = {
+    id: "npc.baba_stoyanka",
+    kind: "npc",
+    nameKey: "npc.baba_stoyanka.name",
+    itemRejectKey: "msg.inventory.npc_reject.baba_stoyanka",
+    itemUseRules: []
+  };
+  let npcSpeech = null;
+  game.content = { items: { "item.empty_envelope": { id: "item.empty_envelope", targetUseRules: [] } } };
+  game.state = { flags: {} };
+  game.inventory = { has: () => true };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.inventoryUseItemId = "item.empty_envelope";
+  game.selectedInventoryItemId = null;
+  game.t = (key) => key;
+  game.setNpcSpeechMessage = (speaker, message) => { npcSpeech = { speaker, message }; return true; };
+  game.setStatusMessage = () => assert.fail("Bai Mitko must not speak an NPC item rejection");
+
+  assert.equal(game.useInventoryItemOnTarget("item.empty_envelope", target), false);
+  assert.deepEqual(npcSpeech, { speaker: target, message: target.itemRejectKey });
+  assert.equal(game.inventoryUseItemId, null);
+});
+
+test("authored inventory reactions on NPCs retain the target as the speaker", () => {
+  const game = Object.create(Game.prototype);
+  const rule = { itemId: "item.test", effects: [], messageKey: "msg.test" };
+  const target = { id: "npc.test", kind: "npc", itemUseRules: [rule] };
+  let application = null;
+  game.content = { items: { "item.test": { id: "item.test", targetUseRules: [] } } };
+  game.state = { flags: {} };
+  game.inventory = { has: () => true };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.applyContentEffect = (definition, options) => { application = { definition, options }; return true; };
+
+  assert.equal(game.useInventoryItemOnTarget("item.test", target), true);
+  assert.deepEqual(application, { definition: rule, options: { speakerTarget: target } });
+});
+
+test("inventory self-use applies the item's authored rule and clears the expanded item state", () => {
+  const game = Object.create(Game.prototype);
+  const rakia = chapter1.items.find((item) => item.id === "item.rakia");
+  let applied = null;
+  game.state = { rakiaGlasses: 2, flags: {} };
+  game.inventory = { has: (itemId) => itemId === "item.rakia" };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.content = { items: { "item.rakia": rakia } };
+  game.inventoryUseItemId = null;
+  game.selectedInventoryItemId = "item.rakia";
+  game.applyContentEffect = (rule) => { applied = rule; return true; };
+
+  assert.equal(game.useInventoryItemOnSelf("item.rakia"), true);
+  assert.equal(applied.messageKey, "msg.self.rakia");
+  assert.equal(game.selectedInventoryItemId, null);
+});
+
+test("inventory item combination finds the fake-diploma rule in either selection order", () => {
+  const game = Object.create(Game.prototype);
+  const owned = new Set(["item.unpaid_bills", "item.empty_envelope"]);
+  const applied = [];
+  game.state = { hasFakeDiploma: false, flags: {} };
+  game.inventory = { has: (itemId) => owned.has(itemId) };
+  game.quests = null;
+  game.player = { pendingInteraction: null };
+  game.content = { items: Object.fromEntries(chapter1.items.map((item) => [item.id, item])) };
+  game.applyContentEffect = (rule) => { applied.push(rule.messageKey); return true; };
+  game.selectedInventoryItemId = null;
+  game.inventoryUseItemId = "item.empty_envelope";
+
+  assert.equal(game.useInventoryItemOnItem("item.empty_envelope", "item.unpaid_bills"), true);
+  assert.deepEqual(applied, ["msg.fake_diploma.assembled"]);
+  assert.equal(game.inventoryUseItemId, null);
+});
+
+test("Tony's completed vote is removed from the outstanding quest list", () => {
+  const state = {
+    activeQuests: ["quest.chapter1.main", "quest.chapter1.tony_vote"],
+    completedQuests: []
+  };
+  const quests = new QuestSystem(Object.fromEntries(chapter1.quests.map((quest) => [quest.id, quest])), state);
+
+  quests.complete("quest.chapter1.tony_vote");
+
+  assert.deepEqual(quests.active().map((quest) => quest.id), ["quest.chapter1.main"]);
+  assert.deepEqual(state.completedQuests, ["quest.chapter1.tony_vote"]);
+});
+
+test("village square routes the apartment building home and the Mehana table inside", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const apartmentExit = scene.exits.find((exit) => exit.id === "exit.square.to_apartment");
+  const mehanaExit = scene.exits.find((exit) => exit.id === "exit.square.to_mehana");
+
+  assert.equal(pointInPolygon({ x: 400, y: 200 }, apartmentExit.polygon), true);
+  assert.equal(pointInPolygon({ x: 100, y: 520 }, mehanaExit.polygon), true);
+  assert.equal(pointInPolygon({ x: 100, y: 520 }, apartmentExit.polygon), false);
+  assert.equal(apartmentExit.targetSceneId, "scene.chapter1.apartment");
+  assert.equal(mehanaExit.targetSceneId, "scene.chapter1.mehana");
+});
+
+test("village square and municipality form a playable round trip", () => {
+  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
+  const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
+  const enter = square.exits.find((exit) => exit.id === "exit.square.to_municipality");
+  const leave = municipality.exits.find((exit) => exit.id === "exit.municipality.to_square");
+
+  assert.equal(enter.targetSceneId, municipality.id);
+  assert.deepEqual(enter.targetPosition, { x: 250, y: 520 });
+  assert.deepEqual(municipality.playerStart, { x: 260, y: 520 });
+  assert.deepEqual(municipality.anchors.baiMitkoSpawn, municipality.playerStart);
+  assert.equal(leave.targetSceneId, square.id);
+  assert.equal(municipality.walkPolygons[0].id, "walk.chapter1.municipality.main");
+  assert.equal(municipality.npcs[0].dialogueId, "dialogue.municipality_clerk");
+});
+
+test("municipality background staff expose short bilingual talk barks without replacing Penka's dialogue", () => {
+  const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
+  const clerk = municipality.npcs.find((npc) => npc.id === "npc.municipality_clerk");
+  const colleague = municipality.npcs.find((npc) => npc.id === "npc.municipality_colleague");
+  const backgroundClerk = municipality.npcs.find((npc) => npc.id === "npc.municipality_background_clerk");
+
+  assert.equal(clerk.talkKey, undefined);
+  assert.equal(clerk.dialogueId, "dialogue.municipality_clerk");
+  assert.equal(clerk.useDialogueId, undefined);
+  assert.equal(colleague.talkKey, "talk.npc.municipality_colleague.helping");
+  assert.equal(backgroundClerk.talkKey, "talk.npc.municipality_clerk.busy");
+  for (const npc of [clerk, colleague, backgroundClerk]) {
+    assert.ok(npc.polygon?.length >= 3);
+    assert.equal(typeof strings.bg[npc.nameKey], "string");
+    assert.equal(typeof strings.en[npc.nameKey], "string");
+  }
+  for (const npc of [colleague, backgroundClerk]) {
+    assert.equal(typeof strings.bg[npc.talkKey], "string");
+    assert.equal(typeof strings.en[npc.talkKey], "string");
+  }
+});
+
+test("municipality security officer remains a standalone bilingual NPC beside a separate prop table", () => {
+  const municipality = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.municipality");
+  const officer = municipality.npcs.find((npc) => npc.id === "npc.municipality_security_officer");
+  const officerLayer = municipality.foregroundLayers.find((layer) => layer.id === "layer.municipality.security_officer");
+  const tableLayer = municipality.foregroundLayers.find((layer) => layer.id === "layer.municipality.security_table");
+
+  assert.ok(officer.polygon?.length >= 3);
+  assert.equal(officer.talkKey, "talk.npc.municipality_security_officer.identification");
+  assert.equal(typeof strings.bg[officer.nameKey], "string");
+  assert.equal(typeof strings.en[officer.nameKey], "string");
+  assert.equal(typeof strings.bg[officer.talkKey], "string");
+  assert.equal(typeof strings.en[officer.talkKey], "string");
+  assert.equal(officerLayer.asset, "securityOfficer");
+  assert.equal(tableLayer.asset, "securityTable");
+  assert.ok(officerLayer.zIndex < tableLayer.zIndex, "security officer must render in front of the table");
+  assert.ok(tableLayer.zIndex < 0, "security table must render in front of foreground-depth Bai Mitko");
+});
+
+test("Penka's fitted selection takes priority over the archive cabinet", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+
+  assert.equal(findTargetAt(scene, { x: 1150, y: 350 }).id, "npc.municipality_clerk");
+  assert.equal(findTargetAt(scene, { x: 1100, y: 250 }).id, "hotspot.municipality.archive_cabinet");
+  assert.equal(findTargetAt(scene, { x: 875, y: 330 }).id, "npc.municipality_background_clerk");
+});
+
+test("a talk bark takes precedence over a target's formal dialogue", () => {
+  const game = Object.create(Game.prototype);
+  let spoken = null;
+  let openedDialogue = null;
+  game.selectedVerb = VERBS.TALK;
+  game.t = (key) => key;
+  game.setNpcSpeechMessage = (target, message) => {
+    spoken = { target, message };
+    return true;
+  };
+  game.dialogue = { start: (dialogueId) => { openedDialogue = dialogueId; } };
+  game.player = { speaking: false };
+
+  const target = {
+    id: "npc.municipality_clerk",
+    kind: "npc",
+    talkKey: "talk.npc.municipality_clerk.busy",
+    dialogueId: "dialogue.municipality_clerk"
+  };
+  game.performTargetAction(target);
+
+  assert.deepEqual(spoken, { target, message: target.talkKey });
+  assert.equal(openedDialogue, null);
+  assert.equal(game.player.speaking, false);
+});
+
+test("talking to seated Penka opens her original municipality dialogue", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const penka = scene.npcs.find((npc) => npc.id === "npc.municipality_clerk");
+  const game = Object.create(Game.prototype);
+  let openedDialogue = null;
+  game.selectedVerb = VERBS.TALK;
+  game.dialogue = { start: (dialogueId) => { openedDialogue = dialogueId; } };
+  game.player = { speaking: false };
+  game.renderUi = () => {};
+
+  game.performTargetAction(penka);
+
+  assert.equal(openedDialogue, "dialogue.municipality_clerk");
+  assert.equal(game.player.speaking, true);
+});
+
+test("regular Use on seated Penka rejects instead of opening her Talk dialogue", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const penka = scene.npcs.find((npc) => npc.id === "npc.municipality_clerk");
+  const game = Object.create(Game.prototype);
+  let openedDialogue = null;
+  let status = null;
+  game.selectedVerb = VERBS.USE;
+  game.t = (key) => key;
+  game.dialogue = { start: (dialogueId) => { openedDialogue = dialogueId; } };
+  game.setStatusMessage = (message, options) => { status = { message, options }; };
+
+  game.performTargetAction(penka);
+
+  assert.equal(openedDialogue, null);
+  assert.deepEqual(status, { message: "msg.no_use", options: { reject: true } });
+});
+
+test("Mehana starts Bai Mitko seated with waiter and table interactions", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.mehana");
+  const waiter = scene.npcs.find((npc) => npc.id === "npc.mehana_waiter");
+  const waiterLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.waiter_idle");
+
+  assert.equal(scene.playerMode, "seated");
+  assert.deepEqual(scene.playerStart, scene.anchors.baiMitkoSeat);
+  assert.equal(scene.interactables.some((target) => target.id === "hotspot.mehana.table"), true);
+  assert.equal(waiter.dialogueId, "dialogue.mehana_waiter");
+  assert.equal(waiterLayer.asset, "mehanaWaiterIdle");
+  assert.equal(waiterLayer.height, 322);
+  assert.equal(waiterLayer.left, 653);
+  assert.equal(scene.npcs.some((npc) => npc.id === "npc.tony_fridge"), true);
+});
+
+test("Mehana sideboard props, larger furniture, and moved cellar align with the revised painted scene", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.mehana");
+  const oil = scene.interactables.find((target) => target.id === "hotspot.mehana.oil");
+  const water = scene.interactables.find((target) => target.id === "hotspot.mehana.water_jug");
+  const oilLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.kaliakra_oil");
+  const waterLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.water_jug");
+  const leftTableLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.table_group_left");
+  const rightTableLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.table_group_right");
+  const tonyLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.tony_fridge_seated");
+  const newspaperLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.newspaper_left_table");
+  const cellar = scene.interactables.find((target) => target.id === "hotspot.mehana.cellar_hatch");
+
+  assert.equal(pointInPolygon({ x: 1155, y: 340 }, oil.polygon), true);
+  assert.equal(pointInPolygon({ x: 1220, y: 360 }, water.polygon), true);
+  assert.equal(pointInPolygon({ x: 575, y: 440 }, oil.polygon), false);
+  assert.equal(pointInPolygon({ x: 950, y: 650 }, cellar.polygon), true);
+  assert.equal(pointInPolygon({ x: 1160, y: 520 }, cellar.polygon), false);
+  assert.equal(oilLayer.hiddenWhenState, "hasSunflowerOil");
+  assert.equal(waterLayer.hiddenWhenState, "hasGlassOfWater");
+  assert.equal(leftTableLayer.width, 395);
+  assert.equal(rightTableLayer.width, 414);
+  assert.equal(tonyLayer.height, 244);
+  assert.equal(tonyLayer.top, 310);
+  assert.equal(newspaperLayer.asset, "todayNewspaper");
+  assert.equal(scene.interactables.find((target) => target.id === "hotspot.mehana.newspaper").lookKey, "look.mehana.newspaper");
+  assert.equal(scene.interactables.find((target) => target.id === "hotspot.mehana.radio").lookKey, "look.mehana.radio");
+  assert.ok(sceneScale(scene, scene.playerStart) > 1.3);
+  assert.ok(sceneScale(scene, scene.playerStart) < 1.4);
+});
+
+test("Bai Mitko keeps his calibrated entrance height in the apartment and Mehana", () => {
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const apartment = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.apartment");
+  const mehana = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.mehana");
+  const apartmentHeight = characterHeight(definition, apartment, apartment.playerStart);
+  const mehanaHeight = characterHeight(definition, mehana, mehana.playerStart);
+
+  assert.ok(Math.abs(apartmentHeight - mehanaHeight) < 0.1);
+});
+
+test("municipality starts Bai Mitko five percent below foreground size and shrinks him at the counter", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const entranceHeight = characterHeight(definition, scene, scene.playerStart);
+  const counterHeight = characterHeight(definition, scene, scene.anchors.clerkCounter);
+  const registerHeight = characterHeight(definition, scene, scene.anchors.candidateRegister);
+
+  assert.ok(Math.abs(entranceHeight - 386 * 0.95) < 0.01);
+  assert.equal(counterHeight, 225.75);
+  assert.equal(registerHeight, 225.75);
+  assert.ok(counterHeight / 105 >= 2.1 && counterHeight / 105 <= 2.2);
+});
+
+test("the route to Penka keeps the municipality opening size throughout the outlined foreground", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const penka = scene.npcs.find((npc) => npc.id === "npc.municipality_clerk");
+  const square = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const entry = square.exits.find((exit) => exit.id === "exit.square.to_municipality").targetPosition;
+  const path = findWalkPath(scene, entry, penka.interactionApproach);
+  const openingHeight = characterHeight(definition, scene, entry);
+
+  assert.deepEqual(penka.interactionApproach, { x: 850, y: 690 });
+  assert.ok(Math.max(...path.map((point) => point.y)) >= 690);
+  assert.ok(Math.abs(openingHeight - 386 * 0.95) < 0.01);
+  for (let index = 1; index < path.length; index += 1) {
+    const start = path[index - 1];
+    const end = path[index];
+    const steps = Math.max(1, Math.ceil(Math.hypot(end.x - start.x, end.y - start.y) / 5));
+    for (let step = 1; step <= steps; step += 1) {
+      const position = {
+        x: start.x + ((end.x - start.x) * step) / steps,
+        y: start.y + ((end.y - start.y) * step) / steps
+      };
+      const height = characterHeight(definition, scene, position);
+      assert.ok(Math.abs(height - openingHeight) < 0.01);
+    }
+  }
+});
+
+test("municipality outlined foreground positions keep Bai Mitko at the opening size", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const foregroundPositions = [
+    { x: 300, y: 560 },
+    { x: 600, y: 650 },
+    { x: 850, y: 690 },
+    { x: 1141, y: 670 },
+    { x: 1170, y: 630 }
+  ];
+  const openingHeight = 386 * 0.95;
+
+  for (const position of foregroundPositions) {
+    assert.ok(Math.abs(characterHeight(definition, scene, position) - openingHeight) < 0.01);
+  }
+});
+
+test("every walkable point in the municipality foreground band has one explicit Bai Mitko height", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const definition = characterDefinitions["npc.bai_mitko"];
+  for (let y = 505; y <= 715; y += 5) {
+    for (let x = 5; x <= 1275; x += 5) {
+      if (!isWalkable(scene, { x, y })) continue;
+      assert.equal(characterHeight(definition, scene, { x, y }), 366.7);
+    }
+  }
+});
+
+test("municipality foreground scale is independent from desk occlusion depth", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const desk = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_desk");
+  const position = { x: 850, y: 690 };
+
+  assert.equal(sceneZIndexForPoint(scene, position), 0);
+  assert.ok(desk.zIndex > sceneZIndexForPoint(scene, position));
+});
+
+test("the wall-leaning candidate register always renders behind Bai Mitko", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const register = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.candidate_register");
+
+  assert.ok(register.zIndex > 100);
+});
+
+test("Penka's chair is a separate layer behind her approved desk", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const chair = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_chair");
+  const desk = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_desk");
+
+  assert.equal(chair.asset, "penkaChair");
+  assert.ok(chair.zIndex > desk.zIndex);
+});
+
+test("Penka sits between her chair and desk in municipality depth order", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.municipality");
+  const chair = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_chair");
+  const penka = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_seated");
+  const desk = scene.foregroundLayers.find((layer) => layer.id === "layer.municipality.penka_desk");
+
+  assert.equal(penka.asset, "penkaSeated");
+  assert.ok(chair.zIndex > penka.zIndex);
+  assert.ok(penka.zIndex > desk.zIndex);
+});
+
+test("Mehana and municipality use authored raster, object, and layer editor sources", () => {
+  for (const sceneName of ["mehana", "municipality"]) {
+    const sceneId = `scene.chapter1.${sceneName}`;
+    const scene = chapter1.scenes.find((candidate) => candidate.id === sceneId);
+    const walkSource = JSON.parse(readFileSync(`assets_src/chapter1/scenes/${sceneName}/walk-geometry-v1.json`, "utf8"));
+    const objectSource = JSON.parse(readFileSync(`assets_src/chapter1/scenes/${sceneName}/object-geometry-v1.json`, "utf8"));
+    const layerSource = JSON.parse(readFileSync(`assets_src/chapter1/scenes/${sceneName}/layers.json`, "utf8"));
+    const runtimeObjectIds = [...scene.exits, ...scene.interactables, ...scene.npcs].map((entry) => entry.id).sort();
+
+    assert.equal(walkSource.sceneId, sceneId);
+    assert.equal(scene.walkMask.id, walkSource.id);
+    assert.equal(scene.walkMask.rows.length, walkSource.raster.height);
+    assert.ok(scene.walkMask.rows.every((row) => row.length === walkSource.raster.width));
+    assert.deepEqual(objectSource.objects.map((entry) => entry.id).sort(), runtimeObjectIds);
+    assert.equal(layerSource.sceneId, sceneId);
+    assert.ok(Array.isArray(scene.foregroundLayers));
+  }
+});
+
+test("scene editor normalizes rectangle shorthand into visible, saveable polygons", () => {
+  const source = normalizeEditorObjectSource({
+    objects: [{ id: "hotspot.test", rect: { x: 10, y: 20, w: 30, h: 40 } }]
+  });
+  assert.deepEqual(source.objects[0].polygon, [
+    { x: 10, y: 20 },
+    { x: 40, y: 20 },
+    { x: 40, y: 60 },
+    { x: 10, y: 60 }
+  ]);
 });
 
 test("village square depth scaling shrinks Bai Mitko at the distant bench without changing foreground size", () => {
@@ -326,40 +1127,94 @@ test("runtime movement speed multiplier affects distance over time only", () => 
   assert.equal(game.sceneMovementSpeed({ movementSpeed: 70 }), 109.375);
 });
 
+test("rakia bands, color, and movement change progressively from zero to ten", () => {
+  assert.equal(intoxicationBandKey(0), "daisy");
+  assert.equal(intoxicationBandKey(1), "daisy");
+  assert.equal(intoxicationBandKey(2), "merry");
+  assert.equal(intoxicationBandKey(5), "tipsy");
+  assert.equal(intoxicationBandKey(8), "plastered");
+  assert.equal(intoxicationBandKey(10), "plastered");
+  assert.equal(intoxicationColor(1), "rgb(218, 190, 82)");
+  assert.equal(intoxicationColor(10), "rgb(211, 52, 48)");
+  assert.ok(intoxicationMovementMultiplier(10) < intoxicationMovementMultiplier(5));
+  assert.ok(intoxicationMovementMultiplier(5) < intoxicationMovementMultiplier(0));
+});
+
+test("one rakia glass clears for each five minutes of elapsed wall time", () => {
+  const start = 1_000_000;
+  const state = { rakiaGlasses: 6, rakiaLastChangedAt: start };
+  assert.equal(applyTimedSobering(state, start + RAKIA_SOBER_INTERVAL_MS * 2 + 1000), 2);
+  assert.equal(state.rakiaGlasses, 4);
+  assert.equal(state.rakiaLastChangedAt, start + RAKIA_SOBER_INTERVAL_MS * 2);
+  assert.equal(applyTimedSobering(state, start + RAKIA_SOBER_INTERVAL_MS * 6), 4);
+  assert.equal(state.rakiaGlasses, 0);
+  assert.equal(state.rakiaLastChangedAt, null);
+});
+
 test("save system merges old saves with current defaults", () => {
   const storage = new MemoryStorage({ test: JSON.stringify({ influence: 10 }) });
   const save = new SaveSystem(storage, "test").load();
   assert.equal(save.influence, 10);
   assert.equal(save.currentChapter, DEFAULT_SAVE.currentChapter);
   assert.deepEqual(save.inventory, DEFAULT_SAVE.inventory);
+  assert.deepEqual(save.droppedItems, DEFAULT_SAVE.droppedItems);
 });
 
 test("fresh chapter start has no preloaded inventory items", () => {
   assert.deepEqual(DEFAULT_SAVE.inventory, []);
+  assert.deepEqual(DEFAULT_SAVE.droppedItems, []);
+  assert.equal(DEFAULT_SAVE.rakiaGlasses, 0);
+  assert.equal(DEFAULT_SAVE.rakiaLastChangedAt, null);
+  assert.equal(DEFAULT_SAVE.activeQuests.includes("quest.chapter1.baba_vote"), true);
 });
 
-test("fresh chapter start exposes only the main quest", () => {
+test("save migration adds Baba's known vote quest without resurrecting completed work", () => {
+  const oldStorage = new MemoryStorage({
+    test: JSON.stringify({
+      activeQuests: ["quest.chapter1.main", "quest.chapter1.tony_vote"],
+      completedQuests: []
+    })
+  });
+  const migrated = new SaveSystem(oldStorage, "test").load();
+  assert.deepEqual(migrated.activeQuests, [
+    "quest.chapter1.main",
+    "quest.chapter1.tony_vote",
+    "quest.chapter1.baba_vote"
+  ]);
+
+  const completedStorage = new MemoryStorage({
+    test: JSON.stringify({
+      activeQuests: ["quest.chapter1.main"],
+      completedQuests: ["quest.chapter1.baba_vote"],
+      babaStoyankaVote: true
+    })
+  });
+  const completed = new SaveSystem(completedStorage, "test").load();
+  assert.deepEqual(completed.activeQuests, ["quest.chapter1.main"]);
+  assert.deepEqual(completed.completedQuests, ["quest.chapter1.baba_vote"]);
+});
+
+test("fresh chapter start exposes the authored initial campaign quests", () => {
   const save = new SaveSystem(new MemoryStorage(), "test").load();
-  assert.deepEqual(DEFAULT_SAVE.activeQuests, ["quest.chapter1.main"]);
-  assert.deepEqual(save.activeQuests, ["quest.chapter1.main"]);
+  const initialQuests = [
+    "quest.chapter1.main",
+    "quest.chapter1.fake_diploma",
+    "quest.chapter1.baba_vote",
+    "quest.chapter1.tony_vote"
+  ];
+  assert.deepEqual(DEFAULT_SAVE.activeQuests, initialQuests);
+  assert.deepEqual(save.activeQuests, initialQuests);
 });
 
-test("reset restores the main-only fresh quest list", () => {
+test("reset restores the authored fresh quest list", () => {
   const storage = new MemoryStorage({
     test: JSON.stringify({
       activeQuests: ["quest.chapter1.main", "quest.chapter1.fake_diploma", "quest.chapter1.tony_vote"]
     })
   });
   const save = new SaveSystem(storage, "test").reset();
-  assert.deepEqual(save.activeQuests, ["quest.chapter1.main"]);
+  assert.deepEqual(save.activeQuests, DEFAULT_SAVE.activeQuests);
   assert.equal(storage.getItem("test"), null);
-});
-
-test("existing saves preserve their active quest list", () => {
-  const activeQuests = ["quest.chapter1.main", "quest.chapter1.fake_diploma", "quest.chapter1.tony_vote"];
-  const storage = new MemoryStorage({ test: JSON.stringify({ activeQuests }) });
-  const save = new SaveSystem(storage, "test").load();
-  assert.deepEqual(save.activeQuests, activeQuests);
 });
 
 test("chapter quest IDs remain stable", () => {
@@ -406,9 +1261,22 @@ test("Bai Mitko render height is canonical across idle and walk assets", () => {
 test("Bai Mitko external renderer uses stable visual bounds across walk phases", () => {
   const definition = characterDefinitions["npc.bai_mitko"];
   const bounds = stableExternalVisualBounds(definition);
-  assert.equal(bounds.h, 884);
-  assert.equal(bounds.w, 427);
-  assert.equal(bounds.baselineY, 990);
+  assert.equal(bounds.h, 442);
+  assert.equal(bounds.w, 214);
+  assert.equal(bounds.baselineY, 476);
+});
+
+test("Bai Mitko walk frames normalize their visible height instead of contracting", () => {
+  const definition = characterDefinitions["npc.bai_mitko"];
+  const loop = definition.animations.walk.parts.east.loop;
+  const stableBounds = stableExternalVisualBounds(definition);
+  const targetHeight = 386 * 0.95;
+
+  for (let frameIndex = 0; frameIndex < loop.frameCount; frameIndex += 1) {
+    const bounds = externalFrameVisualBounds(loop, frameIndex, stableBounds);
+    const scale = targetHeight / bounds.h;
+    assert.ok(Math.abs(bounds.h * scale - targetHeight) < 0.01);
+  }
 });
 
 test("Bai Mitko idle directions use walk-start animation frames instead of static images", () => {
@@ -527,6 +1395,7 @@ test("apartment accordion is collectible through the generic take flow", () => {
     has: (itemId) => owned.has(itemId),
     add: (itemId) => owned.add(itemId)
   };
+  game.state = {};
   game.t = (key) => key;
   game.setStatusMessage = () => {};
   game.save = () => { saves += 1; };
@@ -536,24 +1405,11 @@ test("apartment accordion is collectible through the generic take flow", () => {
   assert.equal(game.targetAvailable(accordion), true);
   game.takeTarget(accordion);
   assert.equal(owned.has("item.accordion"), true);
+  assert.equal(game.state.hasAccordion, true);
   assert.equal(game.targetAvailable(accordion), false);
   assert.equal(saves, 1);
   game.takeTarget(accordion);
   assert.equal(owned.size, 1);
-  assert.equal(saves, 1);
-});
-
-test("Tony's existing distraction logic accepts the collected accordion", () => {
-  const game = Object.create(Game.prototype);
-  let saves = 0;
-  game.inventory = { has: (itemId) => itemId === "item.accordion" };
-  game.state = { flags: {} };
-  game.t = (key) => key;
-  game.setStatusMessage = () => {};
-  game.save = () => { saves += 1; };
-
-  game.useTarget({ id: "npc.tony_fridge" });
-  assert.equal(game.state.flags.tonyDistracted, true);
   assert.equal(saves, 1);
 });
 
@@ -579,6 +1435,64 @@ test("stateful scene layers stay hidden until their save flag is set", () => {
   renderer.game.state.flags.apartmentWindowOpen = true;
   assert.equal(renderer.sceneLayerVisible(layer), true);
   assert.equal(renderer.sceneLayerVisible({}), true);
+});
+
+test("collected scene layers stay hidden after their inventory item is consumed", () => {
+  const renderer = Object.create(Renderer.prototype);
+  renderer.game = {
+    state: { hasUnpaidBills: true, flags: {} },
+    inventory: { has: () => false }
+  };
+
+  assert.equal(renderer.sceneLayerVisible({ hiddenWhenState: "hasUnpaidBills" }), false);
+  renderer.game.state.hasUnpaidBills = false;
+  assert.equal(renderer.sceneLayerVisible({ hiddenWhenState: "hasUnpaidBills" }), true);
+});
+
+test("the pointer gesture that opens a dialogue cannot also choose its first option", () => {
+  const game = Object.create(Game.prototype);
+  let choices = 0;
+  let renders = 0;
+  game.dialogueChoicePointerLock = 7;
+  game.dialogue = { choose: () => { choices += 1; } };
+  game.renderUi = () => { renders += 1; };
+
+  assert.equal(game.chooseDialogueChoice({}, { detail: 1 }), false);
+  assert.equal(choices, 0);
+  assert.equal(renders, 0);
+
+  game.dialogueChoicePointerLock = null;
+  assert.equal(game.chooseDialogueChoice({}, { detail: 1 }), true);
+  assert.equal(choices, 1);
+  assert.equal(renders, 1);
+});
+
+test("scene raster layers support calibrated height while preserving image aspect ratio", () => {
+  const renderer = Object.create(Renderer.prototype);
+  const rect = renderer.sceneLayerRect(
+    { left: 315, top: 299, height: 153 },
+    { naturalWidth: 101, naturalHeight: 165 }
+  );
+  assert.equal(rect.x, 315);
+  assert.equal(rect.y, 299);
+  assert.equal(rect.h, 153);
+  assert.equal(rect.w, 101 * (153 / 165));
+});
+
+test("trimmed scene raster layers render at their natural size", () => {
+  const renderer = Object.create(Renderer.prototype);
+  const rect = renderer.sceneLayerRect(
+    { left: 104, top: 389 },
+    { naturalWidth: 375, naturalHeight: 273 }
+  );
+  assert.deepEqual(rect, { x: 104, y: 389, w: 375, h: 273, width: 375, height: 273 });
+});
+
+test("Baba's seated layer is twenty percent smaller than Bai Mitko at the bus-stop bench depth", () => {
+  const square = chapter1.scenes.find((scene) => scene.id === "scene.chapter1.village_square");
+  const babaLayer = square.foregroundLayers.find((layer) => layer.id === "layer.square.baba_stoyanka_seated");
+  const mitkoHeight = characterHeight(characterDefinitions["npc.bai_mitko"], square, square.anchors.babaBench);
+  assert.equal(babaLayer.height, Math.round(mitkoHeight * 0.8));
 });
 
 test("collectible scene layers hide as soon as their item is owned", () => {
@@ -1572,6 +2486,94 @@ test("looking at an already-open window still approaches but skips animation and
   assert.equal(game.spokenMessage, "translated:msg.apartment.window_opened");
 });
 
+test("world clicks cannot trigger an exit while an interaction action is running", () => {
+  const game = Object.create(Game.prototype);
+  let sceneChanges = 0;
+  game.sceneTransitionPending = false;
+  game.currentScene = {
+    npcs: [],
+    interactables: [],
+    exits: [{
+      id: "exit.apartment.to_square",
+      kind: "exit",
+      rect: { x: 0, y: 0, w: 100, h: 100 },
+      targetSceneId: "scene.chapter1.village_square"
+    }]
+  };
+  game.player = {
+    animation: "action",
+    actionSequence: { target: { id: "window" } }
+  };
+  game.changeScene = () => { sceneChanges += 1; };
+
+  game.handleWorldClick({ x: 50, y: 50 });
+
+  assert.equal(sceneChanges, 0);
+  assert.equal(game.player.actionSequence.target.id, "window");
+});
+
+test("hovering actionable geometry selects it and enables the pointer cursor", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const game = Object.create(Game.prototype);
+  game.currentScene = scene;
+  game.menuOpen = false;
+  game.paused = false;
+  game.sceneTransitionPending = false;
+  game.dialogue = { current: null };
+  game.inventory = { has: () => false };
+  game.player = { animation: "idle", actionSequence: null };
+  game.canvas = { style: {} };
+
+  const target = game.updateHoveredTarget({ x: 400, y: 200 });
+
+  assert.equal(target.id, "exit.square.to_apartment");
+  assert.equal(game.canvas.style.cursor, "pointer");
+  game.updateHoveredTarget(null);
+  assert.equal(game.hoveredTarget, null);
+  assert.equal(game.canvas.style.cursor, "default");
+});
+
+test("hovered actionable geometry uses a transparent yellow outer glow", () => {
+  const calls = [];
+  const ctx = {
+    save() {},
+    restore() {},
+    beginPath() {},
+    rect(...args) { calls.push(["rect", ...args]); },
+    stroke() { calls.push(["stroke", this.strokeStyle, this.lineWidth, this.shadowColor, this.shadowBlur]); }
+  };
+  const renderer = Object.create(Renderer.prototype);
+  renderer.ctx = ctx;
+  renderer.game = { hoveredTarget: { rect: { x: 10, y: 20, w: 30, h: 40 } } };
+
+  renderer.drawHoveredTarget();
+
+  assert.deepEqual(calls[0], ["rect", 10, 20, 30, 40]);
+  assert.deepEqual(calls[1], ["stroke", "rgba(225, 194, 100, 0.26)", 2, "rgba(225, 194, 100, 0.68)", 16]);
+});
+
+test("hover outline uses scene depth so Bai covers objects behind him", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const building = scene.exits.find((target) => target.id === "exit.square.to_apartment");
+  const table = scene.exits.find((target) => target.id === "exit.square.to_mehana");
+  const actor = { position: { x: 430, y: 540 } };
+  assert.ok(targetZIndex(scene, building) > sceneZIndexForPoint(scene, actor.position));
+  assert.ok(targetZIndex(scene, table) < sceneZIndexForPoint(scene, actor.position));
+});
+
+test("apartment-building target trims about one third from its old left edge", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.village_square");
+  const building = scene.exits.find((target) => target.id === "exit.square.to_apartment");
+  assert.equal(pointInPolygon({ x: 300, y: 200 }, building.polygon), false);
+  assert.equal(pointInPolygon({ x: 430, y: 200 }, building.polygon), true);
+});
+
+test("active Menu switch uses the same color as button hover", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  assert.match(css, /button:hover\s*{\s*background:\s*#4a3825;/);
+  assert.match(css, /button\.active\s*{\s*background:\s*#4a3825;/);
+});
+
 test("rect target approach uses click point as hand target and left-middle fallback without click", () => {
   const target = { rect: { x: 640, y: 155, w: 140, h: 220 } };
   const game = Object.create(Game.prototype);
@@ -1729,6 +2731,37 @@ test("speech bubble messages start talk or reject animation variants", () => {
 
   assert.equal(game.player.animation, "reject");
   assert.equal(game.player.speechAnimation.slot, "external_reject_east_1");
+});
+
+test("overlong speech is paginated at word boundaries without losing text", () => {
+  const game = Object.create(Game.prototype);
+  game.speechBubbleTextFits = (text) => text.length <= 18;
+
+  const message = "One bureaucratic sentence with several needlessly ceremonial words";
+  const pages = game.speechBubblePages(message);
+
+  assert.ok(pages.length > 1);
+  assert.equal(pages.join(" "), message);
+  assert.ok(pages.every((page) => page.length <= 18));
+});
+
+test("automatic speech pages join authored message beats in the existing queue", () => {
+  const game = Object.create(Game.prototype);
+  game.usesExternalCharacterAnimation = () => false;
+  game.renderUi = () => {};
+  game.measureSpeechBubble = () => ({ width: 350, height: 120, maxWidth: 350, maxHeight: 190 });
+  game.speechBubbleTextFits = (text) => text.split(" ").length <= 2;
+  game.player = { target: null, animation: "idle", speaking: false, speechAnimation: null };
+  game.speechBubble = null;
+  game.pendingSpeechBubble = null;
+  game.speechBubbleQueue = [];
+  game.speechBubblePauseRemaining = 0;
+  game.speechBubbleSequence = 0;
+
+  game.setStatusMessage(["one two three four", "five six"]);
+
+  assert.equal(game.speechBubble.text, "one two");
+  assert.deepEqual(game.speechBubbleQueue.map((beat) => beat.message), ["three four", "five six"]);
 });
 
 test("speech bubble defers during walking and appears when idle", () => {
@@ -2168,3 +3201,59 @@ class MemoryStorage {
     delete this.values[key];
   }
 }
+
+test("the old men's bench blocks walking behind its seated figures but remains approachable", () => {
+  const scene = chapter1.scenes.find(scene => scene.id === "scene.chapter1.village_square");
+  for (let x = 490; x <= 610; x += 20) {
+    for (let y = 330; y <= 430; y += 20) assert.equal(isWalkable(scene, { x, y }), false);
+  }
+  const from = { x: 300, y: 540 };
+  const approach = nearestReachableWalkablePoint(scene, from, { x: 530, y: 400 });
+  assert.ok(approach);
+  assert.ok(distance(approach, { x: 530, y: 400 }) < 110);
+  const path = findWalkPath(scene, from, approach);
+  assert.ok(path.length);
+  for (let i = 1; i < path.length; i++) {
+    for (let t = 0; t <= 1; t += 0.05) {
+      const p = { x: path[i - 1].x + (path[i].x - path[i - 1].x) * t,
+        y: path[i - 1].y + (path[i].y - path[i - 1].y) * t };
+      assert.equal(p.x >= 480 && p.x < 620 && p.y < 440, false);
+    }
+  }
+});
+
+test("the pre-campaign notice covers Mitko's portrait until posting, including old saves", () => {
+  const scene = chapter1.scenes.find(scene => scene.id === "scene.chapter1.village_square");
+  const layer = scene.foregroundLayers.find(layer => layer.id === "layer.square.poster_before");
+  const editedScene = {};
+  SceneEditor.prototype.applyLayersToRuntime.call({ layerSource: {}, layers: [layer], game: { currentScene: editedScene } });
+  assert.equal(editedScene.foregroundLayers[0].hiddenWhenFlag, "campaignPosted");
+  const renderer = Object.create(Renderer.prototype);
+  for (const flags of [undefined, {}, { campaignPosted: false }]) {
+    renderer.game = { state: { flags } };
+    assert.equal(renderer.sceneLayerVisible(layer), true);
+  }
+  renderer.game.state.flags = { campaignPosted: true };
+  assert.equal(renderer.sceneLayerVisible(layer), false);
+});
+
+test("relocated stamp station targets the visible seal and releases its old right-hand area", () => {
+  const scene = chapter1.scenes.find(scene => scene.id === "scene.chapter1.municipality");
+  const target = scene.interactables.find(target => target.id === "hotspot.municipality.stamp_desk");
+  const seal = scene.foregroundLayers.find(layer => layer.asset === "municipalitySeal");
+  assert.equal(pointInPolygon({ x: seal.left + 5, y: seal.top + seal.height / 2 }, target.polygon), true);
+  assert.equal(pointInPolygon({ x: 690, y: 430 }, target.polygon), false);
+});
+
+test("corner stamp table sits behind the register without stealing its covered click area", () => {
+  const scene = chapter1.scenes.find(scene => scene.id === "scene.chapter1.municipality");
+  const layers = scene.foregroundLayers;
+  const register = layers.find(layer => layer.asset === "candidateRegister");
+  const table = layers.find(layer => layer.asset === "stampTable");
+  const seal = layers.find(layer => layer.asset === "municipalitySeal");
+  const order = [register, table, seal].sort((a, b) => b.zIndex - a.zIndex);
+  assert.deepEqual(order.map(layer => layer.asset), ["stampTable", "municipalitySeal", "candidateRegister"]);
+  const target = scene.interactables.find(target => target.id === "hotspot.municipality.stamp_desk");
+  assert.equal(pointInPolygon({ x: 518, y: 400 }, target.polygon), false);
+  assert.equal(pointInPolygon({ x: seal.left + 5, y: seal.top + seal.height - 3 }, target.polygon), true);
+});

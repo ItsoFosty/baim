@@ -1,4 +1,4 @@
-import { externalAnimationV1 } from "./externalAnimationV1.generated.js";
+import { externalAnimationV1 } from "./externalAnimationRuntime.generated.js";
 
 export const characterDefinitions = {
   "npc.bai_mitko": {
@@ -14,7 +14,8 @@ export const characterDefinitions = {
       sceneHeights: {
         "scene.chapter1.apartment": { near: 335, far: 270 },
         "scene.chapter1.village_square": { near: 300, far: 109 },
-        "scene.chapter1.mehana": { near: 285, far: 230 }
+        "scene.chapter1.mehana": { near: 344.4, far: 278 },
+        "scene.chapter1.municipality": { near: 386, far: 225.75 }
       }
     },
     animations: {

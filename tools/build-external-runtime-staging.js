@@ -21,6 +21,7 @@ import {
 } from "./external-animation-utils.mjs";
 
 const GENERATED_MODULE = "src/content/art/externalAnimationV1.generated.js";
+const portablePath = (value) => typeof value === "string" ? value.replaceAll("\\", "/") : value;
 
 ensureExternalAnimationDirs();
 
@@ -113,8 +114,8 @@ for (const [key, config] of Object.entries(selection.animations || {})) {
   const flipXWest = typeof config.flipXWest === "boolean" ? config.flipXWest : undefined;
   const metadata = {
     src: `target/external_animation_v1/runtime/${key}.png`,
-    sourceSheet: info.sheetImage,
-    metadataFile: info.metadataFile,
+    sourceSheet: portablePath(info.sheetImage),
+    metadataFile: portablePath(info.metadataFile),
     usesOriginalLudoLayout: true,
     sourcePreserved: true,
     runtimeSource: "unpacked-alpha-sheet",
@@ -189,10 +190,10 @@ for (const [key, config] of Object.entries(selection.animations || {})) {
   report.push({
     key,
     staged: true,
-    output: runtimeOutput,
-    sourceSheet: info.sheetImage,
+    output: portablePath(runtimeOutput),
+    sourceSheet: portablePath(info.sheetImage),
     runtimeSource: "unpacked-alpha-sheet",
-    metadataFile: info.metadataFile,
+    metadataFile: portablePath(info.metadataFile),
     metadataMode: info.parseMode,
     frameCount: metadata.frameCount,
     sourceFrameCount: metadata.sourceFrameCount,

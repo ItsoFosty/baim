@@ -32,8 +32,8 @@ export const externalAnimationV1 = {
     "east": {
       "start": {
         "src": "target/external_animation_v1/runtime/walk_east_start.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_start\\sprite--9px-frames-16-rows-4-cols-4.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_start\\sprite--9px-frames-16-rows-4-cols-4.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/walk_east_start/sprite--9px-frames-16-rows-4-cols-4.png",
+        "metadataFile": "target/external_animation_v1/unpacked/walk_east_start/sprite--9px-frames-16-rows-4-cols-4.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -584,8 +584,8 @@ export const externalAnimationV1 = {
       },
       "loop": {
         "src": "target/external_animation_v1/runtime/walk_east_loop.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_loop\\sprite--9px-frames-16-rows-4-cols-4.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_loop\\sprite--9px-frames-16-rows-4-cols-4.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/walk_east_loop/sprite--9px-frames-16-rows-4-cols-4.png",
+        "metadataFile": "target/external_animation_v1/unpacked/walk_east_loop/sprite--9px-frames-16-rows-4-cols-4.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -1137,8 +1137,8 @@ export const externalAnimationV1 = {
       },
       "short": {
         "src": "target/external_animation_v1/runtime/walk_east_short.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_short\\sprite--9px-frames-16-rows-4-cols-4.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_short\\sprite--9px-frames-16-rows-4-cols-4.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/walk_east_short/sprite--9px-frames-16-rows-4-cols-4.png",
+        "metadataFile": "target/external_animation_v1/unpacked/walk_east_short/sprite--9px-frames-16-rows-4-cols-4.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -1689,8 +1689,8 @@ export const externalAnimationV1 = {
       },
       "stop": {
         "src": "target/external_animation_v1/runtime/walk_east_stop.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_stop\\sprite--9px-frames-16-rows-4-cols-4.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_stop\\sprite--9px-frames-16-rows-4-cols-4.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/walk_east_stop/sprite--9px-frames-16-rows-4-cols-4.png",
+        "metadataFile": "target/external_animation_v1/unpacked/walk_east_stop/sprite--9px-frames-16-rows-4-cols-4.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -2213,8 +2213,8 @@ export const externalAnimationV1 = {
     "west": {
       "start": {
         "src": "target/external_animation_v1/runtime/walk_east_start.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_start\\sprite--9px-frames-16-rows-4-cols-4.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_start\\sprite--9px-frames-16-rows-4-cols-4.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/walk_east_start/sprite--9px-frames-16-rows-4-cols-4.png",
+        "metadataFile": "target/external_animation_v1/unpacked/walk_east_start/sprite--9px-frames-16-rows-4-cols-4.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -2767,8 +2767,8 @@ export const externalAnimationV1 = {
       },
       "loop": {
         "src": "target/external_animation_v1/runtime/walk_east_loop.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_loop\\sprite--9px-frames-16-rows-4-cols-4.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_loop\\sprite--9px-frames-16-rows-4-cols-4.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/walk_east_loop/sprite--9px-frames-16-rows-4-cols-4.png",
+        "metadataFile": "target/external_animation_v1/unpacked/walk_east_loop/sprite--9px-frames-16-rows-4-cols-4.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -3322,8 +3322,8 @@ export const externalAnimationV1 = {
       },
       "short": {
         "src": "target/external_animation_v1/runtime/walk_east_short.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_short\\sprite--9px-frames-16-rows-4-cols-4.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_short\\sprite--9px-frames-16-rows-4-cols-4.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/walk_east_short/sprite--9px-frames-16-rows-4-cols-4.png",
+        "metadataFile": "target/external_animation_v1/unpacked/walk_east_short/sprite--9px-frames-16-rows-4-cols-4.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -3876,8 +3876,8 @@ export const externalAnimationV1 = {
       },
       "stop": {
         "src": "target/external_animation_v1/runtime/walk_east_stop.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_stop\\sprite--9px-frames-16-rows-4-cols-4.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_stop\\sprite--9px-frames-16-rows-4-cols-4.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/walk_east_stop/sprite--9px-frames-16-rows-4-cols-4.png",
+        "metadataFile": "target/external_animation_v1/unpacked/walk_east_stop/sprite--9px-frames-16-rows-4-cols-4.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -4404,8 +4404,8 @@ export const externalAnimationV1 = {
     "east": [
       {
         "src": "target/external_animation_v1/runtime/idle_east_1.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_1\\sprite--9px-frames-25-rows-5-cols-5.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_1\\sprite--9px-frames-25-rows-5-cols-5.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_1/sprite--9px-frames-25-rows-5-cols-5.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_1/sprite--9px-frames-25-rows-5-cols-5.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -5236,8 +5236,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_2.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_2\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_2\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_2/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_2/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -6409,8 +6409,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_3.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_3\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_3\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_3/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_3/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -7582,8 +7582,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_4.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_4\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_4\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_4/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_4/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -8755,8 +8755,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_5.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_5\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_5\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_5/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_5/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -9928,8 +9928,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_6.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_6\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_6\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_6/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_6/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -11103,8 +11103,8 @@ export const externalAnimationV1 = {
     "west": [
       {
         "src": "target/external_animation_v1/runtime/idle_east_1.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_1\\sprite--9px-frames-25-rows-5-cols-5.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_1\\sprite--9px-frames-25-rows-5-cols-5.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_1/sprite--9px-frames-25-rows-5-cols-5.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_1/sprite--9px-frames-25-rows-5-cols-5.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -11937,8 +11937,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_2.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_2\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_2\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_2/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_2/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -13112,8 +13112,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_3.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_3\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_3\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_3/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_3/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -14287,8 +14287,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_4.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_4\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_4\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_4/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_4/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -15462,8 +15462,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_5.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_5\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_5\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_5/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_5/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -16637,8 +16637,8 @@ export const externalAnimationV1 = {
       },
       {
         "src": "target/external_animation_v1/runtime/idle_east_6.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_6\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_6\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/idle_east_6/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/idle_east_6/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -17817,8 +17817,8 @@ export const externalAnimationV1 = {
       "singleWord": [
         {
           "src": "target/external_animation_v1/runtime/talk_east_short_1.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\talk_east_short_1\\sprite--9px-frames-16-rows-4-cols-4.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\talk_east_short_1\\sprite--9px-frames-16-rows-4-cols-4.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/talk_east_short_1/sprite--9px-frames-16-rows-4-cols-4.png",
+          "metadataFile": "target/external_animation_v1/unpacked/talk_east_short_1/sprite--9px-frames-16-rows-4-cols-4.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -18374,8 +18374,8 @@ export const externalAnimationV1 = {
       "singleShortSentence": [
         {
           "src": "target/external_animation_v1/runtime/talk_east_long_2.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\talk_east_long_2\\sprite--9px-frames-36-rows-6-cols-6.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\talk_east_long_2\\sprite--9px-frames-36-rows-6-cols-6.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/talk_east_long_2/sprite--9px-frames-36-rows-6-cols-6.png",
+          "metadataFile": "target/external_animation_v1/unpacked/talk_east_long_2/sprite--9px-frames-36-rows-6-cols-6.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -19551,8 +19551,8 @@ export const externalAnimationV1 = {
       "singleLongSentence": [
         {
           "src": "target/external_animation_v1/runtime/talk_east_long_1.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\talk_east_long_1\\sprite--9px-frames-25-rows-5-cols-5.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\talk_east_long_1\\sprite--9px-frames-25-rows-5-cols-5.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/talk_east_long_1/sprite--9px-frames-25-rows-5-cols-5.png",
+          "metadataFile": "target/external_animation_v1/unpacked/talk_east_long_1/sprite--9px-frames-25-rows-5-cols-5.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -20389,8 +20389,8 @@ export const externalAnimationV1 = {
       "singleWord": [
         {
           "src": "target/external_animation_v1/runtime/talk_east_short_1.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\talk_east_short_1\\sprite--9px-frames-16-rows-4-cols-4.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\talk_east_short_1\\sprite--9px-frames-16-rows-4-cols-4.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/talk_east_short_1/sprite--9px-frames-16-rows-4-cols-4.png",
+          "metadataFile": "target/external_animation_v1/unpacked/talk_east_short_1/sprite--9px-frames-16-rows-4-cols-4.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -20948,8 +20948,8 @@ export const externalAnimationV1 = {
       "singleShortSentence": [
         {
           "src": "target/external_animation_v1/runtime/talk_east_long_2.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\talk_east_long_2\\sprite--9px-frames-36-rows-6-cols-6.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\talk_east_long_2\\sprite--9px-frames-36-rows-6-cols-6.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/talk_east_long_2/sprite--9px-frames-36-rows-6-cols-6.png",
+          "metadataFile": "target/external_animation_v1/unpacked/talk_east_long_2/sprite--9px-frames-36-rows-6-cols-6.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -22127,8 +22127,8 @@ export const externalAnimationV1 = {
       "singleLongSentence": [
         {
           "src": "target/external_animation_v1/runtime/talk_east_long_1.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\talk_east_long_1\\sprite--9px-frames-25-rows-5-cols-5.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\talk_east_long_1\\sprite--9px-frames-25-rows-5-cols-5.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/talk_east_long_1/sprite--9px-frames-25-rows-5-cols-5.png",
+          "metadataFile": "target/external_animation_v1/unpacked/talk_east_long_1/sprite--9px-frames-25-rows-5-cols-5.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -22969,8 +22969,8 @@ export const externalAnimationV1 = {
       "take": [
         {
           "src": "target/external_animation_v1/runtime/take_east_forward_default.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\take_east_forward_default\\sprite--9px-frames-16-rows-4-cols-4.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\take_east_forward_default\\sprite--9px-frames-16-rows-4-cols-4.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/take_east_forward_default/sprite--9px-frames-16-rows-4-cols-4.png",
+          "metadataFile": "target/external_animation_v1/unpacked/take_east_forward_default/sprite--9px-frames-16-rows-4-cols-4.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -23591,8 +23591,8 @@ export const externalAnimationV1 = {
       "opensWindow": [
         {
           "src": "target/external_animation_v1/runtime/opens_window.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\opens_window\\sprite--9px-frames-16-rows-4-cols-4.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\opens_window\\sprite--9px-frames-16-rows-4-cols-4.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/opens_window/sprite--9px-frames-16-rows-4-cols-4.png",
+          "metadataFile": "target/external_animation_v1/unpacked/opens_window/sprite--9px-frames-16-rows-4-cols-4.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -24215,8 +24215,8 @@ export const externalAnimationV1 = {
       "take": [
         {
           "src": "target/external_animation_v1/runtime/take_east_forward_default.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\take_east_forward_default\\sprite--9px-frames-16-rows-4-cols-4.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\take_east_forward_default\\sprite--9px-frames-16-rows-4-cols-4.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/take_east_forward_default/sprite--9px-frames-16-rows-4-cols-4.png",
+          "metadataFile": "target/external_animation_v1/unpacked/take_east_forward_default/sprite--9px-frames-16-rows-4-cols-4.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -24839,8 +24839,8 @@ export const externalAnimationV1 = {
       "opensWindow": [
         {
           "src": "target/external_animation_v1/runtime/opens_window.png",
-          "sourceSheet": "target\\external_animation_v1\\unpacked\\opens_window\\sprite--9px-frames-16-rows-4-cols-4.png",
-          "metadataFile": "target\\external_animation_v1\\unpacked\\opens_window\\sprite--9px-frames-16-rows-4-cols-4.json",
+          "sourceSheet": "target/external_animation_v1/unpacked/opens_window/sprite--9px-frames-16-rows-4-cols-4.png",
+          "metadataFile": "target/external_animation_v1/unpacked/opens_window/sprite--9px-frames-16-rows-4-cols-4.json",
           "usesOriginalLudoLayout": true,
           "sourcePreserved": true,
           "runtimeSource": "unpacked-alpha-sheet",
@@ -25467,8 +25467,8 @@ export const externalAnimationV1 = {
     "east": [
       {
         "src": "target/external_animation_v1/runtime/reject_east_1.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\reject_east_1\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\reject_east_1\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/reject_east_1/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/reject_east_1/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -26642,8 +26642,8 @@ export const externalAnimationV1 = {
     "west": [
       {
         "src": "target/external_animation_v1/runtime/reject_east_1.png",
-        "sourceSheet": "target\\external_animation_v1\\unpacked\\reject_east_1\\sprite--9px-frames-36-rows-6-cols-6.png",
-        "metadataFile": "target\\external_animation_v1\\unpacked\\reject_east_1\\sprite--9px-frames-36-rows-6-cols-6.json",
+        "sourceSheet": "target/external_animation_v1/unpacked/reject_east_1/sprite--9px-frames-36-rows-6-cols-6.png",
+        "metadataFile": "target/external_animation_v1/unpacked/reject_east_1/sprite--9px-frames-36-rows-6-cols-6.json",
         "usesOriginalLudoLayout": true,
         "sourcePreserved": true,
         "runtimeSource": "unpacked-alpha-sheet",
@@ -27820,8 +27820,8 @@ export const externalAnimationV1 = {
   "animations": {
     "walk_east_start": {
       "src": "target/external_animation_v1/runtime/walk_east_start.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_start\\sprite--9px-frames-16-rows-4-cols-4.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_start\\sprite--9px-frames-16-rows-4-cols-4.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/walk_east_start/sprite--9px-frames-16-rows-4-cols-4.png",
+      "metadataFile": "target/external_animation_v1/unpacked/walk_east_start/sprite--9px-frames-16-rows-4-cols-4.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -28371,8 +28371,8 @@ export const externalAnimationV1 = {
     },
     "walk_east_loop": {
       "src": "target/external_animation_v1/runtime/walk_east_loop.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_loop\\sprite--9px-frames-16-rows-4-cols-4.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_loop\\sprite--9px-frames-16-rows-4-cols-4.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/walk_east_loop/sprite--9px-frames-16-rows-4-cols-4.png",
+      "metadataFile": "target/external_animation_v1/unpacked/walk_east_loop/sprite--9px-frames-16-rows-4-cols-4.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -28923,8 +28923,8 @@ export const externalAnimationV1 = {
     },
     "walk_east_short": {
       "src": "target/external_animation_v1/runtime/walk_east_short.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_short\\sprite--9px-frames-16-rows-4-cols-4.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_short\\sprite--9px-frames-16-rows-4-cols-4.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/walk_east_short/sprite--9px-frames-16-rows-4-cols-4.png",
+      "metadataFile": "target/external_animation_v1/unpacked/walk_east_short/sprite--9px-frames-16-rows-4-cols-4.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -29474,8 +29474,8 @@ export const externalAnimationV1 = {
     },
     "walk_east_stop": {
       "src": "target/external_animation_v1/runtime/walk_east_stop.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\walk_east_stop\\sprite--9px-frames-16-rows-4-cols-4.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\walk_east_stop\\sprite--9px-frames-16-rows-4-cols-4.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/walk_east_stop/sprite--9px-frames-16-rows-4-cols-4.png",
+      "metadataFile": "target/external_animation_v1/unpacked/walk_east_stop/sprite--9px-frames-16-rows-4-cols-4.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -29995,8 +29995,8 @@ export const externalAnimationV1 = {
     },
     "idle_east_1": {
       "src": "target/external_animation_v1/runtime/idle_east_1.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_1\\sprite--9px-frames-25-rows-5-cols-5.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_1\\sprite--9px-frames-25-rows-5-cols-5.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/idle_east_1/sprite--9px-frames-25-rows-5-cols-5.png",
+      "metadataFile": "target/external_animation_v1/unpacked/idle_east_1/sprite--9px-frames-25-rows-5-cols-5.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -30825,8 +30825,8 @@ export const externalAnimationV1 = {
     },
     "idle_east_2": {
       "src": "target/external_animation_v1/runtime/idle_east_2.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_2\\sprite--9px-frames-36-rows-6-cols-6.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_2\\sprite--9px-frames-36-rows-6-cols-6.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/idle_east_2/sprite--9px-frames-36-rows-6-cols-6.png",
+      "metadataFile": "target/external_animation_v1/unpacked/idle_east_2/sprite--9px-frames-36-rows-6-cols-6.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -31996,8 +31996,8 @@ export const externalAnimationV1 = {
     },
     "idle_east_3": {
       "src": "target/external_animation_v1/runtime/idle_east_3.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_3\\sprite--9px-frames-36-rows-6-cols-6.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_3\\sprite--9px-frames-36-rows-6-cols-6.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/idle_east_3/sprite--9px-frames-36-rows-6-cols-6.png",
+      "metadataFile": "target/external_animation_v1/unpacked/idle_east_3/sprite--9px-frames-36-rows-6-cols-6.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -33167,8 +33167,8 @@ export const externalAnimationV1 = {
     },
     "idle_east_4": {
       "src": "target/external_animation_v1/runtime/idle_east_4.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_4\\sprite--9px-frames-36-rows-6-cols-6.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_4\\sprite--9px-frames-36-rows-6-cols-6.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/idle_east_4/sprite--9px-frames-36-rows-6-cols-6.png",
+      "metadataFile": "target/external_animation_v1/unpacked/idle_east_4/sprite--9px-frames-36-rows-6-cols-6.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -34338,8 +34338,8 @@ export const externalAnimationV1 = {
     },
     "idle_east_5": {
       "src": "target/external_animation_v1/runtime/idle_east_5.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_5\\sprite--9px-frames-36-rows-6-cols-6.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_5\\sprite--9px-frames-36-rows-6-cols-6.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/idle_east_5/sprite--9px-frames-36-rows-6-cols-6.png",
+      "metadataFile": "target/external_animation_v1/unpacked/idle_east_5/sprite--9px-frames-36-rows-6-cols-6.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -35509,8 +35509,8 @@ export const externalAnimationV1 = {
     },
     "idle_east_6": {
       "src": "target/external_animation_v1/runtime/idle_east_6.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\idle_east_6\\sprite--9px-frames-36-rows-6-cols-6.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\idle_east_6\\sprite--9px-frames-36-rows-6-cols-6.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/idle_east_6/sprite--9px-frames-36-rows-6-cols-6.png",
+      "metadataFile": "target/external_animation_v1/unpacked/idle_east_6/sprite--9px-frames-36-rows-6-cols-6.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -36680,8 +36680,8 @@ export const externalAnimationV1 = {
     },
     "talk_east_long_1": {
       "src": "target/external_animation_v1/runtime/talk_east_long_1.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\talk_east_long_1\\sprite--9px-frames-25-rows-5-cols-5.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\talk_east_long_1\\sprite--9px-frames-25-rows-5-cols-5.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/talk_east_long_1/sprite--9px-frames-25-rows-5-cols-5.png",
+      "metadataFile": "target/external_animation_v1/unpacked/talk_east_long_1/sprite--9px-frames-25-rows-5-cols-5.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -37510,8 +37510,8 @@ export const externalAnimationV1 = {
     },
     "talk_east_long_2": {
       "src": "target/external_animation_v1/runtime/talk_east_long_2.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\talk_east_long_2\\sprite--9px-frames-36-rows-6-cols-6.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\talk_east_long_2\\sprite--9px-frames-36-rows-6-cols-6.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/talk_east_long_2/sprite--9px-frames-36-rows-6-cols-6.png",
+      "metadataFile": "target/external_animation_v1/unpacked/talk_east_long_2/sprite--9px-frames-36-rows-6-cols-6.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -38681,8 +38681,8 @@ export const externalAnimationV1 = {
     },
     "talk_east_short_1": {
       "src": "target/external_animation_v1/runtime/talk_east_short_1.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\talk_east_short_1\\sprite--9px-frames-16-rows-4-cols-4.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\talk_east_short_1\\sprite--9px-frames-16-rows-4-cols-4.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/talk_east_short_1/sprite--9px-frames-16-rows-4-cols-4.png",
+      "metadataFile": "target/external_animation_v1/unpacked/talk_east_short_1/sprite--9px-frames-16-rows-4-cols-4.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -39232,8 +39232,8 @@ export const externalAnimationV1 = {
     },
     "reject_east_1": {
       "src": "target/external_animation_v1/runtime/reject_east_1.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\reject_east_1\\sprite--9px-frames-36-rows-6-cols-6.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\reject_east_1\\sprite--9px-frames-36-rows-6-cols-6.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/reject_east_1/sprite--9px-frames-36-rows-6-cols-6.png",
+      "metadataFile": "target/external_animation_v1/unpacked/reject_east_1/sprite--9px-frames-36-rows-6-cols-6.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -40403,8 +40403,8 @@ export const externalAnimationV1 = {
     },
     "take_east_forward_default": {
       "src": "target/external_animation_v1/runtime/take_east_forward_default.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\take_east_forward_default\\sprite--9px-frames-16-rows-4-cols-4.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\take_east_forward_default\\sprite--9px-frames-16-rows-4-cols-4.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/take_east_forward_default/sprite--9px-frames-16-rows-4-cols-4.png",
+      "metadataFile": "target/external_animation_v1/unpacked/take_east_forward_default/sprite--9px-frames-16-rows-4-cols-4.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",
@@ -41020,8 +41020,8 @@ export const externalAnimationV1 = {
     },
     "opens_window": {
       "src": "target/external_animation_v1/runtime/opens_window.png",
-      "sourceSheet": "target\\external_animation_v1\\unpacked\\opens_window\\sprite--9px-frames-16-rows-4-cols-4.png",
-      "metadataFile": "target\\external_animation_v1\\unpacked\\opens_window\\sprite--9px-frames-16-rows-4-cols-4.json",
+      "sourceSheet": "target/external_animation_v1/unpacked/opens_window/sprite--9px-frames-16-rows-4-cols-4.png",
+      "metadataFile": "target/external_animation_v1/unpacked/opens_window/sprite--9px-frames-16-rows-4-cols-4.json",
       "usesOriginalLudoLayout": true,
       "sourcePreserved": true,
       "runtimeSource": "unpacked-alpha-sheet",

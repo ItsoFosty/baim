@@ -1,12 +1,33 @@
-import { createServer } from "node:http";
-import { createReadStream, existsSync, statSync, writeFileSync } from "node:fs";
-import { extname, join, normalize } from "node:path";
+import { createServer as createHttpServer } from "node:http";
+import { createServer as createHttpsServer } from "node:https";
+import { createReadStream, existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { extname, isAbsolute, join, normalize, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 const root = normalize(join(fileURLToPath(new URL("..", import.meta.url))));
 const port = Number(process.env.PORT || 5173);
+const secure = process.env.HTTPS === "1";
+const protocol = secure ? "https" : "http";
+const serverOptions = secure ? {
+  key: readFileSync(process.env.TLS_KEY || join(root, "target/server/localhost-key.pem")),
+  cert: readFileSync(process.env.TLS_CERT || join(root, "target/server/localhost-cert.pem"))
+} : undefined;
 const editorScenes = {
+  "scene.chapter1.election_booth": {
+    walkGeometryPath: "assets_src/chapter1/scenes/election_booth/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/election_booth/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/election_booth/layers.json"
+  },
+  "scene.chapter1.archive": {
+    objectGeometryPath: "assets_src/chapter1/scenes/archive/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/archive/layers.json"
+  },
+  "scene.chapter1.mayor_office": {
+    walkGeometryPath: "assets_src/chapter1/scenes/mayor_office/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/mayor_office/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/mayor_office/layers.json"
+  },
   "scene.chapter1.apartment": {
     walkGeometryPath: "assets_src/chapter1/scenes/apartment/walk-geometry-v1.json",
     objectGeometryPath: "assets_src/chapter1/scenes/apartment/object-geometry-v1.json",
@@ -17,6 +38,16 @@ const editorScenes = {
     walkGeometryPath: "assets_src/chapter1/scenes/village_square/walk-geometry-v1.json",
     objectGeometryPath: "assets_src/chapter1/scenes/village_square/object-geometry-v1.json",
     layerPath: "assets_src/chapter1/scenes/village_square/layers.json"
+  },
+  "scene.chapter1.mehana": {
+    walkGeometryPath: "assets_src/chapter1/scenes/mehana/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/mehana/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/mehana/layers.json"
+  },
+  "scene.chapter1.municipality": {
+    walkGeometryPath: "assets_src/chapter1/scenes/municipality/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/municipality/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/municipality/layers.json"
   }
 };
 
@@ -25,14 +56,22 @@ const types = {
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
+  ".pdf": "application/pdf",
   ".png": "image/png",
   ".webp": "image/webp",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg"
 };
 
-createServer((req, res) => {
-  const url = new URL(req.url || "/", `http://localhost:${port}`);
+const server = secure ? createHttpsServer(serverOptions, handleRequest) : createHttpServer(handleRequest);
+
+server.listen(port, () => {
+  console.log(`Comrade Candidate dev server: ${protocol}://localhost:${port}`);
+});
+
+function handleRequest(req, res) {
+  const url = new URL(req.url || "/", `${protocol}://localhost:${port}`);
   if (req.method === "OPTIONS" && ["/__editor/save-scene-geometry", "/__editor/fit-action"].includes(url.pathname)) {
     res.writeHead(204, editorCorsHeaders());
     res.end();
@@ -48,21 +87,29 @@ createServer((req, res) => {
   }
   const requested = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
   const path = normalize(join(root, requested));
+  const relativePath = relative(root, path);
 
-  if (!path.startsWith(root) || !existsSync(path) || !statSync(path).isFile()) {
+  if (relativePath.startsWith("..") || isAbsolute(relativePath) || !existsSync(path) || !statSync(path).isFile()) {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Not found");
     return;
   }
 
+  const extension = extname(path);
+  const fileSize = statSync(path).size;
   res.writeHead(200, {
-    "Content-Type": types[extname(path)] || "application/octet-stream",
-    "Cache-Control": "public, max-age=31536000, immutable"
+    "Content-Type": types[extension] || "application/octet-stream",
+    "Content-Length": fileSize,
+    "Cache-Control": cacheControlFor(url.pathname)
   });
   createReadStream(path).pipe(res);
-}).listen(port, () => {
-  console.log(`Comrade Candidate dev server: http://localhost:${port}`);
-});
+}
+
+function cacheControlFor(pathname) {
+  if (pathname.startsWith("/target/runtime-assets/assets/")) return "public, max-age=31536000, immutable";
+  if (pathname === "/target/runtime-assets/manifest.json") return "no-cache, must-revalidate";
+  return "no-cache";
+}
 
 function handleEditorSave(req, res) {
   let body = "";
@@ -79,7 +126,7 @@ function handleEditorSave(req, res) {
       const saveScope = String(payload.saveScope || "all");
       if (!["walk", "objects", "layers", "actions", "all"].includes(saveScope)) throw new Error(`Unknown editor save scope: ${saveScope}`);
       const savedScopes = [];
-      if (saveScope === "walk" || saveScope === "all") {
+      if ((saveScope === "walk" || saveScope === "all") && config.walkGeometryPath) {
         validateWalkGeometry(payload.walkGeometry);
         writeKnownJson(config.walkGeometryPath, payload.walkGeometry);
         runBuild("tools/build-walk-masks.js");

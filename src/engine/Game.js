@@ -1,4 +1,8 @@
+import { createReviewSaveSystem } from "./ReviewState.js";
+import { AudioSystem } from "./AudioSystem.js";
 import { DialogueSystem } from "./DialogueSystem.js";
+import { applyEffects, firstMatchingRule, requirementsMet } from "./EffectSystem.js";
+import { resolveEnding } from "./EndingSystem.js";
 import { InventorySystem } from "./InventorySystem.js";
 import { Localization } from "./Localization.js";
 import { eastWestFallbackFacing, facingFromDelta, motionMultiplierAtFrame, MovementSystem } from "./MovementSystem.js";
@@ -16,7 +20,14 @@ import { strings } from "../content/localization/index.js";
 import { chapter1 } from "../content/chapter1/index.js";
 import { characterDefinitions } from "../content/art/characters.js";
 import { assetManifest } from "../content/art/assetManifest.js";
-import { externalAnimationV1 } from "../content/art/externalAnimationV1.generated.js";
+import { externalAnimationV1 } from "../content/art/externalAnimationRuntime.generated.js";
+import {
+  applyTimedSobering,
+  intoxicationBandKey,
+  intoxicationColor,
+  intoxicationMovementMultiplier,
+  RAKIA_MAX_GLASSES
+} from "./IntoxicationSystem.js";
 
 const verbs = [VERBS.LOOK, VERBS.TALK, VERBS.USE, VERBS.TAKE];
 const CHARACTER_DISTANCE_SPEED_MULTIPLIER = 1.5625;
@@ -35,7 +46,8 @@ export const SHORT_WALK_PATH_DISTANCE = 400;
 const TALK_SINGLE_WORD_MAX_CHARS = 18;
 const TALK_LONG_SENTENCE_MIN_CHARS = 72;
 const SPEECH_BUBBLE_MAX_WIDTH_PX = 350;
-const SPEECH_BUBBLE_MAX_HEIGHT_PX = 170;
+const SPEECH_BUBBLE_MAX_HEIGHT_PX = 190;
+const SPEECH_BUBBLE_MAX_TEXT_HEIGHT_PX = 150;
 const SPEECH_BUBBLE_WEST_OFFSET_X_FULL_SIZE = 40;
 const SPEECH_BUBBLE_WEST_OFFSET_Y_FULL_SIZE = -75;
 const SPEECH_BUBBLE_WEST_TAIL_END_FROM_RIGHT_PX = 72;
@@ -52,8 +64,13 @@ export class Game {
   constructor(canvas, uiRoot) {
     this.canvas = canvas;
     this.uiRoot = uiRoot;
-    this.saveSystem = new SaveSystem();
+    const reviewId = new URLSearchParams(globalThis.location?.search || "").get("review");
+    const preset = chapter1.reviewPresets?.[reviewId];
+    this.reviewId = preset ? reviewId : null;
+    this.saveSystem = preset ? createReviewSaveSystem(DEFAULT_SAVE, preset, chapter1) : new SaveSystem();
     this.state = this.saveSystem.load();
+    this.audio = new AudioSystem();
+    this.audio.setVolume(this.state.audioVolume);
     this.localization = new Localization(strings, this.state.language);
     this.content = buildContentIndex(chapter1);
     this.debugSceneGeometry = this.readDebugGeometrySetting();
@@ -67,16 +84,20 @@ export class Game {
     this.devHome = this.shouldShowDevHome();
     this.walkSpeedMultiplier = this.readNumberParam("walkSpeed", 1);
     this.selectedVerb = VERBS.LOOK;
+    this.selectedInventoryItemId = null;
+    this.inventoryUseItemId = null;
+    this.questListTab = "outstanding";
     this.message = this.t("ui.hint");
     this.speechBubble = null;
     this.pendingSpeechBubble = null;
     this.speechBubbleQueue = [];
     this.speechBubblePauseRemaining = 0;
     this.speechBubbleSequence = 0;
+    this.npcSpeechBubble = null;
     this.currentScene = this.resolveInitialScene();
     this.player = {
       id: "npc.bai_mitko",
-      position: { ...this.currentScene.playerStart },
+      position: { ...(this.content.endings.find(ending => ending.id === this.state.endingId)?.presentation?.playerPosition || this.currentScene.playerStart) },
       target: null,
       walkPath: [],
       shortWalk: false,
@@ -85,7 +106,7 @@ export class Game {
       interactionDebug: null,
       speed: this.sceneMovementSpeed(this.currentScene),
       animation: "idle",
-      facing: this.characterDefinitions["npc.bai_mitko"].render.defaultFacing,
+      facing: this.content.endings.find(ending => ending.id === this.state.endingId)?.presentation?.facing || this.characterDefinitions["npc.bai_mitko"].render.defaultFacing,
       verticalDirectionBias: this.characterDefinitions["npc.bai_mitko"].render.verticalDirectionBias,
       animationTime: 0,
       facingDebug: null,
@@ -121,6 +142,9 @@ export class Game {
     const params = new URLSearchParams(globalThis.location?.search || "");
     this.menuOpen = !this.editMode && !this.simpleAnimTest && !this.animLab && !this.devHome && params.get("play") !== "1" && !params.has("scene") && !params.has("debugGeometry");
     this.paused = false;
+    this.sceneTransitionPending = false;
+    this.hoveredTarget = null;
+    this.dialogueChoicePointerLock = null;
     this.lastTime = 0;
     this.inputBound = false;
     this.renderUi();
@@ -131,21 +155,51 @@ export class Game {
   }
 
   async start() {
+    await this.assets.loadRuntimeManifest?.();
+    this.protectCurrentAssetWorkingSet();
     await Promise.all([
-      this.assets.preloadAllCharacterAssets(),
+      this.assets.preloadCharacterSlots(this.player.id, this.bootstrapCharacterSlots()),
       this.assets.preloadSceneAssets(this.currentScene.id),
-      this.assets.preloadAllItemAssets()
+      this.assets.preloadOwnedItemAssets(this.state.inventory || [])
     ]);
     if (!this.inputBound) {
       this.bindInput();
       this.inputBound = true;
     }
     requestAnimationFrame((time) => this.tick(time));
+    this.scheduleAdjacentScenePrefetch(this.currentScene);
+  }
+
+  bootstrapCharacterSlots() {
+    const parts = externalAnimationV1.walkParts?.east || {};
+    return [...new Set([parts.start?.slot, parts.loop?.slot, parts.short?.slot, parts.stop?.slot].filter(Boolean))];
+  }
+
+  protectCurrentAssetWorkingSet() {
+    this.assets.protectWorkingSet?.({
+      sceneIds: [this.currentScene.id],
+      characterId: this.player.id,
+      characterSlots: this.bootstrapCharacterSlots(),
+      itemIds: this.state.inventory || []
+    });
+  }
+
+  scheduleAdjacentScenePrefetch(scene = this.currentScene) {
+    const sceneIds = [...new Set((scene?.exits || []).map((exit) => exit.targetSceneId).filter(Boolean))];
+    if (!sceneIds.length || typeof this.assets?.preloadSceneAssets !== "function") return;
+    const prefetch = () => Promise.all(sceneIds.map((sceneId) => this.assets.preloadSceneAssets(sceneId))).catch(() => {});
+    if (typeof globalThis.requestIdleCallback === "function") {
+      globalThis.requestIdleCallback(prefetch, { timeout: 4000 });
+    } else if (typeof globalThis.window !== "undefined") {
+      globalThis.setTimeout(prefetch, 250);
+    }
   }
 
   tick(time) {
     const dt = Math.min(0.05, (time - this.lastTime) / 1000 || 0);
     this.lastTime = time;
+    this.updateTimedIntoxication();
+    if (this.paused || this.menuOpen || this.dialogue.current || this.devHome || this.editMode || this.state.chapter1Completed) this.audio.resetFootsteps();
     if (this.simpleAnimTest) {
       this.updateSimpleAnim(dt);
     } else if (this.animLab) {
@@ -153,7 +207,13 @@ export class Game {
     } else if (!this.paused && !this.menuOpen && !this.dialogue.current) {
       this.player.animator.beginTick();
       const finishingStopFrame = this.finishingStopFrame();
+      const feetBefore = { ...this.player.position };
+      const wasWalking = this.player.animation === "walk";
       this.movement.update(dt);
+      const walked = Math.hypot(this.player.position.x - feetBefore.x, this.player.position.y - feetBefore.y);
+      const height = characterHeight(this.characterDefinitions[this.player.id], this.currentScene, this.player.position);
+      this.audio.updateFootsteps(walked, height, this.currentScene.footsteps,
+        wasWalking && !this.sceneTransitionPending && !this.state.chapter1Completed);
       if (finishingStopFrame && this.player.animation === "idle") this.setIdleHoldFrame(finishingStopFrame.frame, finishingStopFrame.frameIndex);
       this.resolvePendingFacingPoint();
       this.resolvePendingInteraction();
@@ -170,12 +230,23 @@ export class Game {
       this.updateActionSequence();
       this.updateSpeechAnimationHold();
       this.updateSpeechBubble(dt);
+      this.updateNpcSpeechBubble(dt);
     }
     this.renderer.draw();
     requestAnimationFrame((next) => this.tick(next));
   }
 
   bindInput() {
+    const resumeAudio = async () => {
+      if (this.state.audioEnabled && !this.audio.enabled) {
+        await this.audio.setEnabled(true);
+        this.audio.setAmbience(this.currentScene?.ambience);
+      }
+    };
+    window.addEventListener("pointerdown", resumeAudio);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) this.audio.setEnabled(false);
+    });
     this.canvas.addEventListener("contextmenu", (event) => {
       event.preventDefault();
       if (this.editMode) return;
@@ -188,22 +259,39 @@ export class Game {
         return;
       }
       if (event.button !== 0 || this.menuOpen || this.paused || this.dialogue.current) return;
+      const dialogueWasOpen = Boolean(this.dialogue.current);
       this.handleWorldClick(this.renderer.screenToWorld(event.clientX, event.clientY));
+      if (!dialogueWasOpen && this.dialogue.current) {
+        this.dialogueChoicePointerLock = event.pointerId;
+      }
     });
     this.canvas.addEventListener("pointermove", (event) => {
-      if (!this.editMode) return;
-      this.sceneEditor?.handlePointerMove(event, this.renderer.screenToWorld(event.clientX, event.clientY));
+      const point = this.renderer.screenToWorld(event.clientX, event.clientY);
+      if (this.editMode) {
+        this.sceneEditor?.handlePointerMove(event, point);
+        return;
+      }
+      this.updateHoveredTarget(point);
     });
     this.canvas.addEventListener("pointerleave", () => {
       if (this.editMode) this.sceneEditor?.handlePointerLeave();
+      else this.updateHoveredTarget(null);
     });
-    window.addEventListener("pointerup", () => {
+    window.addEventListener("pointerup", (event) => {
       if (this.editMode) this.sceneEditor?.handlePointerUp();
+      this.releaseDialogueChoicePointerLock(event.pointerId);
     });
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
+        if (this.selectedInventoryItemId || this.inventoryUseItemId) {
+          this.clearInventoryInteraction();
+          this.renderUi();
+          return;
+        }
         this.paused = !this.paused;
         this.menuOpen = false;
+        this.hoveredTarget = null;
+        if (this.canvas?.style) this.canvas.style.cursor = "default";
         this.renderUi();
       }
       if (event.key.toLowerCase() === "v") this.cycleVerb();
@@ -217,9 +305,49 @@ export class Game {
     const params = new URLSearchParams(globalThis.location?.search || "");
     const requestedSceneId = params.get("scene");
     if (requestedSceneId && this.content.scenes[requestedSceneId]) {
-      return this.content.scenes[requestedSceneId];
+      return this.sceneWithDroppedItems(this.content.scenes[requestedSceneId]);
     }
-    return this.content.scenes[this.state.currentSceneId] || this.content.scenes[DEFAULT_SAVE.currentSceneId];
+    const scene = this.content.scenes[this.state.currentSceneId] || this.content.scenes[DEFAULT_SAVE.currentSceneId];
+    return this.sceneWithDroppedItems(scene);
+  }
+
+  droppedItemsInScene(sceneId = this.currentScene?.id) {
+    return (this.state.droppedItems || []).filter((record) => (
+      record.sceneId === sceneId && !this.itemRestoresToScene(record.itemId, sceneId)
+    ));
+  }
+
+  itemRestoresToScene(itemId, sceneId = this.currentScene?.id) {
+    const scene = this.currentScene?.id === sceneId
+      ? this.currentScene
+      : this.content?.scenes?.[sceneId];
+    return Boolean(scene?.interactables?.some((target) => (
+      target.restoreOnDrop && target.takeItemId === itemId
+    )));
+  }
+
+  sceneWithDroppedItems(scene) {
+    if (!scene) return scene;
+    const droppedItems = this.droppedItemsInScene(scene.id);
+    if (!droppedItems.length) return scene;
+    const position = droppedItems[0].position || scene.playerStart;
+    const width = 112;
+    const height = 75;
+    const pile = {
+      id: `hotspot.dropped_items.${scene.id}`,
+      kind: "hotspot",
+      nameKey: "hotspot.dropped_items.name",
+      lookKey: "look.dropped_items",
+      droppedItemsPile: true,
+      droppedItemsPileAsset: "droppedBelongingsPile",
+      rect: { x: position.x - width / 2, y: position.y - height, w: width, h: height }
+    };
+    return { ...scene, interactables: [...scene.interactables, pile] };
+  }
+
+  refreshCurrentSceneDroppedItems() {
+    const baseScene = this.content.scenes[this.currentScene.id];
+    this.currentScene = this.sceneWithDroppedItems(baseScene);
   }
 
   readDebugGeometrySetting() {
@@ -304,6 +432,7 @@ export class Game {
       return;
     }
     const sequence = this.randomIdleVariantSequence(variants);
+    this.assets?.preloadCharacterSlots?.(this.player.id, sequence.map((variant) => variant.slot));
     this.player.idleVariant = sequence.shift() || null;
     this.player.idleVariantQueue = sequence;
   }
@@ -465,10 +594,23 @@ export class Game {
   }
 
   sceneMovementSpeed(scene) {
-    return (scene.movementSpeed || 100) * CHARACTER_DISTANCE_SPEED_MULTIPLIER * this.walkSpeedMultiplier;
+    return (scene.movementSpeed || 100)
+      * CHARACTER_DISTANCE_SPEED_MULTIPLIER
+      * this.walkSpeedMultiplier
+      * intoxicationMovementMultiplier(this.state?.rakiaGlasses);
+  }
+
+  updateTimedIntoxication(now = Date.now()) {
+    const reduction = applyTimedSobering(this.state, now);
+    if (!reduction) return false;
+    this.player.speed = this.sceneMovementSpeed(this.currentScene);
+    this.save();
+    this.renderUi();
+    return true;
   }
 
   cycleVerb() {
+    this.clearInventoryInteraction();
     const index = verbs.indexOf(this.selectedVerb);
     this.selectedVerb = verbs[(index + 1) % verbs.length];
     this.renderUi();
@@ -479,14 +621,16 @@ export class Game {
     this.pendingSpeechBubble = null;
     this.speechBubbleQueue = [];
     this.speechBubblePauseRemaining = 0;
+    this.npcSpeechBubble = null;
     if (this.speechBubble) this.hideSpeechBubble(true);
     else if (this.uiRoot) this.renderUi();
   }
 
   setStatusMessage(message, options = {}) {
-    const beats = (Array.isArray(message) ? message : [message])
+    const authoredBeats = (Array.isArray(message) ? message : [message])
       .map((part) => String(part || "").trim())
       .filter(Boolean);
+    const beats = authoredBeats.flatMap((part) => this.speechBubblePages(part));
     if (this.speechBubble) this.hideSpeechBubble(true);
     this.speechBubbleQueue = beats.slice(1).map((part) => ({ message: part, options: { ...options } }));
     this.speechBubblePauseRemaining = 0;
@@ -500,6 +644,37 @@ export class Game {
       return;
     }
     this.showSpeechBubbleBeat(firstBeat, options);
+  }
+
+  speechBubblePages(message) {
+    const normalized = String(message || "").trim();
+    if (!normalized || this.speechBubbleTextFits(normalized)) return normalized ? [normalized] : [];
+
+    const words = normalized.split(/\s+/u);
+    const pages = [];
+    let pageWords = [];
+    for (const word of words) {
+      const candidate = [...pageWords, word].join(" ");
+      if (!pageWords.length || this.speechBubbleTextFits(candidate)) {
+        pageWords.push(word);
+        continue;
+      }
+      pages.push(pageWords.join(" "));
+      pageWords = [word];
+    }
+    if (pageWords.length) pages.push(pageWords.join(" "));
+    return pages;
+  }
+
+  speechBubbleTextFits(text) {
+    if (typeof document === "undefined" || !this.uiRoot) return true;
+    const probe = element("div", "speech-text speech-text-measure");
+    probe.style.width = `${SPEECH_BUBBLE_MAX_WIDTH_PX - 32}px`;
+    probe.textContent = text;
+    this.uiRoot.appendChild(probe);
+    const fits = probe.scrollHeight <= SPEECH_BUBBLE_MAX_TEXT_HEIGHT_PX;
+    probe.remove();
+    return fits;
   }
 
   showSpeechBubbleBeat(message, options = {}) {
@@ -606,6 +781,47 @@ export class Game {
     return clampNumber(readingSeconds, SPEECH_BUBBLE_MIN_VISIBLE_SECONDS, SPEECH_BUBBLE_MAX_VISIBLE_SECONDS);
   }
 
+  setNpcSpeechMessage(target, message) {
+    const text = String(message || "").trim();
+    if (!target?.id || target.kind !== "npc" || !text) return false;
+    if (this.speechBubble) this.hideSpeechBubble(true);
+    this.pendingSpeechBubble = null;
+    this.speechBubbleQueue = [];
+    this.npcSpeechBubble = {
+      id: `npc-speech-${++this.speechBubbleSequence}`,
+      npcId: target.id,
+      text,
+      elapsed: 0,
+      visibleSeconds: this.speechBubbleVisibleSeconds(text),
+      phase: "in"
+    };
+    if (this.uiRoot) this.renderUi();
+    return true;
+  }
+
+  updateNpcSpeechBubble(dt) {
+    if (!this.npcSpeechBubble) return;
+    this.npcSpeechBubble.elapsed += dt;
+    if (this.npcSpeechBubble.phase === "in" && this.npcSpeechBubble.elapsed >= SPEECH_BUBBLE_FADE_SECONDS) {
+      this.npcSpeechBubble.phase = "visible";
+      this.renderUi();
+    }
+    if (
+      this.npcSpeechBubble.phase !== "out"
+      && this.npcSpeechBubble.elapsed >= this.npcSpeechBubble.visibleSeconds
+    ) {
+      this.npcSpeechBubble.phase = "out";
+      this.renderUi();
+    }
+    if (
+      this.npcSpeechBubble?.phase === "out"
+      && this.npcSpeechBubble.elapsed >= this.npcSpeechBubble.visibleSeconds + SPEECH_BUBBLE_FADE_SECONDS
+    ) {
+      this.npcSpeechBubble = null;
+      this.renderUi();
+    }
+  }
+
   updateSpeechBubble(dt) {
     if (!this.speechBubble && this.pendingSpeechBubble && !this.player.target && this.player.animation === "idle") {
       const pending = this.pendingSpeechBubble;
@@ -687,6 +903,7 @@ export class Game {
     if (!this.usesExternalCharacterAnimation() || !message || this.player.target || this.player.animation === "walk" || this.player.animation === "action") return;
     const frame = options.reject ? this.randomRejectAnimation() : this.talkAnimationForMessage(message);
     if (!frame) return;
+    this.assets?.preloadCharacterSlot?.(this.player.id, frame.slot);
     this.player.speechAnimation = frame;
     this.player.idleVariant = null;
     this.player.idleVariantQueue = [];
@@ -784,6 +1001,7 @@ export class Game {
       this.completeInteractionActionSequence({ target, verb, sequence, frame: null });
       return true;
     }
+    this.assets?.preloadCharacterSlot?.(this.player.id, frame.slot);
     this.hideSpeechBubble(true);
     this.player.actionSequence = { target, verb, sequence, frame };
     this.player.actionAnimation = frame;
@@ -818,6 +1036,9 @@ export class Game {
       this.inventory.add(actionSequence.target.takeItemId);
     }
     if (actionSequence.target.flagOnTake) this.state[actionSequence.target.flagOnTake] = true;
+    if (actionSequence.target.takeEffects?.length) {
+      applyEffects(actionSequence.target.takeEffects, this.effectContext());
+    }
     this.save();
     if (this.uiRoot) this.renderUi();
   }
@@ -847,6 +1068,10 @@ export class Game {
       return;
     }
     const messageKey = actionSequence.sequence?.messageKey;
+    if (actionSequence.verb === VERBS.LOOK && actionSequence.target?.lookRules?.length) {
+      this.lookTarget(actionSequence.target);
+      return;
+    }
     if (messageKey) this.setStatusMessage(this.t(messageKey));
   }
 
@@ -860,11 +1085,21 @@ export class Game {
   }
 
   handleWorldClick(point) {
+    if (this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action") return;
+    if (this.selectedInventoryItemId && !this.inventoryUseItemId) {
+      this.selectedInventoryItemId = null;
+      this.renderUi();
+    }
     const target = findTargetAt(this.currentScene, point, (candidate) => this.targetAvailable(candidate));
     if (target) {
       this.handleTarget(target, point);
       return;
     }
+    if (this.inventoryUseItemId) {
+      this.clearInventoryInteraction();
+      this.renderUi();
+    }
+    if (this.currentScene?.playerMode === "closeup") return;
     this.player.pendingInteraction = null;
     const destination = isWalkable(this.currentScene, point)
       ? point
@@ -882,8 +1117,21 @@ export class Game {
     }
   }
 
+  updateHoveredTarget(point) {
+    const blocked = this.menuOpen || this.paused || this.dialogue.current
+      || this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action";
+    const previousTargetId = this.hoveredTarget?.id || null;
+    this.hoveredTarget = !blocked && point
+      ? findTargetAt(this.currentScene, point, (candidate) => this.targetAvailable(candidate))
+      : null;
+    if (this.canvas?.style) this.canvas.style.cursor = this.hoveredTarget ? "pointer" : "default";
+    if (this.inventoryUseItemId && previousTargetId !== (this.hoveredTarget?.id || null)) this.renderUi();
+    return this.hoveredTarget;
+  }
+
   targetAvailable(target) {
     if (target?.hiddenWhenItemOwned && this.inventory?.has(target.hiddenWhenItemOwned)) return false;
+    if (target?.requirements && !requirementsMet(target.requirements, this.effectContext())) return false;
     return true;
   }
 
@@ -894,12 +1142,12 @@ export class Game {
 
   shouldApproachTargetBeforeAction(target, clickPoint = null) {
     if (target.kind === "exit") return false;
+    if (["seated", "closeup"].includes(this.currentScene?.playerMode)) return false;
     const actionSequence = this.actionSequenceForTarget(target, this.selectedVerb);
     const actionApproach = this.actionSequenceApproachPoint(actionSequence);
     if (actionApproach) {
       const rawApproach = actionApproach;
-      const approach = nearestWalkablePoint(this.currentScene, rawApproach)
-        || nearestReachableWalkablePoint(this.currentScene, this.player.position, rawApproach);
+      const approach = this.reachableTargetApproachPoint(rawApproach);
       const reachPoint = actionSequence.facingPoint || clickPoint || this.targetReachPoint(target, clickPoint) || rawApproach;
       if (actionSequence.facing) this.player.facing = actionSequence.facing;
       else this.facePoint(reachPoint);
@@ -927,7 +1175,37 @@ export class Game {
         verb: this.selectedVerb,
         hand: reachPoint,
         approach,
-        actionSequence
+        actionSequence,
+        inventoryUseItemId: this.inventoryUseItemId
+      };
+      this.walkToPoint(approach, reachPoint);
+      this.clearStatusMessage();
+      return true;
+    }
+    if (target.interactionApproach) {
+      const rawApproach = target.interactionApproach;
+      const approach = this.reachableTargetApproachPoint(rawApproach);
+      const reachPoint = target.interactionFacingPoint || clickPoint || this.targetReachPoint(target, clickPoint) || rawApproach;
+      this.facePoint(reachPoint);
+      this.player.interactionDebug = {
+        kind: "target",
+        targetId: target.id,
+        click: clickPoint ? { ...clickPoint } : null,
+        hand: { ...reachPoint },
+        reachOrigin: this.playerReachOriginPoint(),
+        distancePoint: { ...reachPoint },
+        reachDistance: distance(this.playerReachOriginPoint(), reachPoint),
+        feetGoal: { ...rawApproach },
+        feet: approach ? { ...approach } : null
+      };
+      if (!approach || distance(this.player.position, approach) <= TARGET_APPROACH_FEET_CANCEL_DISTANCE) return false;
+      this.player.pendingFacingPoint = { ...reachPoint };
+      this.player.pendingInteraction = {
+        target,
+        verb: this.selectedVerb,
+        hand: reachPoint,
+        approach,
+        inventoryUseItemId: this.inventoryUseItemId
       };
       this.walkToPoint(approach, reachPoint);
       this.clearStatusMessage();
@@ -937,7 +1215,8 @@ export class Game {
     if (!reachPoint) return false;
     this.facePoint(reachPoint);
     const feetGoal = this.targetFeetApproachPoint(reachPoint);
-    const approach = nearestWalkablePoint(this.currentScene, feetGoal) || nearestWalkablePoint(this.currentScene, reachPoint);
+    const approach = this.reachableTargetApproachPoint(feetGoal)
+      || this.reachableTargetApproachPoint(reachPoint);
     const reachOrigin = this.playerReachOriginPoint();
     const distancePoint = reachPoint;
     const reachDistance = distance(reachOrigin, distancePoint);
@@ -963,7 +1242,8 @@ export class Game {
       target,
       verb: this.selectedVerb,
       hand: reachPoint,
-      approach
+      approach,
+      inventoryUseItemId: this.inventoryUseItemId
     };
     this.walkToPoint(approach, reachPoint);
     this.clearStatusMessage();
@@ -984,6 +1264,7 @@ export class Game {
     if (pending.hand) this.facePoint(pending.hand);
     const previousVerb = this.selectedVerb;
     this.selectedVerb = pending.verb;
+    if (pending.inventoryUseItemId) this.inventoryUseItemId = pending.inventoryUseItemId;
     this.performTargetAction(pending.target, pending.actionSequence);
     this.selectedVerb = previousVerb;
   }
@@ -1016,6 +1297,16 @@ export class Game {
     };
   }
 
+  reachableTargetApproachPoint(point) {
+    const nearest = nearestWalkablePoint(this.currentScene, point);
+    if (!nearest) {
+      return nearestReachableWalkablePoint(this.currentScene, this.player.position, point);
+    }
+    if (distance(this.player.position, nearest) <= TARGET_APPROACH_FEET_CANCEL_DISTANCE) return nearest;
+    if (findWalkPath(this.currentScene, this.player.position, nearest).length) return nearest;
+    return nearestReachableWalkablePoint(this.currentScene, this.player.position, point) || nearest;
+  }
+
   playerReachOriginPoint() {
     const definition = this.characterDefinitions?.["npc.bai_mitko"] || characterDefinitions["npc.bai_mitko"];
     const height = characterHeight(definition, this.currentScene, this.player.position);
@@ -1038,23 +1329,46 @@ export class Game {
     const routeDistance = walkPathDistance(this.player.position, route);
     const shortWalk = routeDistance > 0 && routeDistance <= SHORT_WALK_PATH_DISTANCE;
     this.hideSpeechBubble(true);
+    this.npcSpeechBubble = null;
     this.player.actionSequence = null;
     this.player.actionAnimation = null;
     this.movement.walkTo(point, facingPoint, route, { shortWalk });
   }
 
   performTargetAction(target, forcedActionSequence = null) {
+    if (this.inventoryUseItemId) {
+      this.useInventoryItemOnTarget(this.inventoryUseItemId, target);
+      return;
+    }
     if (target.kind === "exit") {
+      if (!requirementsMet(target.accessRequirements, this.effectContext())) {
+        this.setStatusMessage(this.t(target.blockedMessageKey), { reject: true });
+        return;
+      }
       this.changeScene(target.targetSceneId, target.targetPosition);
+      return;
+    }
+    if (target.droppedItemsPile) {
+      if (this.selectedVerb === VERBS.LOOK) {
+        this.setStatusMessage(this.t("look.dropped_items", { count: this.droppedItemsInScene().length }));
+      } else if (this.selectedVerb === VERBS.USE || this.selectedVerb === VERBS.TAKE) {
+        this.droppedItemsOpen = true;
+        this.renderUi();
+      } else {
+        this.setStatusMessage(this.t("msg.need_talk"), { reject: true });
+      }
       return;
     }
     const actionSequence = forcedActionSequence || this.actionSequenceForTarget(target, this.selectedVerb);
     if (actionSequence && this.startInteractionActionSequence(target, this.selectedVerb, actionSequence)) return;
     if (this.selectedVerb === VERBS.LOOK) {
-      this.setStatusMessage(this.t(target.lookKey || target.nameKey));
+      this.lookTarget(target);
       return;
     }
     if (this.selectedVerb === VERBS.TALK) {
+      const rule = firstMatchingRule(target.talkRules, this.effectContext());
+      if (rule) return this.applyContentEffect(rule, { speakerTarget: target.kind === "npc" ? target : null });
+      if (target.talkKey && this.setNpcSpeechMessage(target, this.t(target.talkKey))) return;
       if (target.dialogueId) {
         this.dialogue.start(target.dialogueId);
         this.player.speaking = true;
@@ -1075,63 +1389,193 @@ export class Game {
     this.setStatusMessage(this.t("msg.no_use"), { reject: true });
   }
 
+  lookTarget(target) {
+    const rule = firstMatchingRule(target.lookRules, this.effectContext());
+    if (rule) return this.applyContentEffect(rule);
+    this.setStatusMessage(this.t(target.lookKey || target.nameKey));
+  }
+
   takeTarget(target, options = {}) {
+    if (!this.targetAvailable(target)) return false;
+    const rule = firstMatchingRule(target.takeRules, this.effectContext());
+    if (rule) return this.applyContentEffect(rule);
     if (this.inventory.has(target.takeItemId)) {
       this.setStatusMessage(this.t("msg.already_taken"), { reject: true });
       return;
     }
     this.inventory.add(target.takeItemId);
     if (target.flagOnTake) this.state[target.flagOnTake] = true;
-    this.setStatusMessage(this.t(options.messageKey || "msg.taken"));
+    if (target.takeEffects?.length) applyEffects(target.takeEffects, this.effectContext());
+    this.setStatusMessage(this.t(options.messageKey || target.takeMessageKey || "msg.taken"));
     this.save();
   }
 
   useTarget(target) {
-    if (target.id === "hotspot.mehana.oil" && this.inventory.has("item.sunflower_oil")) {
-      this.state.drankOilBeforeTonyChallenge = true;
-      this.setStatusMessage(this.t("msg.oil_used"));
-      this.save();
+    if (target.endingTrigger) return this.requestEnding(target.endingTrigger);
+    if (target.useDialogueId) {
+      this.clearStatusMessage();
+      this.dialogue.start(target.useDialogueId);
+      this.player.speaking = false;
+      this.renderUi();
       return;
     }
-    if (target.id === "npc.tony_fridge" && this.inventory.has("item.accordion")) {
-      this.state.flags.tonyDistracted = true;
-      this.setStatusMessage(this.t("msg.accordion_tony"));
-      this.save();
-      return;
-    }
-    if (target.id === "hotspot.mehana.water_jug" && this.state.flags.tonyChallengeStarted) {
-      if (!this.state.flags.tonyDistracted) {
-        this.setStatusMessage(this.t("msg.water_swap_missing"), { reject: true });
-        this.state.suspicion += 8;
-        this.save();
-        return;
-      }
-      this.state.swappedOwnRakiaWithWater = true;
-      this.state.tonyVote = true;
-      this.state.tonyFavorOwed = true;
-      this.state.influence += 25;
-      this.state.suspicion += 10;
-      this.state.publicMood += 5;
-      this.quests.complete("quest.chapter1.tony_vote");
-      this.setStatusMessage(this.t("msg.water_swap_success"));
-      this.save();
-      return;
-    }
+    const rule = firstMatchingRule(target.useRules, this.effectContext());
+    if (rule) return this.applyContentEffect(rule);
     this.setStatusMessage(this.t("msg.no_use"), { reject: true });
   }
 
+  beginInventoryItemUse(itemId) {
+    if (!itemId || !this.inventory.has(itemId)) return false;
+    this.selectedInventoryItemId = null;
+    this.inventoryUseItemId = itemId;
+    this.selectedVerb = VERBS.USE;
+    this.clearStatusMessage();
+    this.renderUi();
+    return true;
+  }
+
+  clearInventoryInteraction() {
+    if (this.player?.pendingInteraction?.inventoryUseItemId) this.player.pendingInteraction = null;
+    this.selectedInventoryItemId = null;
+    this.inventoryUseItemId = null;
+  }
+
+  useInventoryItemOnTarget(itemId, target) {
+    const item = this.content.items[itemId];
+    const explicitRule = firstMatchingRule(
+      (target.itemUseRules || []).filter((candidate) => candidate.itemId === itemId),
+      this.effectContext()
+    );
+    const fallbackRule = firstMatchingRule(
+      (item?.targetUseRules || []).filter((candidate) => this.itemTargetRuleMatches(candidate, target)),
+      this.effectContext()
+    );
+    const rule = explicitRule || fallbackRule;
+    this.clearInventoryInteraction();
+    if (rule) return this.applyContentEffect(rule, { speakerTarget: target.kind === "npc" ? target : null });
+    if (target.kind === "npc") {
+      this.setNpcSpeechMessage(target, this.t(target.itemRejectKey || "msg.inventory.npc_reject_generic"));
+      return false;
+    }
+    this.setStatusMessage(this.t("msg.inventory.cannot_use_with", {
+      item: this.t(item?.nameKey || itemId),
+      target: this.t(target.nameKey || target.lookKey || target.id)
+    }), { reject: true });
+    this.renderUi();
+    return false;
+  }
+
+  itemTargetRuleMatches(rule, target) {
+    if (rule.targetIds?.length && !rule.targetIds.includes(target?.id)) return false;
+    if (rule.targetKinds?.length && !rule.targetKinds.includes(target?.kind)) return false;
+    if (rule.targetTags?.length && !rule.targetTags.some((tag) => target?.tags?.includes(tag))) return false;
+    return Boolean(rule.targetIds?.length || rule.targetKinds?.length || rule.targetTags?.length);
+  }
+
+  useInventoryItemOnSelf(itemId) {
+    const item = this.content.items[itemId];
+    const rule = firstMatchingRule(item?.selfUseRules, this.effectContext());
+    this.clearInventoryInteraction();
+    if (rule) return this.applyContentEffect(rule);
+    this.setStatusMessage(this.t("msg.inventory.cannot_use_on_self", {
+      item: this.t(item?.nameKey || itemId)
+    }), { reject: true });
+    this.renderUi();
+    return false;
+  }
+
+  useInventoryItemOnItem(sourceItemId, targetItemId) {
+    if (sourceItemId === targetItemId) {
+      this.clearInventoryInteraction();
+      this.renderUi();
+      return false;
+    }
+    const source = this.content.items[sourceItemId];
+    const target = this.content.items[targetItemId];
+    const directRule = firstMatchingRule(
+      (source?.itemUseRules || []).filter((candidate) => candidate.itemId === targetItemId),
+      this.effectContext()
+    );
+    const reverseRule = firstMatchingRule(
+      (target?.itemUseRules || []).filter((candidate) => candidate.itemId === sourceItemId),
+      this.effectContext()
+    );
+    this.clearInventoryInteraction();
+    if (directRule || reverseRule) return this.applyContentEffect(directRule || reverseRule);
+    this.setStatusMessage(this.t("msg.inventory.cannot_combine", {
+      item: this.t(source?.nameKey || sourceItemId),
+      target: this.t(target?.nameKey || targetItemId)
+    }), { reject: true });
+    this.renderUi();
+    return false;
+  }
+
   applyDialogueEffect(effect) {
-    if (effect === "tonyChallengeStarted") {
-      this.state.flags.tonyChallengeStarted = true;
-      this.setStatusMessage(this.t("dialogue.tony.challenge"));
-    }
-    if (effect === "tonyChallengeRefused") {
-      this.state.suspicion += 3;
-    }
+    this.applyContentEffect(effect, { render: false });
     this.player.speaking = false;
+  }
+
+  effectContext() {
+    return { state: this.state, inventory: this.inventory, quests: this.quests, now: () => Date.now() };
+  }
+
+  applyContentEffect(definition = {}, options = {}) {
+    if (definition.endingTrigger) return this.requestEnding(definition.endingTrigger);
+    applyEffects(definition.effects, this.effectContext());
+    this.audio?.play(definition.soundCue);
+    const stateMessage = definition.messageByState;
+    const stateValue = Number(this.state[stateMessage?.key]);
+    const matchingMessage = stateMessage?.ranges?.find((range) => (
+      (!Number.isFinite(Number(range.min)) || stateValue >= Number(range.min))
+      && (!Number.isFinite(Number(range.max)) || stateValue <= Number(range.max))
+    ));
+    const messageKey = matchingMessage?.messageKey || definition.messageKey;
+    if (messageKey) {
+      const message = this.t(messageKey);
+      if (options.speakerTarget?.kind === "npc") this.setNpcSpeechMessage(options.speakerTarget, message);
+      else this.setStatusMessage(message, { reject: Boolean(definition.reject) });
+    }
+    this.player.speed = this.sceneMovementSpeed(this.currentScene);
+    this.save();
+    if (options.render !== false) this.renderUi();
+    if (definition.sceneTransition) return this.changeScene(definition.sceneTransition.sceneId, definition.sceneTransition.position);
+    return true;
+  }
+
+  requestEnding(trigger = {}) {
+    if (this.state.chapter1Completed) return false;
+    if (!requirementsMet(trigger.requirements, this.effectContext())) {
+      this.setStatusMessage(this.t("msg.election.not_ready"), { reject: true });
+      return false;
+    }
+    this.save();
+    const confirmed = globalThis.confirm?.(this.t(trigger.confirmKey || "ui.election.commit_confirm")) ?? false;
+    if (!confirmed) {
+      this.setStatusMessage(this.t(trigger.cancelledMessageKey || "msg.election.deferred"));
+      return false;
+    }
+    const candidates = (this.content.endings || []).filter((ending) => ending.groupId === trigger.groupId);
+    const ending = resolveEnding(candidates, this.effectContext());
+    if (!ending) {
+      this.setStatusMessage(this.t("msg.election.not_ready"), { reject: true });
+      return false;
+    }
+    this.audio?.setAmbience(null);
+    this.audio?.play(ending.soundCue);
+    if (ending.presentation?.playerPosition) this.player.position = { ...ending.presentation.playerPosition };
+    if (ending.presentation?.facing) this.player.facing = ending.presentation.facing;
+    this.player.target = null;
+    this.player.walkPath = [];
+    this.player.animation = "idle";
     this.dialogue.close();
+    this.clearInventoryInteraction();
+    this.state.currentSceneId = this.currentScene.id;
+    this.menuOpen = false;
+    this.paused = false;
+    this.hoveredTarget = null;
     this.save();
     this.renderUi();
+    return true;
   }
 
   async changeScene(sceneId, position) {
@@ -1141,23 +1585,39 @@ export class Game {
     }
     const sceneLoadToken = Symbol(sceneId);
     this.sceneLoadToken = sceneLoadToken;
-    await this.assets.preloadSceneAssets(sceneId);
-    if (this.sceneLoadToken !== sceneLoadToken) return;
-    this.currentScene = this.content.scenes[sceneId];
-    this.state.currentSceneId = sceneId;
-    this.player.position = { ...(position || this.currentScene.playerStart) };
-    this.player.target = null;
-    this.player.walkPath = [];
-    this.player.shortWalk = false;
-    this.player.pendingInteraction = null;
-    this.player.pendingFacingPoint = null;
-    this.player.interactionDebug = null;
-    this.player.speed = this.sceneMovementSpeed(this.currentScene);
-    this.save();
+    this.sceneTransitionPending = true;
+    this.audio.resetFootsteps();
+    try {
+      await this.assets.preloadSceneAssets(sceneId);
+      if (this.sceneLoadToken !== sceneLoadToken) return;
+      this.currentScene = this.sceneWithDroppedItems(this.content.scenes[sceneId]);
+      this.audio?.setAmbience(this.currentScene.ambience);
+      this.droppedItemsOpen = false;
+      this.clearInventoryInteraction();
+      this.state.currentSceneId = sceneId;
+      this.player.position = { ...(position || this.currentScene.playerStart) };
+      this.player.target = null;
+      this.player.walkPath = [];
+      this.player.shortWalk = false;
+      this.player.pendingInteraction = null;
+      this.player.pendingFacingPoint = null;
+      this.player.interactionDebug = null;
+      this.hoveredTarget = null;
+      this.player.actionSequence = null;
+      this.player.actionAnimation = null;
+      this.player.animation = "idle";
+      this.player.speed = this.sceneMovementSpeed(this.currentScene);
+      this.protectCurrentAssetWorkingSet();
+      this.save();
+      this.scheduleAdjacentScenePrefetch(this.currentScene);
+    } finally {
+      if (this.sceneLoadToken === sceneLoadToken) this.sceneTransitionPending = false;
+    }
   }
 
   setLanguage(language) {
     if (!LANGUAGES.includes(language)) return;
+    this.clearInventoryInteraction();
     this.state.language = language;
     this.localization.setLanguage(language);
     this.message = this.t("ui.hint");
@@ -1172,7 +1632,13 @@ export class Game {
   reset() {
     this.state = this.saveSystem.reset();
     this.localization.setLanguage(this.state.language);
-    this.currentScene = this.content.scenes[this.state.currentSceneId];
+    this.currentScene = this.sceneWithDroppedItems(this.content.scenes[this.state.currentSceneId]);
+    this.audio?.setAmbience(null);
+    this.audio?.setVolume(this.state.audioVolume);
+    this.audio?.setEnabled(Boolean(this.state.audioEnabled));
+    this.droppedItemsOpen = false;
+    this.clearInventoryInteraction();
+    this.questListTab = "outstanding";
     this.inventory = new InventorySystem(this.content.items, this.state);
     this.quests = new QuestSystem(this.content.quests, this.state);
     this.player.position = { ...this.currentScene.playerStart };
@@ -1182,6 +1648,10 @@ export class Game {
     this.player.pendingInteraction = null;
     this.player.pendingFacingPoint = null;
     this.player.interactionDebug = null;
+    this.player.actionSequence = null;
+    this.player.actionAnimation = null;
+    this.player.animation = "idle";
+    this.hoveredTarget = null;
     this.message = this.t("ui.hint");
     this.menuOpen = true;
     this.paused = false;
@@ -1193,6 +1663,28 @@ export class Game {
     if (!confirmed) return;
     this.reset();
     globalThis.location?.reload();
+  }
+
+  restartGame() {
+    const confirmed = globalThis.confirm?.(this.t("ui.restart_confirm")) ?? false;
+    if (!confirmed) return;
+    const language = this.state.language;
+    this.reset();
+    this.state.language = language;
+    this.localization.setLanguage(language);
+    this.menuOpen = false;
+    this.paused = false;
+    this.save();
+    this.renderUi();
+  }
+
+  returnToMainMenu() {
+    this.save();
+    this.clearInventoryInteraction();
+    this.menuOpen = true;
+    this.paused = false;
+    this.hoveredTarget = null;
+    this.renderUi();
   }
 
   renderUi() {
@@ -1210,12 +1702,27 @@ export class Game {
       if (this.sceneEditor) this.uiRoot.appendChild(this.sceneEditor.createPanel());
       return;
     }
+    if (this.state.chapter1Completed && !this.menuOpen && !this.devHome) {
+      this.uiRoot.appendChild(this.createEnding());
+      return;
+    }
     if (this.devHome) this.uiRoot.appendChild(this.createDevHome());
     if (this.menuOpen) this.uiRoot.appendChild(this.createMenu());
     if (this.paused) this.uiRoot.appendChild(this.createPause());
-    if (dialogueNode) this.uiRoot.appendChild(this.createDialogue(dialogueNode));
+    if (dialogueNode) {
+      const npcSpeech = this.createDialogueSpeechBubble(dialogueNode);
+      if (npcSpeech) this.uiRoot.appendChild(npcSpeech);
+      this.uiRoot.appendChild(this.createDialogue(dialogueNode));
+    }
+    if (this.npcSpeechBubble && !this.menuOpen && !this.paused && !dialogueNode) {
+      const reaction = this.createNpcReactionBubble();
+      if (reaction) this.uiRoot.appendChild(reaction);
+    }
     if (this.speechBubble && !this.menuOpen && !this.paused && !dialogueNode) this.uiRoot.appendChild(this.createSpeechBubble());
     if (!this.editMode && !this.devHome && !this.menuOpen && !this.paused && !dialogueNode) this.uiRoot.appendChild(this.createHud());
+    if (this.droppedItemsOpen && !this.menuOpen && !this.paused && !dialogueNode) {
+      this.uiRoot.appendChild(this.createDroppedItemsPanel());
+    }
     this.uiRoot.appendChild(this.createTopBar());
   }
 
@@ -1225,6 +1732,7 @@ export class Game {
 
     const meters = element("div", "hud-meters");
     meters.append(
+      this.createIntoxicationMeter(),
       this.createHudMeter("ui.meter.influence", this.state.influence, "influence"),
       this.createHudMeter("ui.meter.suspicion", this.state.suspicion, "suspicion"),
       this.createHudMeter("ui.meter.public_mood", this.state.publicMood, "public-mood")
@@ -1248,6 +1756,7 @@ export class Game {
     hud.append(meters, verb);
     const items = this.inventory.list();
     if (items.length) hud.appendChild(this.createInventoryDock(items));
+    if (this.inventoryUseItemId) hud.appendChild(this.createInventoryUseIndicator());
     return hud;
   }
 
@@ -1262,6 +1771,23 @@ export class Game {
     meter.innerHTML = `
       <span class="hud-meter-label">${escapeHtml(this.t(labelKey))}</span>
       <span class="hud-meter-track"><span class="hud-meter-fill" style="width:${normalized}%"></span></span>
+    `;
+    return meter;
+  }
+
+  createIntoxicationMeter() {
+    const glasses = Math.max(0, Math.min(RAKIA_MAX_GLASSES, Math.round(Number(this.state.rakiaGlasses) || 0)));
+    const labelKey = `ui.intoxication.${intoxicationBandKey(glasses)}`;
+    const color = intoxicationColor(glasses);
+    const meter = element("div", "hud-meter intoxication");
+    meter.setAttribute("role", "meter");
+    meter.setAttribute("aria-label", `${this.t("ui.meter.rakia")}: ${this.t(labelKey)}`);
+    meter.setAttribute("aria-valuemin", "0");
+    meter.setAttribute("aria-valuemax", String(RAKIA_MAX_GLASSES));
+    meter.setAttribute("aria-valuenow", String(glasses));
+    meter.innerHTML = `
+      <span class="hud-meter-label">${escapeHtml(this.t(labelKey))}</span>
+      <span class="hud-meter-track"><span class="hud-meter-fill" style="width:${glasses * 10}%;background:${color}"></span><span class="hud-meter-glass">🥃 ${glasses}/${RAKIA_MAX_GLASSES}</span></span>
     `;
     return meter;
   }
@@ -1287,25 +1813,132 @@ export class Game {
       itemButton.setAttribute("aria-label", itemName);
       itemButton.setAttribute("aria-describedby", tooltipId);
       itemButton.dataset.itemId = item.id;
-      const iconPath = assetManifest.items?.[item.id]?.icon;
+      const iconRule = firstMatchingRule(item.iconRules, this.effectContext());
+      const iconPath = this.assets.getItemAssetPath(item.id, iconRule?.slot || "icon");
       if (iconPath) {
         const icon = document.createElement("img");
         icon.src = iconPath;
         icon.alt = "";
         icon.draggable = false;
         itemButton.appendChild(icon);
+      } else {
+        const label = element("span", "inventory-item-label");
+        label.textContent = itemName;
+        itemButton.appendChild(label);
       }
       const tooltip = element("span", "inventory-tooltip");
       tooltip.id = tooltipId;
       tooltip.setAttribute("role", "tooltip");
       tooltip.textContent = itemName;
       itemButton.appendChild(tooltip);
-      itemButton.addEventListener("click", () => this.setStatusMessage(this.t(item.descriptionKey)));
+      const selected = this.selectedInventoryItemId === item.id;
+      const using = this.inventoryUseItemId === item.id;
+      itemButton.classList.toggle("selected", selected);
+      itemButton.classList.toggle("using", using);
+      itemButton.setAttribute("aria-pressed", String(selected || using));
+      itemButton.addEventListener("click", () => {
+        if (this.inventoryUseItemId) {
+          this.useInventoryItemOnItem(this.inventoryUseItemId, item.id);
+          return;
+        }
+        this.selectedInventoryItemId = this.selectedInventoryItemId === item.id ? null : item.id;
+        this.renderUi();
+      });
       dock.appendChild(itemButton);
     });
     dock.addEventListener("keydown", (event) => this.handleInventoryDockKeydown(event, dock));
     panel.appendChild(dock);
+    const selectedItem = items.find((item) => item.id === this.selectedInventoryItemId);
+    if (selectedItem) {
+      const actions = element("div", "inventory-item-actions");
+      const name = element("span", "inventory-item-actions-name");
+      name.textContent = this.t(selectedItem.nameKey);
+      actions.append(
+        name,
+        button(this.t("ui.inventory.use"), () => this.beginInventoryItemUse(selectedItem.id)),
+        ...(selectedItem.selfUseRules?.length
+          ? [button(this.t("ui.inventory.use_on_self"), () => this.useInventoryItemOnSelf(selectedItem.id))]
+          : []),
+        button(this.t("ui.inventory.inspect"), () => {
+          this.clearInventoryInteraction();
+          this.setStatusMessage(this.t(selectedItem.descriptionKey));
+        }),
+        button(this.t("ui.inventory.drop"), () => this.dropInventoryItem(selectedItem)),
+        button(this.t("ui.inventory.close"), () => {
+          this.clearInventoryInteraction();
+          this.renderUi();
+        })
+      );
+      panel.appendChild(actions);
+    }
     return panel;
+  }
+
+  createInventoryUseIndicator() {
+    const item = this.content.items[this.inventoryUseItemId];
+    const target = this.hoveredTarget;
+    const indicator = element("div", "inventory-use-indicator");
+    const instruction = element("span", "inventory-use-instruction");
+    instruction.textContent = target
+      ? this.t("ui.inventory.use_with_target", {
+          item: this.t(item?.nameKey || this.inventoryUseItemId),
+          target: this.t(target.nameKey || target.lookKey || target.id)
+        })
+      : this.t("ui.inventory.use_prompt", { item: this.t(item?.nameKey || this.inventoryUseItemId) });
+    indicator.append(
+      instruction,
+      button(this.t("ui.inventory.cancel"), () => {
+        this.clearInventoryInteraction();
+        this.renderUi();
+      })
+    );
+    return indicator;
+  }
+
+  dropInventoryItem(item) {
+    if (!item?.id || !this.inventory.has(item.id)) return false;
+    if (this.currentScene.allowItemDrop === false) {
+      this.setStatusMessage(this.t(this.currentScene.dropBlockedMessageKey));
+      return false;
+    }
+    this.state.droppedItems ||= [];
+    const restoresToScene = this.itemRestoresToScene(item.id);
+    if (restoresToScene) {
+      this.state.droppedItems = this.state.droppedItems.filter((record) => (
+        record.itemId !== item.id || record.sceneId !== this.currentScene.id
+      ));
+    } else {
+      const existingPile = this.droppedItemsInScene()[0];
+      const requestedPosition = { x: this.player.position.x + 54, y: this.player.position.y };
+      const position = existingPile?.position
+        || nearestWalkablePoint(this.currentScene, requestedPosition)
+        || { ...this.player.position };
+      this.state.droppedItems.push({ itemId: item.id, sceneId: this.currentScene.id, position });
+    }
+    this.inventory.remove(item.id);
+    this.selectedInventoryItemId = null;
+    this.refreshCurrentSceneDroppedItems();
+    this.droppedItemsOpen = !restoresToScene;
+    this.save();
+    this.setStatusMessage(this.t("msg.inventory.dropped_nearby", { item: this.t(item.nameKey) }));
+    this.renderUi();
+    return true;
+  }
+
+  pickUpDroppedItem(itemId) {
+    const recordIndex = (this.state.droppedItems || []).findIndex((record) => (
+      record.sceneId === this.currentScene.id && record.itemId === itemId
+    ));
+    if (recordIndex < 0 || this.inventory.has(itemId)) return false;
+    const item = this.content.items[itemId];
+    this.state.droppedItems.splice(recordIndex, 1);
+    this.inventory.add(itemId);
+    this.refreshCurrentSceneDroppedItems();
+    if (!this.droppedItemsInScene().length) this.droppedItemsOpen = false;
+    this.save();
+    this.setStatusMessage(this.t("msg.inventory.picked_up_again", { item: this.t(item?.nameKey || itemId) }));
+    this.renderUi();
+    return true;
   }
 
   handleInventoryDockKeydown(event, dock) {
@@ -1326,19 +1959,37 @@ export class Game {
     const bar = element("div", "top-bar");
     const left = element("div", "top-bar-left");
     const right = element("div", "top-bar-right");
-    left.append(
-      button(this.t("ui.reset"), () => this.confirmResetAndReload())
-    );
+    const menuButton = button(this.t("ui.menu"), () => {
+        this.clearInventoryInteraction();
+        this.paused = !this.paused;
+        this.hoveredTarget = null;
+        this.renderUi();
+      });
+    menuButton.classList.toggle("active", this.paused);
+    menuButton.setAttribute("aria-pressed", String(this.paused));
+    left.append(menuButton);
+    const returnExit = this.currentScene.exits.find(exit => exit.id === this.currentScene.returnExitId);
+    if (returnExit) left.append(button(this.t(returnExit.nameKey), () => {
+      this.clearStatusMessage();
+      this.clearInventoryInteraction();
+      this.performTargetAction(returnExit);
+    }));
     right.append(
-      button(this.t("verb.look"), () => { this.selectedVerb = VERBS.LOOK; this.renderUi(); }),
-      button(this.t("verb.talk"), () => { this.selectedVerb = VERBS.TALK; this.renderUi(); }),
-      button(this.t("verb.use"), () => { this.selectedVerb = VERBS.USE; this.renderUi(); }),
-      button(this.t("verb.take"), () => { this.selectedVerb = VERBS.TAKE; this.renderUi(); }),
+      button(this.t("verb.look"), () => this.selectVerb(VERBS.LOOK)),
+      button(this.t("verb.talk"), () => this.selectVerb(VERBS.TALK)),
+      button(this.t("verb.use"), () => this.selectVerb(VERBS.USE)),
+      button(this.t("verb.take"), () => this.selectVerb(VERBS.TAKE)),
       button("BG", () => this.setLanguage("bg")),
       button("EN", () => this.setLanguage("en"))
     );
     bar.append(left, right);
     return bar;
+  }
+
+  selectVerb(verb) {
+    this.clearInventoryInteraction();
+    this.selectedVerb = verb;
+    this.renderUi();
   }
 
   createSpeechBubble() {
@@ -1490,20 +2141,89 @@ export class Game {
     return menu;
   }
 
+  createEnding() {
+    const ending = this.content.endings.find((candidate) => candidate.id === this.state.endingId)
+      || this.content.endings.find((candidate) => candidate.id === "ending.chapter1.loss");
+    const panel = element("section", "panel ending-panel");
+    panel.dataset.endingId = ending?.id || "ending.chapter1.loss";
+    panel.innerHTML = `
+      <p class="ending-kicker">${escapeHtml(this.t("ending.chapter1.complete"))}</p>
+      <h1>${escapeHtml(this.t(ending?.titleKey || "ending.chapter1.loss.title"))}</h1>
+      <p class="ending-body">${escapeHtml(this.t(ending?.bodyKey || "ending.chapter1.loss.body"))}</p>
+      <dl class="ending-results">
+        <div><dt>${escapeHtml(this.t("ui.meter.influence"))}</dt><dd>${Number(this.state.influence) || 0}</dd></div>
+        <div><dt>${escapeHtml(this.t("ui.meter.suspicion"))}</dt><dd>${Number(this.state.suspicion) || 0}</dd></div>
+        <div><dt>${escapeHtml(this.t("ui.meter.public_mood"))}</dt><dd>${Number(this.state.publicMood) || 0}</dd></div>
+      </dl>
+    `;
+    const report = element("ul", "ending-report");
+    const reportKeys = this.state.endingReportKeys || (ending?.reportRules || [])
+      .filter(rule => requirementsMet(rule.requirements, this.effectContext())).map(rule => rule.textKey);
+    for (const key of reportKeys) {
+      const line = element("li");
+      line.textContent = this.t(key);
+      report.appendChild(line);
+    }
+    panel.appendChild(report);
+    const epilogueKeys = this.state.endingEpilogueKeys || (ending?.epilogue || [])
+      .filter(rule => requirementsMet(rule.requirements, this.effectContext())).map(rule => rule.textKey);
+    const index = Math.max(0, Math.min(Number(this.state.endingPresentationIndex) || 0, epilogueKeys.length - 1));
+    if (epilogueKeys.length) {
+      const epilogue = element("p", "ending-epilogue");
+      epilogue.setAttribute("aria-live", "polite");
+      epilogue.textContent = this.t(epilogueKeys[index]);
+      panel.appendChild(epilogue);
+      if (index < epilogueKeys.length - 1) panel.appendChild(button(this.t("election.continue"), () => {
+        this.state.endingPresentationIndex = index + 1;
+        this.save();
+        this.renderUi();
+      }));
+    }
+    const actions = element("div", "ending-actions");
+    actions.append(
+      button(this.t("ui.restart"), () => this.restartGame()),
+      button(this.t("ui.main_menu"), () => this.returnToMainMenu())
+    );
+    panel.appendChild(actions);
+    const languages = element("div", "ending-languages");
+    languages.append(button("BG", () => this.setLanguage("bg")), button("EN", () => this.setLanguage("en")));
+    panel.appendChild(languages);
+    return panel;
+  }
+
   createDevHome() {
     const panel = element("section", "panel dev-home");
     panel.innerHTML = `
       <h1>Comrade Candidate Dev</h1>
       <p>Internal development links for runtime art and animation testing.</p>
       <a class="play-link" href="./?play=1">Play Animated East/West</a>
+      <div class="dev-links">
+        <a href="./docs/chapter1-storyboard.html">Chapter 1 Storyboard / Сториборд — Глава 1</a>
+      </div>
+      <h2>Chapter 1 visual review</h2>
+      <p>These previews use temporary saves. Reload resets the preview; your normal game is untouched.</p>
+      <div class="dev-links">
+        <a href="./?play=1&review=election">Election room and objections</a>
+        <a href="./?play=1&review=convincing_win">Convincing victory</a>
+        <a href="./?play=1&review=narrow_win">Narrow victory</a>
+        <a href="./?play=1&review=loss">Loss</a>
+      </div>
+      <h2>Scene Editors</h2>
+      <div class="dev-links dev-scene-editors">
+        <a href="./?edit=1&scene=scene.chapter1.apartment">Bai Mitko's Room Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.village_square">Village Square Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.mehana">Mehana Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.municipality">Municipality Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.mayor_office">Mayor’s Office Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.archive">Archive Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.election_booth">Election Room Editor</a>
+      </div>
       <div class="dev-status-list">
         <div class="dev-status">
           <strong>External Animation v1</strong>
           <span>active Bai Mitko animation import path. East start/loop/short/stop only; west mirrors east. North/south/diagonals deferred.</span>
           <a href="./?animLab=1">Open animLab external section</a>
           <a href="./?simpleAnimTest=1">Open simple animation test</a>
-          <a href="./?edit=1&scene=scene.chapter1.apartment">Edit Bai Mitko's room</a>
-          <a href="./?edit=1&scene=scene.chapter1.village_square">Edit village square</a>
           <a href="./?play=1">Play with External Animation v1</a>
         </div>
       </div>
@@ -1514,8 +2234,6 @@ node tools/build-external-runtime-staging.js</pre>
       <div class="dev-links">
         <a href="./?animLab=1">Animation Lab</a>
         <a href="./?simpleAnimTest=1">Simple Animation Test</a>
-        <a href="./?edit=1&scene=scene.chapter1.apartment">Bai Mitko's Room Editor</a>
-        <a href="./?edit=1&scene=scene.chapter1.village_square">Village Square Editor</a>
         <a href="./?play=1">Play External Animation v1</a>
         <a href="./target/external_animation_v1/previews/walk_east_start.gif">Walk East Start GIF</a>
         <a href="./target/external_animation_v1/previews/walk_east_loop.gif">Walk East Loop GIF</a>
@@ -1887,39 +2605,206 @@ node tools/build-external-runtime-staging.js</pre>
 
   createPause() {
     const pause = element("section", "panel pause-menu");
-    pause.innerHTML = `<h2>${this.t("ui.pause")}</h2>`;
+    pause.innerHTML = `<h2>${this.t("ui.menu")}</h2>`;
     pause.append(
-      button(this.t("ui.resume"), () => {
-        this.paused = false;
-        this.renderUi();
-      }),
       button(this.t("ui.save"), () => {
         this.save();
         this.message = this.t("msg.scene_saved");
+        this.paused = false;
+        this.renderUi();
       }),
-      button(this.t("ui.reset"), () => this.reset()),
-      button("BG", () => this.setLanguage("bg")),
-      button("EN", () => this.setLanguage("en"))
+      button(this.t("ui.restart"), () => this.restartGame()),
+      button(this.t("ui.main_menu"), () => this.returnToMainMenu())
     );
-    const quests = element("div", "quest-list");
-    quests.innerHTML = `<h3>${this.t("ui.quests")}</h3>`;
-    for (const quest of this.quests.active()) {
-      const p = document.createElement("p");
-      p.textContent = this.t(quest.titleKey);
-      quests.appendChild(p);
+    const soundButton = button(this.t(this.state.audioEnabled ? "ui.sound.on" : "ui.sound.off"), async () => {
+      this.state.audioEnabled = !this.state.audioEnabled;
+      await this.audio.setEnabled(this.state.audioEnabled);
+      this.audio.setAmbience(this.state.audioEnabled ? this.currentScene?.ambience : null);
+      this.save();
+      this.renderUi();
+    });
+    soundButton.setAttribute("aria-pressed", String(Boolean(this.state.audioEnabled)));
+    pause.appendChild(soundButton);
+    const volumeLabel = element("label", "sound-volume");
+    const volumeText = element("span");
+    volumeText.textContent = this.t("ui.sound.volume");
+    const volume = document.createElement("input");
+    volume.type = "range";
+    volume.min = "0";
+    volume.max = "100";
+    volume.step = "1";
+    volume.value = String(Math.round(this.audio.volume * 100));
+    volume.setAttribute("aria-label", this.t("ui.sound.volume"));
+    const value = document.createElement("output");
+    value.textContent = `${volume.value}%`;
+    volume.addEventListener("input", () => {
+      this.state.audioVolume = Number(volume.value) / 100;
+      this.audio.setVolume(this.state.audioVolume);
+      value.textContent = `${volume.value}%`;
+      this.save();
+    });
+    volumeLabel.append(volumeText, volume, value);
+    pause.appendChild(volumeLabel);
+    const questViews = {
+      outstanding: this.quests.active(),
+      completed: this.quests.completed()
+    };
+    if (!questViews[this.questListTab]) this.questListTab = "outstanding";
+    const quests = element("section", "quest-list");
+    quests.setAttribute("aria-label", this.t("ui.quests"));
+    quests.innerHTML = `<h3>${escapeHtml(this.t("ui.quests"))}</h3>`;
+    const tabs = element("div", "quest-list-tabs");
+    for (const tabId of ["outstanding", "completed"]) {
+      const tab = button(this.t(`ui.quests.tab.${tabId}`), () => {
+        this.questListTab = tabId;
+        this.renderUi();
+      });
+      tab.classList.add("quest-list-tab");
+      tab.classList.toggle("active", this.questListTab === tabId);
+      tab.setAttribute("aria-pressed", String(this.questListTab === tabId));
+      tab.setAttribute("aria-label", this.t("ui.quests.tab_with_count", {
+        tab: this.t(`ui.quests.tab.${tabId}`),
+        count: questViews[tabId].length
+      }));
+      tabs.appendChild(tab);
     }
+    quests.appendChild(tabs);
+    const scroll = element("div", "quest-list-scroll");
+    const visibleQuests = questViews[this.questListTab];
+    const list = document.createElement("ol");
+    list.className = "quest-list-items";
+    for (const quest of visibleQuests) {
+      const entry = document.createElement("li");
+      const stage = this.questListTab === "outstanding"
+        ? firstMatchingRule(quest.stages, this.effectContext())
+        : null;
+      entry.textContent = this.t(stage?.titleKey || quest.titleKey);
+      entry.dataset.questId = quest.id;
+      if (stage?.id) entry.dataset.questStageId = stage.id;
+      list.appendChild(entry);
+    }
+    if (visibleQuests.length) scroll.appendChild(list);
+    else {
+      const empty = element("p", "quest-list-empty");
+      empty.textContent = this.t(`ui.quests.${this.questListTab}.none`);
+      scroll.appendChild(empty);
+    }
+    quests.appendChild(scroll);
     pause.appendChild(quests);
     return pause;
   }
 
   createDialogue(node) {
     const panel = element("section", "dialogue-panel");
-    const line = document.createElement("p");
-    line.textContent = this.t(node.lineKey);
-    panel.appendChild(line);
-    for (const choice of node.choices || []) {
-      panel.appendChild(button(this.t(choice.textKey), () => this.dialogue.choose(choice) || this.renderUi()));
+    const dialogue = this.content.dialogues[this.dialogue.current?.id];
+    const isNpcDialogue = Boolean(dialogue?.npcId);
+    if (node.lineKey && !isNpcDialogue) {
+      panel.classList.add("dialogue-panel-with-line");
+      const line = document.createElement("p");
+      line.textContent = this.t(firstMatchingRule(node.lineRules, this.effectContext())?.lineKey || node.lineKey);
+      panel.appendChild(line);
     }
+    if (node.entries?.length) {
+      panel.classList.add("dialogue-panel-with-entries");
+      const entries = element("div", "dialogue-menu-entries");
+      for (const entry of node.entries) {
+        const row = document.createElement(entry.kind === "heading" ? "h3" : "p");
+        row.textContent = this.t(entry.textKey);
+        entries.appendChild(row);
+      }
+      panel.appendChild(entries);
+    }
+    const choiceNode = node.choicesFrom ? dialogue?.nodes?.[node.choicesFrom] : node;
+    const choices = element("div", "dialogue-choice-list");
+    for (const choice of (choiceNode?.choices || []).filter((candidate) => this.dialogueChoiceAvailable(candidate))) {
+      choices.appendChild(button(this.t(choice.textKey), (event) => this.chooseDialogueChoice(choice, event)));
+    }
+    if (choices.childElementCount) panel.appendChild(choices);
+    return panel;
+  }
+
+  createDialogueSpeechBubble(node) {
+    if (!node?.lineKey) return null;
+    const dialogue = this.content.dialogues[this.dialogue.current?.id];
+    if (!dialogue?.npcId) return null;
+    const npc = this.currentScene.npcs?.find((candidate) => candidate.id === (node.npcId || dialogue.npcId));
+    const lineKey = firstMatchingRule(node.lineRules, this.effectContext())?.lineKey || node.lineKey;
+    return this.createNpcSpeechBubble(npc, this.t(lineKey), "dialogue-speech-bubble");
+  }
+
+  createNpcReactionBubble() {
+    const speech = this.npcSpeechBubble;
+    if (!speech) return null;
+    const npc = this.currentScene.npcs?.find((candidate) => candidate.id === speech.npcId);
+    return this.createNpcSpeechBubble(npc, speech.text, `dialogue-speech-bubble npc-reaction-bubble phase-${speech.phase}`);
+  }
+
+  createNpcSpeechBubble(npc, text, className) {
+    if (!npc?.rect || !text) return null;
+
+    const speechAnchor = npc.speechAnchor || {
+      x: npc.rect.x + npc.rect.w * 0.5,
+      y: npc.rect.y + Math.min(42, npc.rect.h * 0.18)
+    };
+    const npcCenterX = speechAnchor.x;
+    const bubbleCenterX = clampNumber(npcCenterX, 210, 1070);
+    const bubbleBottomY = clampNumber(speechAnchor.y, 118, 480);
+    const tailOffset = clampNumber(npcCenterX - bubbleCenterX, -150, 150);
+    const speakerClass = npc.id.replaceAll(".", "-");
+    const bubble = element("aside", `${className} speaker-${speakerClass}`);
+    bubble.setAttribute("role", "status");
+    bubble.setAttribute("aria-live", "polite");
+    bubble.setAttribute("aria-label", this.t(npc.nameKey));
+    bubble.style.left = `${bubbleCenterX}px`;
+    bubble.style.top = `${bubbleBottomY}px`;
+    bubble.style.setProperty("--dialogue-tail-offset", `${tailOffset}px`);
+
+    const line = document.createElement("p");
+    line.textContent = text;
+    bubble.appendChild(line);
+    return bubble;
+  }
+
+  chooseDialogueChoice(choice, event) {
+    if (this.dialogueChoicePointerLock !== null && event?.detail !== 0) return false;
+    this.dialogue.choose(choice);
+    this.renderUi();
+    return true;
+  }
+
+  releaseDialogueChoicePointerLock(pointerId) {
+    if (this.dialogueChoicePointerLock === null || this.dialogueChoicePointerLock !== pointerId) return;
+    const lockedPointerId = pointerId;
+    setTimeout(() => {
+      if (this.dialogueChoicePointerLock === lockedPointerId) this.dialogueChoicePointerLock = null;
+    }, 0);
+  }
+
+  dialogueChoiceAvailable(choice) {
+    return requirementsMet(choice?.requirements, this.effectContext())
+      && requirementsMet(choice?.effect?.requirements, this.effectContext());
+  }
+
+  createDroppedItemsPanel() {
+    const panel = element("section", "panel dropped-items-panel");
+    panel.addEventListener("pointerdown", (event) => event.stopPropagation());
+    panel.addEventListener("click", (event) => event.stopPropagation());
+    const title = document.createElement("h2");
+    title.textContent = this.t("ui.dropped_items.title");
+    panel.appendChild(title);
+    for (const record of this.droppedItemsInScene()) {
+      const item = this.content.items[record.itemId];
+      if (!item) continue;
+      const row = element("div", "dropped-item-row");
+      const name = document.createElement("span");
+      name.textContent = this.t(item.nameKey);
+      row.append(name, button(this.t("ui.dropped_items.pick_up"), () => this.pickUpDroppedItem(item.id)));
+      panel.appendChild(row);
+    }
+    panel.appendChild(button(this.t("ui.dropped_items.close"), () => {
+      this.droppedItemsOpen = false;
+      this.renderUi();
+    }));
     return panel;
   }
 }
@@ -1929,7 +2814,8 @@ function buildContentIndex(chapter) {
     scenes: Object.fromEntries(chapter.scenes.map((scene) => [scene.id, scene])),
     items: Object.fromEntries(chapter.items.map((item) => [item.id, item])),
     quests: Object.fromEntries(chapter.quests.map((quest) => [quest.id, quest])),
-    dialogues: Object.fromEntries(chapter.dialogues.map((dialogue) => [dialogue.id, dialogue]))
+    dialogues: Object.fromEntries(chapter.dialogues.map((dialogue) => [dialogue.id, dialogue])),
+    endings: chapter.endings || []
   };
 }
 

@@ -2,6 +2,8 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 const SOURCES = [
+  { name: "electionWalkGeometry", path: "assets_src/chapter1/scenes/election_booth/walk-geometry-v1.json" },
+  { name: "mayorOfficeWalkGeometry", path: "assets_src/chapter1/scenes/mayor_office/walk-geometry-v1.json" },
   {
     name: "apartmentWalkGeometry",
     path: "assets_src/chapter1/scenes/apartment/walk-geometry-v1.json"
@@ -9,6 +11,14 @@ const SOURCES = [
   {
     name: "villageSquareWalkGeometry",
     path: "assets_src/chapter1/scenes/village_square/walk-geometry-v1.json"
+  },
+  {
+    name: "mehanaWalkGeometry",
+    path: "assets_src/chapter1/scenes/mehana/walk-geometry-v1.json"
+  },
+  {
+    name: "municipalityWalkGeometry",
+    path: "assets_src/chapter1/scenes/municipality/walk-geometry-v1.json"
   }
 ];
 
@@ -25,7 +35,7 @@ function buildGeometry(source) {
   const rows = normalizeRows(source);
 
   return {
-    walkPolygons: [],
+    walkPolygons: Array.isArray(source.legacyWalkPolygons) ? source.legacyWalkPolygons : [],
     walkMask: {
       id: source.id,
       sourceBackground: source.sourceBackground,

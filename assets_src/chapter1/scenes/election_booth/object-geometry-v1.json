@@ -1,0 +1,78 @@
+{
+  "id": "geometry.chapter1.election_booth.objects",
+  "sceneId": "scene.chapter1.election_booth",
+  "sourceBackground": {
+    "path": "assets/chapter1/scenes/election_booth/background-v1.png",
+    "width": 1280,
+    "height": 720
+  },
+  "world": {
+    "width": 1280,
+    "height": 720
+  },
+  "objects": [
+    {
+      "id": "exit.election_booth.to_square",
+      "rect": {
+        "x": 20,
+        "y": 120,
+        "w": 155,
+        "h": 380
+      }
+    },
+    {
+      "id": "hotspot.election_booth.commission_table",
+      "rect": {
+        "x": 685,
+        "y": 330,
+        "w": 385,
+        "h": 160
+      }
+    },
+    {
+      "id": "npc.mayor",
+      "rect": {
+        "x": 1060,
+        "y": 253,
+        "w": 174,
+        "h": 270
+      }
+    },
+    {
+      "id": "npc.journalist",
+      "rect": {
+        "x": 570,
+        "y": 213,
+        "w": 90,
+        "h": 277
+      }
+    },
+    {
+      "id": "npc.baba_stoyanka",
+      "rect": {
+        "x": 292,
+        "y": 320,
+        "w": 110,
+        "h": 183
+      }
+    },
+    {
+      "id": "npc.tony_fridge",
+      "rect": {
+        "x": 420,
+        "y": 265,
+        "w": 160,
+        "h": 243
+      }
+    },
+    {
+      "id": "npc.municipality_clerk",
+      "rect": {
+        "x": 850,
+        "y": 180,
+        "w": 105,
+        "h": 145
+      }
+    }
+  ]
+}

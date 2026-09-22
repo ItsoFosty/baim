@@ -1,7 +1,11 @@
+import { requirementsMet } from "./EffectSystem.js";
 import { clamp } from "./geometry.js";
 import { characterHeight } from "./CharacterRenderMath.js";
 import { canExitToStop, eastWestFallbackFacing, stopExitFrameForPlayer } from "./MovementSystem.js";
-import { externalAnimationV1 } from "../content/art/externalAnimationV1.generated.js";
+import { externalAnimationV1 } from "../content/art/externalAnimationRuntime.generated.js";
+import { intoxicationSway } from "./IntoxicationSystem.js";
+import { sceneZDepthT } from "./DepthMath.js";
+import { drawSceneEffect } from "./SceneEffects.js";
 
 const PLAYER_SHADOW_FULL_SIZE_Y_OFFSET = -4;
 
@@ -74,11 +78,30 @@ export function stableExternalVisualBounds(definition) {
   };
 }
 
+export function externalFrameVisualBounds(frame, frameIndex, stableBounds = null) {
+  const bounds = frame?.sourceFrameContentBounds?.[frameIndex] || frame?.contentBounds || stableBounds;
+  if (!bounds || !Number.isFinite(bounds.h) || bounds.h <= 0) return stableBounds;
+  return bounds;
+}
+
 export function sceneZIndexForPoint(scene, point) {
-  const horizonY = Number(scene?.perspectiveScale?.horizonY ?? 0);
-  const bottomY = Number(scene?.perspectiveScale?.bottomY ?? 720);
-  const t = clamp(((point?.y ?? bottomY) - horizonY) / Math.max(1, bottomY - horizonY), 0, 1);
-  return 100 - t * 100;
+  return 100 - sceneZDepthT(scene, point) * 100;
+}
+
+export function targetZIndex(scene, target) {
+  if (Number.isFinite(target?.depthY)) {
+    return sceneZIndexForPoint(scene, { y: target.depthY });
+  }
+  const points = target?.polygon?.length
+    ? target.polygon
+    : target?.rect
+      ? [
+          { x: target.rect.x, y: target.rect.y },
+          { x: target.rect.x + target.rect.w, y: target.rect.y + target.rect.h }
+        ]
+      : [];
+  if (!points.length) return 100;
+  return sceneZIndexForPoint(scene, { y: Math.max(...points.map((point) => point.y)) });
 }
 
 export class Renderer {
@@ -111,12 +134,57 @@ export class Renderer {
     const scene = this.game.currentScene;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     const hasRealBackground = this.drawBackground(scene);
-    const actors = !this.game.editMode || this.game.sceneEditor?.shouldRenderPlayer()
+    const actors = scene.playerMode !== "closeup" && (!this.game.editMode || this.game.sceneEditor?.shouldRenderPlayer())
       ? [this.game.player]
       : [];
     this.drawSceneZLayers(scene, actors);
+    if (!hasRealBackground && scene.playerMode === "seated") this.drawSeatedTableFallback(scene);
     if (this.game.editMode) this.game.sceneEditor?.draw(ctx);
-    else if (this.game.debugSceneGeometry || !hasRealBackground) this.drawSceneGeometry(scene);
+    else {
+      if (this.game.debugSceneGeometry || !hasRealBackground) this.drawSceneGeometry(scene);
+    }
+  }
+
+  drawHoveredTarget(target = this.game.hoveredTarget) {
+    if (!target) return;
+    const { ctx } = this;
+    ctx.save();
+    ctx.strokeStyle = "rgba(225, 194, 100, 0.26)";
+    ctx.lineWidth = 2;
+    ctx.shadowColor = "rgba(225, 194, 100, 0.68)";
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    if (target.polygon?.length) {
+      target.polygon.forEach((point, index) => {
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      });
+      ctx.closePath();
+    } else if (target.rect) {
+      ctx.rect(target.rect.x, target.rect.y, target.rect.w, target.rect.h);
+    } else {
+      ctx.restore();
+      return;
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  drawSeatedTableFallback(scene) {
+    const rect = scene.seatedPresentation?.tableRect;
+    if (!rect) return;
+    const { ctx } = this;
+    ctx.save();
+    ctx.fillStyle = "#5a3521";
+    ctx.strokeStyle = "#c69a56";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 24);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "rgba(246, 214, 157, 0.12)";
+    ctx.fillRect(rect.x + 18, rect.y + 18, rect.w - 36, 8);
+    ctx.restore();
   }
 
   drawSimpleAnimTest() {
@@ -345,9 +413,21 @@ export class Renderer {
   drawSceneZLayers(scene, actors) {
     const entries = [
       ...actors.map((actor) => ({ kind: "actor", actor, zIndex: sceneZIndexForPoint(scene, actor.position) })),
+      ...scene.interactables
+        .filter((target) => target.droppedItemsPileAsset)
+        .map((target) => ({ kind: "droppedItemsPile", target, zIndex: targetZIndex(scene, target) })),
+      ...[...scene.npcs, ...scene.interactables, ...scene.exits]
+        .filter((target) => target.debugVisual && this.game.targetAvailable?.(target))
+        .map((target) => ({ kind: "debugTarget", target, zIndex: targetZIndex(scene, target) })),
+      ...(!this.game.editMode && this.game.hoveredTarget
+        ? [{ kind: "hover", target: this.game.hoveredTarget, zIndex: targetZIndex(scene, this.game.hoveredTarget) }]
+        : []),
       ...(scene.foregroundLayers || [])
         .filter((layer) => this.sceneLayerVisible(layer))
-        .map((layer) => ({ kind: "layer", layer, zIndex: Number(layer.zIndex) }))
+        .map((layer) => ({ kind: "layer", layer, zIndex: Number(layer.zIndex) })),
+      ...(scene.effects || [])
+        .filter((effect) => this.sceneLayerVisible(effect))
+        .map((effect) => ({ kind: "effect", effect, zIndex: Number(effect.zIndex) }))
     ].sort((a, b) => {
       const az = Number.isFinite(a.zIndex) ? a.zIndex : 100;
       const bz = Number.isFinite(b.zIndex) ? b.zIndex : 100;
@@ -355,13 +435,88 @@ export class Renderer {
     });
     for (const entry of entries) {
       if (entry.kind === "actor") this.drawPlayer(entry.actor);
+      else if (entry.kind === "hover") this.drawHoveredTarget(entry.target);
+      else if (entry.kind === "droppedItemsPile") this.drawDroppedItemsPile(scene, entry.target);
+      else if (entry.kind === "debugTarget") this.drawDebugTarget(entry.target);
+      else if (entry.kind === "effect") drawSceneEffect(this.ctx, entry.effect, (this.game.lastTime || 0) / 1000);
       else this.drawSceneRasterLayer(scene, entry.layer);
     }
   }
 
+  drawDebugTarget(target) {
+    const bounds = this.targetBounds(target);
+    if (!bounds) return;
+    const { ctx } = this;
+    const visual = target.debugVisual;
+    const centerX = bounds.x + bounds.w / 2;
+    ctx.save();
+    if (visual.kind === "sign") {
+      ctx.fillStyle = visual.fill || "#efe0bd";
+      ctx.strokeStyle = visual.accent || "#9b302f";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.roundRect(bounds.x, bounds.y, bounds.w, bounds.h, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = visual.accent || "#9b302f";
+      ctx.font = "700 14px Arial";
+      ctx.textAlign = "center";
+      const label = this.game.t(visual.labelKey || target.nameKey);
+      const words = label.split(/\s+/);
+      const midpoint = Math.ceil(words.length / 2);
+      ctx.fillText(words.slice(0, midpoint).join(" "), centerX, bounds.y + bounds.h / 2 - 3);
+      ctx.fillText(words.slice(midpoint).join(" "), centerX, bounds.y + bounds.h / 2 + 16);
+      ctx.restore();
+      return;
+    }
+    ctx.fillStyle = visual.fill || "#714052";
+    ctx.beginPath();
+    ctx.ellipse(centerX, bounds.y + 37, 25, 31, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(bounds.x + 18, bounds.y + 65, bounds.w - 36, bounds.h - 65, 18);
+    ctx.fill();
+    ctx.strokeStyle = visual.accent || "#d7b35f";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(centerX + 20, bounds.y + 86);
+    ctx.lineTo(centerX + 45, bounds.y + 47);
+    ctx.stroke();
+    ctx.fillStyle = visual.accent || "#d7b35f";
+    ctx.beginPath();
+    ctx.arc(centerX + 48, bounds.y + 42, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(22, 17, 16, 0.82)";
+    ctx.fillRect(bounds.x - 12, bounds.y - 25, bounds.w + 24, 23);
+    ctx.fillStyle = "#fff3cf";
+    ctx.font = "700 13px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(this.game.t(visual.labelKey || target.nameKey), centerX, bounds.y - 9);
+    ctx.restore();
+  }
+
+  drawDroppedItemsPile(scene, target) {
+    const image = this.game.assets.getSceneImage(scene.id, target.droppedItemsPileAsset);
+    if (!this.game.assets.isLoaded(image) || !target.rect) return;
+    this.ctx.drawImage(image, target.rect.x, target.rect.y, target.rect.w, target.rect.h);
+  }
+
   sceneLayerVisible(layer) {
+    if (layer.requirements && !requirementsMet(layer.requirements, this.game.effectContext())) return false;
+    if (this.game.editMode) {
+      const preview = this.game.sceneEditor?.layerPreviewVisible?.(layer);
+      if (typeof preview === "boolean") return preview;
+    }
+    if (layer?.visibleWhenTargetId) {
+      const scene = this.game.currentScene;
+      const target = [...(scene?.npcs || []), ...(scene?.interactables || []), ...(scene?.exits || [])]
+        .find(target => target.id === layer.visibleWhenTargetId);
+      if (!target || !this.game.targetAvailable(target)) return false;
+    }
+    if (layer?.hiddenWhenFlag && this.game.state?.flags?.[layer.hiddenWhenFlag]) return false;
     if (layer?.visibleWhenFlag && !this.game.state?.flags?.[layer.visibleWhenFlag]) return false;
     if (layer?.hiddenWhenItemOwned && this.game.inventory?.has(layer.hiddenWhenItemOwned)) return false;
+    if (layer?.hiddenWhenState && this.game.state?.[layer.hiddenWhenState]) return false;
     if (layer?.visibleDuringAction) {
       const condition = layer.visibleDuringAction;
       const action = this.game.player?.actionAnimation;
@@ -377,12 +532,18 @@ export class Renderer {
     const image = this.game.assets.getSceneImage(scene.id, layer.asset);
     if (!this.game.assets.isLoaded(image)) return;
     const rect = this.sceneLayerRect(layer, image);
-    this.ctx.drawImage(image, rect.x, rect.y);
+    this.ctx.drawImage(image, rect.x, rect.y, rect.w, rect.h);
   }
 
   sceneLayerRect(layer, image) {
-    const width = image?.naturalWidth || image?.width || 1280;
-    const height = image?.naturalHeight || image?.height || 720;
+    const naturalWidth = image?.naturalWidth || image?.width || 1280;
+    const naturalHeight = image?.naturalHeight || image?.height || 720;
+    const authoredWidth = Number(layer.width);
+    const authoredHeight = Number(layer.height);
+    const hasWidth = Number.isFinite(authoredWidth) && authoredWidth > 0;
+    const hasHeight = Number.isFinite(authoredHeight) && authoredHeight > 0;
+    const width = hasWidth ? authoredWidth : hasHeight ? naturalWidth * (authoredHeight / naturalHeight) : naturalWidth;
+    const height = hasHeight ? authoredHeight : hasWidth ? naturalHeight * (authoredWidth / naturalWidth) : naturalHeight;
     const hasRight = Number.isFinite(Number(layer.right));
     const hasBottom = Number.isFinite(Number(layer.bottom));
     const left = Number.isFinite(Number(layer.left)) ? Number(layer.left) : null;
@@ -440,6 +601,7 @@ export class Renderer {
     }
     if (!this.game.editMode) {
       for (const hotspot of [...scene.exits, ...scene.interactables, ...scene.npcs]) {
+        if (!this.game.targetAvailable?.(hotspot)) continue;
         const bounds = this.targetBounds(hotspot);
         if (!bounds) continue;
         ctx.strokeStyle = hotspot.kind === "exit" ? "rgba(114, 188, 255, 0.85)" : "rgba(255, 214, 102, 0.8)";
@@ -565,17 +727,28 @@ export class Renderer {
     const { ctx } = this;
     const p = actor;
     const definition = this.game.player.animator.definition;
-    const spriteInfo = this.resolveCharacterSprite(p, definition);
+    let spriteInfo = this.resolveCharacterSprite(p, definition);
+    if (!this.game.assets.isLoaded(spriteInfo.image) && usesExternalWalkPose(p, definition)) {
+      const fallback = this.resolveExternalWalkStartFrame(p, definition, p.facing || definition.render.defaultFacing);
+      const fallbackImage = fallback?.slot ? this.game.assets.getCharacterImage(p.id, fallback.slot) : null;
+      if (this.game.assets.isLoaded(fallbackImage)) {
+        spriteInfo = { image: fallbackImage, slot: fallback.slot, frame: fallback.frame, mirrored: Boolean(fallback.mirrored), staticFrameIndex: 0 };
+      }
+    }
     const sprite = spriteInfo.image;
     const walkBob = p.animation === "walk" ? Math.sin(p.animationTime * 16) * 5 : 0;
-    if (!sprite) return;
+    if (!this.game.assets.isLoaded(sprite)) return;
     const height = characterHeight(definition, this.game.currentScene, p.position);
     const preserveFrameLayout = Boolean(spriteInfo.frame?.usesOriginalLudoLayout || spriteInfo.frame?.frameRects?.length);
     const boundsForSize = spriteInfo.frame?.contentBounds || null;
     const sourceWidth = preserveFrameLayout && spriteInfo.frame ? spriteInfo.frame.frameWidth : boundsForSize?.w || spriteInfo.frame?.frameWidth || sprite.width;
     const sourceHeight = preserveFrameLayout && spriteInfo.frame ? spriteInfo.frame.frameHeight : boundsForSize?.h || spriteInfo.frame?.frameHeight || sprite.height;
     const stableBounds = preserveFrameLayout && usesExternalWalkPose(p, definition) ? stableExternalVisualBounds(definition) : null;
-    const visualHeight = stableBounds?.h || (preserveFrameLayout ? sourceHeight : boundsForSize?.h || sourceHeight);
+    const frameIndex = spriteInfo.frame
+      ? Number.isInteger(spriteInfo.staticFrameIndex) ? spriteInfo.staticFrameIndex : this.game.player.animator.frameIndex % spriteInfo.frame.frameCount
+      : 0;
+    const currentVisualBounds = stableBounds ? externalFrameVisualBounds(spriteInfo.frame, frameIndex, stableBounds) : null;
+    const visualHeight = currentVisualBounds?.h || (preserveFrameLayout ? sourceHeight : boundsForSize?.h || sourceHeight);
     const animationScale = animationRenderScale(spriteInfo.frame);
     const scale = (height / visualHeight) * animationScale;
     const width = sourceWidth * scale;
@@ -583,18 +756,16 @@ export class Renderer {
     const anchor = spriteInfo.frame?.anchor || definition.render.anchor;
     const useRealWalk = p.animation === "walk" && spriteInfo.frame;
     const verticalOffset = useRealWalk ? 0 : walkBob;
-    const frameIndex = spriteInfo.frame
-      ? Number.isInteger(spriteInfo.staticFrameIndex) ? spriteInfo.staticFrameIndex : this.game.player.animator.frameIndex % spriteInfo.frame.frameCount
-      : 0;
     const mirrored = animationRenderMirrored(spriteInfo.frame, spriteInfo.mirrored);
     const renderOffset = animationRenderOffset(spriteInfo.frame, frameIndex, mirrored);
     const renderOffsetX = stopRenderOffsetX(spriteInfo.frame, frameIndex, mirrored) + renderOffset.x;
     const renderOffsetY = stopRenderOffsetY(spriteInfo.frame, frameIndex) + renderOffset.y;
-    const drawX = p.position.x + renderOffsetX - width * anchor.x;
+    const sway = intoxicationSway(this.game.state?.rakiaGlasses, p.animationTime);
+    const drawX = p.position.x + renderOffsetX + sway.x - width * anchor.x;
     const baselineOffset = preserveFrameLayout && spriteInfo.frame
       ? stableBounds?.baselineY || spriteInfo.frame.baselineY || sourceHeight
       : spriteInfo.frame?.baselineY && boundsForSize ? spriteInfo.frame.baselineY - boundsForSize.y : sourceHeight * anchor.y;
-    const drawY = p.position.y + renderOffsetY - baselineOffset * scale + verticalOffset;
+    const drawY = p.position.y + renderOffsetY + sway.y - baselineOffset * scale + verticalOffset;
     ctx.save();
     ctx.fillStyle = "rgba(0, 0, 0, 0.26)";
     ctx.beginPath();

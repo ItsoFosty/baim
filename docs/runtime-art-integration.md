@@ -1,5 +1,50 @@
 # Runtime Art Integration
 
+## Scalable Runtime Delivery
+
+The browser no longer downloads the whole art library before play. Startup waits only for:
+
+- the current scene's raster layers;
+- Bai Mitko's east/west walk start, loop, short, and stop sheets;
+- icons for items already present in the loaded save.
+
+Optional idle, speech, rejection, and action sheets load when first requested. After the first frame,
+the game uses browser idle time to prefetch scenes reachable through the current scene's exits. A
+scene transition still waits for its required scene assets, so a missed prefetch cannot expose an
+unfinished scene.
+
+Run the complete runtime build with:
+
+```bash
+npm run build:runtime
+```
+
+The build preserves the reviewed Ludo.ai PNG exports as source material, generates half-size alpha
+WebP animation sheets, and writes `target/runtime-assets/manifest.json`. Every raster URL in that
+manifest contains a content hash. The manifest is checked on every reload; unchanged hashed files
+stay cached for one year, while changed files receive new URLs and are fetched automatically.
+
+The service worker keeps at most 96 hashed runtime responses and 64 shell responses. Independently,
+the in-memory decoded-image cache targets 256 MiB and evicts the least-recently-used optional images
+while protecting the active scene, core walking sheets, and owned inventory icons.
+
+Current measured build (2026-09-04):
+
+| Payload | Transfer size | Approximate decoded size |
+| --- | ---: | ---: |
+| Playable apartment bootstrap art | 3.58 MiB | 63.77 MiB |
+| Complete current runtime art library | 42.77 MiB | 457.18 MiB |
+| Generated animation metadata module | 0.85 MiB | n/a |
+
+At a sustained 10 Mbit/s, the bootstrap art is about 3.0 seconds of ideal wire time, before latency
+and the metadata/module requests. The former eager 151.35 MiB animation-sheet transfer alone was
+about two minutes at that speed. Future chapters increase the manifest and cache population, not
+the reload payload: only the current working set and newly encountered content are transferred.
+
+Deployment must publish `target/runtime-assets/manifest.json` and its `assets/` directory together.
+The development server already sends the manifest with revalidation headers and hashed assets as
+immutable. Production hosting must apply the same policy.
+
 ## Current Visual State
 
 The game starts normally in:
@@ -12,15 +57,33 @@ That scene now has the first real apartment runtime background.
 
 The village square background is also integrated and proves runtime background loading works, but it is not final locked art direction. Its layout is useful, but the final version should later be regenerated or repainted closer to the Bai Mitko model-sheet style, with less baked-in readable text and more replaceable poster/sign surfaces.
 
+The Mehana now uses the approved medium-cartoon character-readability V2 runtime background. Its background contains the fixed architecture,
+bar, sideboard, coat rack, cellar hatch, and old radio. Two matching bentwood-chair table groups,
+seated Tony, the standing waiter, the newspaper, and the sideboard-mounted oil and water gameplay props
+remain independent raster layers, so their scale, placement, visibility, and depth can be tuned without
+repainting the room. The newspaper and background-baked radio both have authored Look hotspots and
+natural Bulgarian/English observations.
+
+Bai Mitko uses the same external animation sources as in the apartment. His mehana-only character-height
+calibration is set so his visual height at `anchors.baiMitkoSeat` matches his apartment spawn height;
+this does not change his scale in any other scene.
+
+The municipality uses the approved style-match medium V1 background, derived from V9 with the
+apartment and Mehana as restrained style references. Its camera, service-counter footprint, exits,
+walkable floor, and gameplay anchors remain compatible with the existing geometry and independent
+prop/character layers. The full-resolution generated source and reproducible prompt live under
+`assets_src/chapter1/scenes/municipality/`. `background-v9.png` remains untouched; rollback only
+requires changing the municipality manifest entry back to that path and rebuilding runtime assets.
+
 ## Scene Background Status
 
 | Scene ID | Runtime background | Status |
 | --- | --- | --- |
 | `scene.chapter1.apartment` | `assets/chapter1/scenes/apartment/background.png` | integrated |
 | `scene.chapter1.village_square` | `assets/chapter1/scenes/village_square/background.png` | integrated; runtime proof, not final locked style |
-| `scene.chapter1.mehana` | `assets/chapter1/scenes/mehana/background.png` | missing |
-| `scene.chapter1.municipality` | `assets/chapter1/scenes/municipality/background.png` | missing/not implemented |
-| `scene.chapter1.election_booth` | `assets/chapter1/scenes/election_booth/background.png` | missing/not implemented |
+| `scene.chapter1.mehana` | `assets/chapter1/scenes/mehana/background.png` | integrated medium-cartoon readability V2; separate tables, Tony, waiter, newspaper, oil, and water layers |
+| `scene.chapter1.municipality` | `assets/chapter1/scenes/municipality/background-style-match-medium-v1.png` | approved style-match medium V1; independent archive/register, Penka chair/character/desk, and security officer/table layers; previous V9 remains available for rollback |
+| `scene.chapter1.election_booth` | `assets/chapter1/scenes/election_booth/background.png` | playable graybox; runtime background missing |
 
 ## Apartment Runtime Target
 
@@ -60,15 +123,20 @@ Runtime asset:
 assets/chapter1/scenes/village_square/background.png
 ```
 
-PNG is temporary. WebP is still preferred for final runtime delivery, but no WebP conversion tool is currently available in the project tooling.
+The approved scene source remains PNG. Scene WebP conversion can be added to the same runtime build
+later; the current optimizer already uses the project's Sharp dependency for animation sheets.
 
 ## Character Runtime Animation
 
-Bai Mitko no longer uses static runtime pose images. The runtime uses the external animation sheets generated under:
+Bai Mitko no longer uses static runtime pose images. The runtime uses optimized external animation
+sheets generated under:
 
 ```text
 target/external_animation_v1/runtime/
 ```
+
+These are delivery derivatives only. The approved external PNG sheets and JSON metadata remain the
+source-of-truth import path under `assets_src/characters/bai_mitko/external_animation_v1/`.
 
 When Bai Mitko has no active authored animation for the current state, the renderer holds frame 0 of the current-direction walk-start animation.
 
@@ -89,11 +157,14 @@ The model sheet remains source direction:
 assets_src/characters/bai-mitko-model-sheet-v1.png
 ```
 
-Next character-art task:
+Remaining character-art work:
 
 ```text
-Bai Mitko walk/talk/look/use/take animation pass
+Bai Mitko look/use and puzzle-specific actions; north/south movement remains deferred
 ```
+
+The active external set already includes east walk start/loop/short/stop, six idle variants, three
+talk variants, rejection, and take. West mirrors the east-authored sheets.
 
 ## Starting Inventory Icons
 
@@ -103,6 +174,8 @@ Integrated runtime icons:
 assets/chapter1/items/accordion.png
 assets/chapter1/items/unpaid_bills.png
 assets/chapter1/items/empty_envelope.png
+assets/chapter1/items/sunflower-oil-v1.png
+assets/chapter1/items/glass-of-water-v1.png
 ```
 
 If an icon is missing, the inventory UI keeps the existing text-label fallback box.
@@ -114,8 +187,10 @@ The active apartment manifest entry is:
 ```js
 "scene.chapter1.apartment": {
   background: "assets/chapter1/scenes/apartment/background.png",
-  foreground: "assets/chapter1/scenes/apartment/foreground.webp",
-  geometry: "assets/chapter1/scenes/apartment/scene.geometry.json"
+  foregroundTable: "assets/chapter1/scenes/apartment/foreground-table.png",
+  billsOnTable: "assets/chapter1/scenes/apartment/bills-on-table.png",
+  windowOpen: "assets/chapter1/scenes/apartment/window-open.png",
+  windowOpenBack: "assets/chapter1/scenes/apartment/window-open-0.png"
 }
 ```
 
@@ -123,11 +198,31 @@ The active village square manifest entry is:
 
 ```js
 "scene.chapter1.village_square": {
-  background: "assets/chapter1/scenes/village_square/background.png",
-  foreground: "assets/chapter1/scenes/village_square/foreground.webp",
-  geometry: "assets/chapter1/scenes/village_square/scene.geometry.json"
+  background: "assets/chapter1/scenes/village_square/background.png"
 }
 ```
+
+The active mehana manifest entry is:
+
+```js
+"scene.chapter1.mehana": {
+  background: "assets/chapter1/scenes/mehana/background.png",
+  tableGroupLeft: "assets/chapter1/scenes/mehana/table-group-left-v2.png",
+  tableGroupRight: "assets/chapter1/scenes/mehana/table-group-right-v2.png",
+  mehanaWaiterIdle: "assets/chapter1/characters/mehana_waiter/idle-v1.png",
+  tonyFridgeSeated: "assets/chapter1/characters/tony_fridge/seated-v1.png",
+  kaliakraOil: "assets/chapter1/scenes/mehana/kaliakra-oil-v1.png",
+  waterJug: "assets/chapter1/scenes/mehana/water-jug-v1.png",
+  todayNewspaper: "assets/chapter1/scenes/mehana/newspaper-v3.png"
+}
+```
+
+The active municipality manifest entry also includes its painted background and eight independent
+scene layers (`archiveCabinet`, `candidateRegister`, `penkaChair`, `penkaSeated`, `penkaDesk`,
+`securityOfficer`, `securityTable`, and the shared dropped-item pile). Missing assets are omitted from
+the manifest so preload does not generate expected 404 responses. The election-booth background
+remains omitted and uses the renderer's intentional debug-art fallback until its direction is
+approved.
 
 The renderer resolves these paths relative to `index.html`.
 
@@ -239,14 +334,38 @@ Village square roughly aligned in logical `1280x720` scene coordinates:
 - old men bench hotspot
 - election notice hotspot
 - Baba Stoyanka anchor/interaction area
+- seated Baba Stoyanka scene layer at the bus-stop bench
 - Journalist anchor
 - Old Men Chorus anchor
 - Bai Mitko default spawn point
+
+Mehana aligned in logical `1280x720` scene coordinates:
+
+- square exit and entrance door
+- independent left and right table/chair compositions
+- seated Tony layer, interaction area, and rakia glass
+- standing waiter layer and dialogue interaction area
+- separate newspaper layer and Look hotspot
+- separate collectible oil and water layers on the sideboard
+- background-baked radio Look hotspot
+- cellar hatch and hidden ballot-box interaction areas
+- Bai Mitko seat and apartment-matched visual-height calibration
+
+The Baba cutout uses an authored `height` of `122` in the village-square layer source, approximately
+80% of Bai Mitko's perspective-scaled height at `anchors.babaBench`. Its `left` and `top` placement
+preserves the previous visual center and seated baseline; the renderer derives the cutout width from
+the PNG aspect ratio. Keep character cutout calibration in the authored layer source rather than
+resampling the approved runtime asset for every placement adjustment.
 
 ## Manual Alignment Still Needed
 
 - Fine hotspot tuning should be done with `Shift+G` in browser.
 - Apartment foreground occlusion is not split yet; later split objects such as the table/chairs, accordion chair, and door frame if needed.
-- The municipality entrance geometry exists, but `scene.chapter1.municipality` is not implemented in the current runtime scene list yet. Clicking it is safely guarded and shows a not-ready message.
+- The municipality painted background, independent props and characters, raster walk mask, depth
+  zones, object geometry, and square return route are integrated. Further work belongs to the
+  broader visual-direction and polish pass rather than the technical scene milestone.
+- The election booth is playable as a geometry graybox with a final-commitment interaction and three
+  persistent outcomes. It still needs its reviewed background, commission presentation, and tuned
+  geometry once that art exists.
 - Village square foreground occlusion is not split yet. Later, export foreground elements such as the mehana doorway, kiosk edge, fountain rim, and foreground plants as separate layers if needed.
 - Topical poster text should eventually be moved to replaceable layers where possible.

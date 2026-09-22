@@ -2,6 +2,9 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 const SOURCES = [
+  { name: "electionObjectGeometry", path: "assets_src/chapter1/scenes/election_booth/object-geometry-v1.json" },
+  { name: "archiveObjectGeometry", path: "assets_src/chapter1/scenes/archive/object-geometry-v1.json" },
+  { name: "mayorOfficeObjectGeometry", path: "assets_src/chapter1/scenes/mayor_office/object-geometry-v1.json" },
   {
     name: "apartmentObjectGeometry",
     path: "assets_src/chapter1/scenes/apartment/object-geometry-v1.json"
@@ -9,6 +12,14 @@ const SOURCES = [
   {
     name: "villageSquareObjectGeometry",
     path: "assets_src/chapter1/scenes/village_square/object-geometry-v1.json"
+  },
+  {
+    name: "mehanaObjectGeometry",
+    path: "assets_src/chapter1/scenes/mehana/object-geometry-v1.json"
+  },
+  {
+    name: "municipalityObjectGeometry",
+    path: "assets_src/chapter1/scenes/municipality/object-geometry-v1.json"
   }
 ];
 

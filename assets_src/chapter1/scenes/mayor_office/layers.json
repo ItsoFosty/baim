@@ -1,0 +1,27 @@
+{
+  "sceneId": "scene.chapter1.mayor_office",
+  "sourceBackground": "assets/chapter1/scenes/mayor_office/background-v1.png",
+  "layers": [
+    {
+      "id": "layer.mayor_office.mayor",
+      "asset": "mayorStanding",
+      "output": "assets/chapter1/characters/mayor/standing-v1.png",
+      "enabled": true,
+      "left": 674,
+      "top": 243,
+      "height": 290,
+      "zIndex": 56
+    },
+    {
+      "id": "layer.mayor_office.journalist",
+      "enabled": true,
+      "asset": "journalistStanding",
+      "output": "assets/chapter1/characters/journalist/standing-v2.png",
+      "left": 495,
+      "top": 235,
+      "height": 290,
+      "zIndex": 58,
+      "visibleWhenTargetId": "npc.journalist"
+    }
+  ]
+}

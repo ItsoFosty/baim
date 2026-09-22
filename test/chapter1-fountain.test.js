@@ -1,0 +1,189 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { chapter1 } from "../src/content/chapter1/index.js";
+import { babaSupportRule, babaGiftRules, fountainLookRules, fountainUseRules, fountainItemRules, oldMenRules, oilRefillRule, fountainQuestStages } from "../src/content/chapter1/fountain.js";
+import { fountainBg, fountainEn } from "../src/content/localization/chapter1Fountain.js";
+import { DEFAULT_SAVE, VERBS } from "../src/engine/ids.js";
+import { InventorySystem } from "../src/engine/InventorySystem.js";
+import { QuestSystem } from "../src/engine/QuestSystem.js";
+import { SaveSystem } from "../src/engine/SaveSystem.js";
+import { Game } from "../src/engine/Game.js";
+import { Renderer } from "../src/engine/Renderer.js";
+import { drawSceneEffect, streamPoint } from "../src/engine/SceneEffects.js";
+import { applyEffects, firstMatchingRule, requirementsMet } from "../src/engine/EffectSystem.js";
+
+function context(overrides = {}) {
+  const state = { ...structuredClone(DEFAULT_SAVE), ...overrides };
+  const index = entries => Object.fromEntries(entries.map(entry => [entry.id, entry]));
+  return { state, inventory: new InventorySystem(index(chapter1.items), state), quests: new QuestSystem(index(chapter1.quests), state) };
+}
+function apply(rule, ctx) {
+  assert.ok(rule);
+  assert.ok(requirementsMet(rule.requirements, ctx));
+  applyEffects(rule.effects, ctx);
+}
+function reload(ctx) {
+  let json;
+  const save = new SaveSystem({ getItem() { return json; }, setItem(_key, value) { json = value; } });
+  save.save(ctx.state);
+  return context(save.load());
+}
+const square = chapter1.scenes.find(scene => scene.id === "scene.chapter1.village_square");
+const mehana = chapter1.scenes.find(scene => scene.id === "scene.chapter1.mehana");
+
+test("Baba support requires oiling, operating and reporting; progress survives intermediate reloads", () => {
+  let ctx = context();
+  const stage = () => firstMatchingRule(fountainQuestStages, ctx).id;
+  assert.equal(stage(), "stage.baba.ask_terms");
+  const baba = chapter1.dialogues.find(dialogue => dialogue.id === "dialogue.baba_stoyanka");
+  apply(baba.nodes.start.choices.find(choice => choice.next === "vote_terms").effect, ctx);
+  assert.equal(stage(), "stage.baba.inspect_fountain");
+  apply(firstMatchingRule(fountainLookRules, ctx), ctx);
+  assert.equal(stage(), "stage.baba.ask_chorus");
+  apply(firstMatchingRule(oldMenRules, ctx), ctx);
+  assert.equal(stage(), "stage.baba.find_oil");
+  apply(oilRefillRule, ctx);
+  assert.equal(stage(), "stage.baba.oil_valve");
+  apply(firstMatchingRule(fountainItemRules.filter(rule => rule.itemId === "item.sunflower_oil"), ctx), ctx);
+  assert.equal(ctx.inventory.has("item.sunflower_oil"), false);
+  assert.equal(ctx.state.babaStoyankaVote, false);
+  assert.equal(requirementsMet(babaSupportRule.requirements, ctx), false);
+  ctx = reload(ctx);
+  assert.equal(stage(), "stage.baba.turn_valve");
+  apply(firstMatchingRule(fountainUseRules, ctx), ctx);
+  assert.equal(stage(), "stage.baba.report_repair");
+  assert.equal(ctx.state.babaStoyankaVote, false);
+  ctx = reload(ctx);
+  apply(babaSupportRule, ctx);
+  assert.equal(ctx.state.babaStoyankaVote, true);
+  assert.equal(ctx.state.babaTrust, "supportive");
+  assert.equal(ctx.state.influence, 15);
+  assert.equal(ctx.state.publicMood, 53);
+  assert.equal(ctx.state.suspicion, 0);
+  assert.ok(ctx.state.completedQuests.includes("quest.chapter1.baba_vote"));
+  const meters = [ctx.state.influence, ctx.state.publicMood, ctx.state.suspicion];
+  assert.equal(requirementsMet(babaSupportRule.requirements, ctx), false);
+  for (let i = 0; i < 4; i++) apply(firstMatchingRule(fountainUseRules, ctx), ctx);
+  assert.deepEqual([ctx.state.influence, ctx.state.publicMood, ctx.state.suspicion], meters);
+  assert.equal(reload(ctx).state.flags.fountainRepaired, true);
+});
+
+test("gift dialogue and direct offers cannot buy support or consume puzzle items, even in old damaged-trust saves", () => {
+  const baba = chapter1.dialogues.find(dialogue => dialogue.id === "dialogue.baba_stoyanka");
+  const ctx = context({ inventory: babaGiftRules.map(rule => rule.itemId), babaCheapOfferAttempts: 4, flags: { babaRequiresBetterGift: true } });
+  const before = [...ctx.state.inventory];
+  for (const rule of babaGiftRules) {
+    assert.ok(baba.nodes.start.choices.some(choice => choice.effect === rule));
+    assert.ok(square.npcs.find(npc => npc.id === "npc.baba_stoyanka").itemUseRules.includes(rule));
+    apply(rule, ctx);
+    apply(rule, ctx);
+  }
+  assert.deepEqual(ctx.state.inventory, before);
+  assert.equal(ctx.state.babaStoyankaVote, false);
+  assert.equal(ctx.state.suspicion, 0);
+  apply(firstMatchingRule(fountainItemRules.filter(rule => rule.itemId === "item.sunflower_oil"), ctx), ctx);
+  apply(firstMatchingRule(fountainUseRules, ctx), ctx);
+  apply(babaSupportRule, ctx);
+  assert.equal(ctx.state.babaStoyankaVote, true);
+});
+
+test("consumed oil is replaceable but carried or dropped oil cannot be duplicated", () => {
+  let ctx = context();
+  const oil = mehana.interactables.find(target => target.id === "hotspot.mehana.oil");
+  assert.equal(requirementsMet(oil.requirements, ctx), true);
+  apply(oilRefillRule, ctx);
+  assert.equal(requirementsMet(oil.requirements, ctx), false);
+  assert.equal(requirementsMet(oilRefillRule.requirements, ctx), false);
+  const oilItem = chapter1.items.find(item => item.id === "item.sunflower_oil");
+  apply(oilItem.selfUseRules[0], ctx);
+  ctx = reload(ctx);
+  apply(oilRefillRule, ctx);
+  ctx.inventory.remove("item.sunflower_oil");
+  ctx.state.droppedItems.push({ itemId: "item.sunflower_oil", sceneId: "scene.chapter1.apartment", position: { x: 800, y: 550 } });
+  ctx = reload(ctx);
+  assert.equal(requirementsMet(oilRefillRule.requirements, ctx), false);
+  ctx.state.droppedItems = [];
+  ctx.inventory.add("item.sunflower_oil");
+  apply(firstMatchingRule(fountainItemRules.filter(rule => rule.itemId === "item.sunflower_oil"), ctx), ctx);
+  assert.equal(requirementsMet(oilRefillRule.requirements, ctx), false);
+});
+
+test("early repair works without visiting Baba or the chorus; repeated failures give a stronger hint", () => {
+  const ctx = context({ inventory: ["item.sunflower_oil", "item.glass_of_water"] });
+  const first = firstMatchingRule(fountainUseRules, ctx);
+  apply(first, ctx);
+  const hint = firstMatchingRule(fountainUseRules, ctx);
+  assert.notEqual(first.messageKey, hint.messageKey);
+  for (let i = 0; i < 3; i++) apply(hint, ctx);
+  apply(firstMatchingRule(fountainItemRules.filter(rule => rule.itemId === "item.glass_of_water"), ctx), ctx);
+  assert.equal(ctx.inventory.has("item.glass_of_water"), true);
+  assert.equal(ctx.state.suspicion, 0);
+  apply(firstMatchingRule(fountainItemRules.filter(rule => rule.itemId === "item.sunflower_oil"), ctx), ctx);
+  apply(firstMatchingRule(fountainUseRules, ctx), ctx);
+  apply(babaSupportRule, ctx);
+  assert.equal(ctx.state.babaStoyankaVote, true);
+});
+
+test("legacy votes remain earned without inventing a repair or granting a second reward", () => {
+  const ctx = reload(context({ babaStoyankaVote: true, babaTrust: "traditional", influence: 15,
+    completedQuests: ["quest.chapter1.baba_vote"], inventory: ["item.sunflower_oil"] }));
+  assert.equal(ctx.state.flags.fountainRepaired, undefined);
+  assert.equal(ctx.state.babaStoyankaVote, true);
+  apply(firstMatchingRule(fountainItemRules.filter(rule => rule.itemId === "item.sunflower_oil"), ctx), ctx);
+  apply(firstMatchingRule(fountainUseRules, ctx), ctx);
+  assert.equal(requirementsMet(babaSupportRule.requirements, ctx), false);
+  assert.equal(ctx.state.influence, 15);
+  assert.equal(ctx.state.babaTrust, "traditional");
+});
+
+test("finished loss saves do not reactivate expired Baba business or allow refill/support rewards", () => {
+  const ctx = reload(context({ chapter1Completed: true, endingId: "ending.chapter1.loss", activeQuests: [],
+    expiredQuests: ["quest.chapter1.baba_vote"], flags: { fountainRepaired: true } }));
+  assert.deepEqual(ctx.state.activeQuests, []);
+  assert.equal(requirementsMet(babaSupportRule.requirements, ctx), false);
+  assert.equal(requirementsMet(oilRefillRule.requirements, ctx), false);
+});
+
+test("the chorus Talk action uses the same authored clue as Look and Use", () => {
+  const ctx = context();
+  const bench = square.interactables.find(target => target.id === "hotspot.square.old_men_bench");
+  const game = Object.create(Game.prototype);
+  Object.assign(game, ctx, { selectedVerb: VERBS.TALK, player: {},
+    applyContentEffect(rule) { apply(rule, ctx); this.message = rule.messageKey; } });
+  game.performTargetAction(bench);
+  assert.equal(ctx.state.flags.fountainOilClue, true);
+  assert.equal(game.message, "fountain.chorus.clue");
+});
+
+test("fountain stream follows saved visibility and remains within its authored nozzle/basin area", () => {
+  const effect = square.effects[0];
+  const renderer = Object.create(Renderer.prototype);
+  renderer.game = { state: { flags: {} } };
+  assert.equal(renderer.sceneLayerVisible(effect), false);
+  renderer.game.state.flags.fountainRepaired = true;
+  assert.equal(renderer.sceneLayerVisible(effect), true);
+  assert.deepEqual(streamPoint(effect.points, 0), effect.points[0]);
+  assert.deepEqual(streamPoint(effect.points, 1), effect.points[3]);
+  for (let t = 0; t <= 1; t += 0.1) {
+    const point = streamPoint(effect.points, t);
+    assert.ok(point.x >= 682 && point.x <= 704 && point.y >= 168 && point.y <= 243);
+  }
+  const frames = [];
+  const ctx = { save() {}, restore() {}, beginPath() {}, stroke() {}, bezierCurveTo() {}, quadraticCurveTo() {},
+    moveTo(x, y) { frames.push([x, y]); }, lineTo(x, y) { frames.push([x, y]); } };
+  drawSceneEffect(ctx, effect, 0);
+  const first = [...frames];
+  frames.length = 0;
+  drawSceneEffect(ctx, effect, 0.2);
+  assert.notDeepEqual(frames, first);
+});
+
+test("fountain dialogue, stages and feedback resolve in both languages; wine remains orderable", () => {
+  assert.deepEqual(Object.keys(fountainBg).sort(), Object.keys(fountainEn).sort());
+  for (const [, key] of JSON.stringify(chapter1).matchAll(/"(fountain\.[^"]+)"/g)) {
+    assert.equal(typeof fountainBg[key], "string", key);
+    assert.equal(typeof fountainEn[key], "string", key);
+  }
+  const waiter = chapter1.dialogues.find(dialogue => dialogue.id === "dialogue.mehana_waiter");
+  assert.ok(waiter.nodes.start.choices.some(choice => choice.textKey === "dialogue.waiter.choice.village_wine" && !choice.requirements));
+});

@@ -199,6 +199,7 @@ export class Game {
     const dt = Math.min(0.05, (time - this.lastTime) / 1000 || 0);
     this.lastTime = time;
     this.updateTimedIntoxication();
+    if (this.paused || this.menuOpen || this.dialogue.current || this.devHome || this.editMode || this.state.chapter1Completed) this.audio.resetFootsteps();
     if (this.simpleAnimTest) {
       this.updateSimpleAnim(dt);
     } else if (this.animLab) {
@@ -206,7 +207,13 @@ export class Game {
     } else if (!this.paused && !this.menuOpen && !this.dialogue.current) {
       this.player.animator.beginTick();
       const finishingStopFrame = this.finishingStopFrame();
+      const feetBefore = { ...this.player.position };
+      const wasWalking = this.player.animation === "walk";
       this.movement.update(dt);
+      const walked = Math.hypot(this.player.position.x - feetBefore.x, this.player.position.y - feetBefore.y);
+      const height = characterHeight(this.characterDefinitions[this.player.id], this.currentScene, this.player.position);
+      this.audio.updateFootsteps(walked, height, this.currentScene.footsteps,
+        wasWalking && !this.sceneTransitionPending && !this.state.chapter1Completed);
       if (finishingStopFrame && this.player.animation === "idle") this.setIdleHoldFrame(finishingStopFrame.frame, finishingStopFrame.frameIndex);
       this.resolvePendingFacingPoint();
       this.resolvePendingInteraction();
@@ -1579,6 +1586,7 @@ export class Game {
     const sceneLoadToken = Symbol(sceneId);
     this.sceneLoadToken = sceneLoadToken;
     this.sceneTransitionPending = true;
+    this.audio.resetFootsteps();
     try {
       await this.assets.preloadSceneAssets(sceneId);
       if (this.sceneLoadToken !== sceneLoadToken) return;
@@ -2691,6 +2699,7 @@ node tools/build-external-runtime-staging.js</pre>
     const dialogue = this.content.dialogues[this.dialogue.current?.id];
     const isNpcDialogue = Boolean(dialogue?.npcId);
     if (node.lineKey && !isNpcDialogue) {
+      panel.classList.add("dialogue-panel-with-line");
       const line = document.createElement("p");
       line.textContent = this.t(firstMatchingRule(node.lineRules, this.effectContext())?.lineKey || node.lineKey);
       panel.appendChild(line);

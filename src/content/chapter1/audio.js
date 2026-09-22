@@ -18,3 +18,12 @@ export const accordionCue = {
     { frequency: 146.83, at: 1.56, duration: 0.54 }
   ]
 };
+
+export const footstepSurfaces = {
+  "scene.chapter1.apartment": { cutoff: 700, volume: 0.65 },
+  "scene.chapter1.village_square": { cutoff: 1800, volume: 0.55 },
+  "scene.chapter1.mehana": { cutoff: 650, volume: 0.65 },
+  "scene.chapter1.municipality": { cutoff: 1400, volume: 0.55 },
+  "scene.chapter1.mayor_office": { cutoff: 700, volume: 0.6 },
+  "scene.chapter1.election_booth": { cutoff: 750, volume: 0.6 }
+};

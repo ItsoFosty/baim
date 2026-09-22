@@ -1259,3 +1259,27 @@ button.active {
 .sound-volume { display: flex; align-items: center; gap: 12px; margin: 12px 0 18px; }
 .sound-volume input { flex: 1; min-width: 80px; accent-color: #d9b86e; }
 .sound-volume output { min-width: 4ch; text-align: right; }
+
+/* Inline dialogue text must not push the scrollable choices below a clipped box. */
+.dialogue-panel-with-line:not(.dialogue-panel-with-entries) {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  max-height: 45%;
+  gap: 6px;
+}
+.dialogue-panel-with-line:not(.dialogue-panel-with-entries) > p {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 130px;
+  overflow-y: auto;
+}
+.dialogue-panel-with-line:not(.dialogue-panel-with-entries) .dialogue-choice-list {
+  flex: 0 1 auto;
+  min-height: 32px;
+  height: auto;
+  max-height: 150px;
+  grid-auto-rows: minmax(30px, auto);
+  scrollbar-gutter: stable;
+}
+.dialogue-panel-with-line .dialogue-choice-list button { white-space: normal; overflow-wrap: anywhere; }

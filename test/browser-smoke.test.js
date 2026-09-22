@@ -82,6 +82,39 @@ test("browser completes the required Chapter 1 path and restores the ending afte
       });
     });
 
+    await t.test("Docheva's inline dialogue keeps every choice reachable in both languages", async () => {
+      for (const viewport of [{ width: 1280, height: 720 }, { width: 640, height: 360 }, { width: 390, height: 844 }]) {
+        await page.setViewportSize(viewport);
+        for (const language of ["bg", "en"]) {
+          await page.evaluate(async language => {
+            const { game } = window.__comradeCandidateTest;
+            await game.changeScene("scene.chapter1.village_square");
+            game.setLanguage(language);
+            game.inventory.add("item.unpaid_bills");
+            game.dialogue.start("dialogue.penka_kiosk");
+            game.renderUi();
+          }, language);
+          const requirement = await page.evaluate(() => window.__comradeCandidateTest.game.t("campaign.kiosk.choice.requirements"));
+          await page.getByRole("button", { name: requirement, exact: true }).click();
+          const choices = page.locator(".dialogue-choice-list button");
+          assert.equal(await choices.count(), 3);
+          for (let index = 0; index < await choices.count(); index++) {
+            await choices.nth(index).scrollIntoViewIfNeeded();
+            const panel = await page.locator(".dialogue-panel").boundingBox();
+            const bounds = await choices.nth(index).boundingBox();
+            assert.ok(bounds.y >= panel.y && bounds.y + bounds.height <= panel.y + panel.height,
+              `clipped Docheva choice ${index} at ${viewport.width}, ${language}`);
+          }
+          const leave = await page.evaluate(() => window.__comradeCandidateTest.game.t("campaign.kiosk.choice.leave"));
+          await page.getByRole("button", { name: leave, exact: true }).click();
+          assert.equal(await page.locator(".dialogue-panel").count(), 0);
+          await page.evaluate(() => window.__comradeCandidateTest.game.inventory.remove("item.unpaid_bills"));
+        }
+      }
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.evaluate(() => window.__comradeCandidateTest.game.changeScene("scene.chapter1.apartment"));
+    });
+
     const beforeInterview = await page.evaluate(async () => {
       const { game } = window.__comradeCandidateTest;
       const find = (entries, id) => entries.find((entry) => entry.id === id);

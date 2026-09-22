@@ -64,6 +64,49 @@ export class AudioSystem {
     }
   }
 
+  resetFootsteps() { this.stepDistance = 0; }
+  updateFootsteps(distance, characterHeight, surface, walking) {
+    if (!walking || !surface || !this.enabled || this.volume === 0) {
+      this.resetFootsteps();
+      return;
+    }
+    const stride = Math.max(12, characterHeight * 0.21);
+    if (!Number.isFinite(distance) || distance < 0 || distance > stride * 2) {
+      this.resetFootsteps();
+      return;
+    }
+    this.stepDistance = (this.stepDistance || 0) + distance;
+    if (this.stepDistance >= stride) {
+      this.stepDistance %= stride;
+      this.playFootstep(surface);
+    }
+  }
+  playFootstep(surface) {
+    if (!this.enabled || !this.context) return;
+    const ctx = this.context;
+    const now = ctx.currentTime;
+    if (!this.stepNoise) {
+      this.stepNoise = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.18), ctx.sampleRate);
+      const data = this.stepNoise.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = this.stepNoise;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = Math.max(1000, surface.cutoff);
+    filter.Q.value = 0.55;
+    const gain = ctx.createGain();
+    const strength = surface.volume * 0.75 * (this.leftFoot ? 0.9 : 1);
+    this.leftFoot = !this.leftFoot;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(strength, now + 0.035);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+    noise.connect(filter); filter.connect(gain); gain.connect(this.master);
+    noise.start(now);
+    noise.onended = () => { noise.disconnect(); filter.disconnect(); gain.disconnect(); };
+  }
+
   setAmbience(definition) {
     if (this.ambient) { this.ambient.stop(); this.ambient.disconnect(); this.ambient = null; }
     if (!this.enabled || !this.context || !definition?.frequency) return;

@@ -41,3 +41,37 @@ test("all accordion performance routes play the phrase, but using the strap does
   assert.equal(archiveOpenRule.soundCue, undefined);
   assert.ok(Math.max(...accordionCue.notes.map(note => note.at + note.duration)) < 2.5);
 });
+
+test("footsteps follow travelled distance and stop when paused, muted or teleported", () => {
+  const audio = new AudioSystem();
+  audio.enabled = true;
+  const surface = { cutoff: 700, pitch: 100, volume: 0.6 };
+  let steps = 0;
+  audio.playFootstep = () => { steps++; };
+  audio.updateFootsteps(20, 300, surface, true);
+  audio.updateFootsteps(0, 300, surface, true);
+  assert.equal(steps, 0);
+  // A 300px character now steps every 63px rather than 42px: 2/3 cadence.
+  audio.updateFootsteps(22, 300, surface, true);
+  assert.equal(steps, 0);
+  audio.updateFootsteps(22, 300, surface, true);
+  assert.equal(steps, 1);
+  audio.updateFootsteps(30, 300, surface, true);
+  audio.updateFootsteps(0, 300, surface, false);
+  audio.updateFootsteps(12, 300, surface, true);
+  assert.equal(steps, 1);
+  audio.updateFootsteps(500, 300, surface, true);
+  assert.equal(steps, 1);
+  audio.volume = 0;
+  audio.updateFootsteps(65, 300, surface, true);
+  assert.equal(steps, 1);
+  audio.volume = 0.6;
+  audio.updateFootsteps(65, 300, surface, true);
+  assert.equal(steps, 2);
+  audio.enabled = false;
+  audio.updateFootsteps(65, 300, surface, true);
+  assert.equal(steps, 2);
+  audio.enabled = true;
+  audio.updateFootsteps(65, 300, undefined, true);
+  assert.equal(steps, 2);
+});

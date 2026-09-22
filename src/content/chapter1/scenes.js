@@ -1,4 +1,4 @@
-import { accordionCue } from "./audio.js";
+import { accordionCue, footstepSurfaces } from "./audio.js";
 import { electionObjectGeometry } from "./sceneObjectGeometry.generated.js";
 import { electionScene } from "./election.js";
 import { archiveObjectGeometry } from "./sceneObjectGeometry.generated.js";
@@ -758,7 +758,7 @@ const rawScenes = [
   electionScene
 ];
 
-export const scenes = applySceneObjectGeometry(wireRegistrationScenes(rawScenes), {
+export const scenes = applySceneObjectGeometry(wireRegistrationScenes(rawScenes.map(scene => ({ ...scene, footsteps: footstepSurfaces[scene.id] }))), {
   [electionObjectGeometry.sceneId]: electionObjectGeometry,
   [mayorOfficeObjectGeometry.sceneId]: mayorOfficeObjectGeometry,
   [archiveObjectGeometry.sceneId]: archiveObjectGeometry,

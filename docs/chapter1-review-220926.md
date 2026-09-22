@@ -124,3 +124,21 @@ It controls all cues and ambience, defaults to 60%, updates live, and persists i
 normal saves. Zero volume and muting both remain silent. Old saves get the default.
 Browser validation exercised the actual inventory action and slider; offline audio
 rendering confirmed a non-silent, unclipped signal at full volume.
+
+## Docheva dialogue and footsteps follow-up
+
+Inline dialogue panels now size around their spoken text and give choices their
+own scrollable area. Long choices wrap instead of being truncated. Browser checks
+cover every Docheva choice in BG/EN at desktop, small landscape and phone sizes.
+
+Footsteps use soft filtered-noise shoe rustles, with softer wooden
+floor and sharper paving/tile profiles authored per scene. Cadence follows actual
+travel distance scaled to the character's displayed size. Their rhythm is two-thirds
+of the initial implementation (stride ratio 0.21 instead of 0.14); the tonal knock
+has been removed and the noise attack softened. Pausing, muting, zero
+volume, idle state and scene transitions do not accumulate pending footsteps.
+They share the existing sound toggle and volume slider. The accordion phrase is
+unchanged and remains pending a later sound-quality pass.
+
+Browser checks verified footsteps during ordinary click-to-walk movement and no
+new steps while paused. Rendered footstep audio is non-silent and does not clip.

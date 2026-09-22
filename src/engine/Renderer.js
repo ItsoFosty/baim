@@ -1,3 +1,4 @@
+import { requirementsMet } from "./EffectSystem.js";
 import { clamp } from "./geometry.js";
 import { characterHeight } from "./CharacterRenderMath.js";
 import { canExitToStop, eastWestFallbackFacing, stopExitFrameForPlayer } from "./MovementSystem.js";
@@ -501,6 +502,7 @@ export class Renderer {
   }
 
   sceneLayerVisible(layer) {
+    if (layer.requirements && !requirementsMet(layer.requirements, this.game.effectContext())) return false;
     if (this.game.editMode) {
       const preview = this.game.sceneEditor?.layerPreviewVisible?.(layer);
       if (typeof preview === "boolean") return preview;

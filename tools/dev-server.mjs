@@ -14,6 +14,11 @@ const serverOptions = secure ? {
   cert: readFileSync(process.env.TLS_CERT || join(root, "target/server/localhost-cert.pem"))
 } : undefined;
 const editorScenes = {
+  "scene.chapter1.election_booth": {
+    walkGeometryPath: "assets_src/chapter1/scenes/election_booth/walk-geometry-v1.json",
+    objectGeometryPath: "assets_src/chapter1/scenes/election_booth/object-geometry-v1.json",
+    layerPath: "assets_src/chapter1/scenes/election_booth/layers.json"
+  },
   "scene.chapter1.archive": {
     objectGeometryPath: "assets_src/chapter1/scenes/archive/object-geometry-v1.json",
     layerPath: "assets_src/chapter1/scenes/archive/layers.json"

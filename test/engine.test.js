@@ -52,6 +52,14 @@ test("inventory preload discovery includes every authored high-resolution item i
   const paths = Object.values(assetManifest.items).flatMap((itemAssets) => imageAssetPaths(itemAssets));
   assert.deepEqual(paths.sort(), [
     assetManifest.items["item.accordion"].icon,
+    assetManifest.items["item.campaign_pamphlets"].icon,
+    assetManifest.items["item.fake_diploma"].icon,
+    assetManifest.items["item.fake_diploma"].stampedIcon,
+    assetManifest.items["item.suspicious_receipt"].icon,
+    assetManifest.items["item.rakia"].icon,
+    assetManifest.items["item.shopska_salad"].icon,
+    assetManifest.items["item.tripe_soup"].icon,
+    assetManifest.items["item.village_wine"].icon,
     assetManifest.items["item.ballot_box"].icon,
     assetManifest.items["item.pickle_jar"].icon,
     assetManifest.items["item.empty_envelope"].icon,

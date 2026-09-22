@@ -161,7 +161,6 @@ test("browser completes the required Chapter 1 path and restores the ending afte
       game.selectedVerb = "use";
       game.renderUi();
     });
-    page.once("dialog", (dialog) => dialog.accept());
     await page.evaluate(() => {
       const { game } = window.__comradeCandidateTest;
       const table = game.currentScene.interactables.find(
@@ -169,6 +168,18 @@ test("browser completes the required Chapter 1 path and restores the ending afte
       );
       game.performTargetAction(table);
     });
+    const electionChoice = async key => {
+      const label = await page.evaluate(key => window.__comradeCandidateTest.game.t(key), key);
+      await page.getByRole("button", { name: label, exact: true }).click();
+    };
+    await electionChoice("election.deliver");
+    for (const objection of ["credentials", "evidence", "container"]) {
+      await electionChoice("election.ask." + objection);
+      await electionChoice("election.answer." + objection);
+      await electionChoice("election.continue");
+    }
+    page.once("dialog", dialog => dialog.accept());
+    await electionChoice("election.count");
 
     await page.locator('.ending-panel[data-ending-id="ending.chapter1.loss"]').waitFor();
     const saved = JSON.parse(await page.evaluate(() => (
@@ -223,7 +234,7 @@ async function availablePort() {
   return port;
 }
 
-test("opening through registration and archive exchange work through real clicks in Bulgarian and English", { timeout: 360_000 }, async (t) => {
+test("fresh Chapter 1 journeys reach all three endings through real clicks in Bulgarian and English", { timeout: 600_000 }, async (t) => {
   if (!existsSync(chromium.executablePath())) {
     t.skip("Playwright Chromium is not installed");
     return;
@@ -264,9 +275,9 @@ test("opening through registration and archive exchange work through real clicks
       await page.getByRole("button", { name: handover, exact: true }).click();
       await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.campaign_pamphlets"));
       assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.inventory.has("item.unpaid_bills")), false);
-      const pamphletLabel = page.locator('[data-item-id="item.campaign_pamphlets"] .inventory-item-label');
-      assert.equal(await pamphletLabel.isVisible(), true);
-      assert.equal(await pamphletLabel.textContent(), await page.evaluate(() => window.__comradeCandidateTest.game.t("item.campaign_pamphlets.name")));
+      const pamphletIcon = page.locator('[data-item-id="item.campaign_pamphlets"] img');
+      assert.equal(await pamphletIcon.isVisible(), true);
+      assert.equal(await pamphletIcon.evaluate(image => image.complete && image.naturalWidth > 0), true);
       await page.mouse.move(0, 0);
       const posterBefore = await page.screenshot({ clip: { x: 1090, y: 255, width: 85, height: 160 } });
       await page.locator('[data-item-id="item.campaign_pamphlets"]').click();
@@ -379,6 +390,92 @@ test("opening through registration and archive exchange work through real clicks
       assert.equal(await page.getByRole("button", { name: back, exact: true }).count(), 0);
       await clickTarget("exit.archive.to_municipality");
       await waitFor(() => window.__comradeCandidateTest.game.currentScene.id === "scene.chapter1.municipality");
+      await go("exit.municipality.to_square", "scene.chapter1.village_square");
+      await talk("npc.journalist");
+      for (let step = 0; step < 4; step++) await page.locator(".dialogue-choice-list button").first().click();
+      await waitFor(() => window.__comradeCandidateTest.game.state.journalistInterviewCompleted);
+      await choice("dialogue.journalist.choice.leave");
+      await go("exit.square.to_election_booth", "scene.chapter1.election_booth");
+      await verb("use");
+      await clickTarget("hotspot.election_booth.commission_table");
+      await choice("election.deliver");
+      for (const objection of ["container", "credentials", "evidence"]) {
+        await choice("election.ask." + objection);
+        await choice("election.answer." + objection);
+        await choice("election.continue");
+      }
+      // Cancel final commitment, reload the completed objections, and leave freely.
+      page.once("dialog", dialog => dialog.dismiss());
+      await choice("election.count");
+      assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.state.chapter1Completed), false);
+      await page.reload();
+      await page.evaluate(() => window.__comradeCandidateTest.ready);
+      assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.state.flags.electionContainerAnswered), true);
+      const finish = async expected => {
+        await verb("use");
+        await clickTarget("hotspot.election_booth.commission_table");
+        page.once("dialog", dialog => dialog.accept());
+        await choice("election.count");
+        await page.locator('.ending-panel[data-ending-id="ending.chapter1.' + expected + '"]').waitFor();
+        await page.reload();
+        await page.evaluate(() => window.__comradeCandidateTest.ready);
+        await page.locator('.ending-panel[data-ending-id="ending.chapter1.' + expected + '"]').waitFor();
+        await choiceEndingContinue(page);
+        await choiceEndingContinue(page);
+        assert.ok((await page.locator(".ending-epilogue").textContent()).includes(
+          await page.evaluate(() => window.__comradeCandidateTest.game.t("election.epilogue.creditors"))));
+      };
+      if (language === "bg") {
+        await finish("loss");
+      } else {
+        await go("exit.election_booth.to_square", "scene.chapter1.village_square");
+        await talk("npc.baba_stoyanka");
+        await choice("dialogue.baba.choice.ask_vote");
+        await choice("dialogue.baba.choice.leave");
+        await verb("look");
+        await clickTarget("hotspot.square.fountain");
+        await waitFor(() => window.__comradeCandidateTest.game.state.flags.fountainDiagnosed);
+        await go("exit.square.to_mehana", "scene.chapter1.mehana");
+        await verb("take");
+        await clickTarget("hotspot.mehana.oil");
+        await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.sunflower_oil"));
+        await go("exit.mehana.to_square", "scene.chapter1.village_square");
+        await useItem("item.sunflower_oil");
+        await clickTarget("hotspot.square.fountain");
+        await waitFor(() => window.__comradeCandidateTest.game.state.flags.fountainValveOiled);
+        await verb("use");
+        await clickTarget("hotspot.square.fountain");
+        await waitFor(() => window.__comradeCandidateTest.game.state.flags.fountainRepaired);
+        await talk("npc.baba_stoyanka");
+        await choice("fountain.baba.choice.report");
+        await waitFor(() => window.__comradeCandidateTest.game.state.babaStoyankaVote);
+        await go("exit.square.to_election_booth", "scene.chapter1.election_booth");
+        // Branch from an actually earned save; no quest/meter injection.
+        const oneSupporterSave = await page.evaluate(() => localStorage.getItem("comrade-candidate.save.v1"));
+        await finish("narrow_win");
+        await page.evaluate(raw => localStorage.setItem("comrade-candidate.save.v1", raw), oneSupporterSave);
+        await page.reload();
+        await page.evaluate(() => window.__comradeCandidateTest.ready);
+        await go("exit.election_booth.to_square", "scene.chapter1.village_square");
+        await go("exit.square.to_mehana", "scene.chapter1.mehana");
+        await talk("npc.tony_fridge");
+        for (const key of ["dialogue.tony.choice.challenge", "dialogue.tony.choice.accept", "dialogue.tony.choice.prepare"]) await choice(key);
+        await verb("take");
+        await clickTarget("hotspot.mehana.water_jug");
+        await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.glass_of_water"));
+        await useItem("item.accordion");
+        await clickTarget("npc.tony_fridge");
+        await waitFor(() => window.__comradeCandidateTest.game.state.flags.tonyDistracted);
+        await useItem("item.glass_of_water");
+        await clickTarget("hotspot.mehana.bai_mitko_rakia_glass");
+        await waitFor(() => window.__comradeCandidateTest.game.state.swappedOwnRakiaWithWater);
+        await talk("npc.tony_fridge");
+        await choice("dialogue.tony.choice.finish_challenge");
+        await choice("dialogue.tony.choice.leave");
+        await go("exit.mehana.to_square", "scene.chapter1.village_square");
+        await go("exit.square.to_election_booth", "scene.chapter1.election_booth");
+        await finish("convincing_win");
+      }
       await context.close();
     }
   } finally {
@@ -523,4 +620,9 @@ async function clickSceneTarget(page, id) {
           return candidates[Math.floor(candidates.length / 2)];
         }, id);
         await page.locator("#game").click({ position: point });
+}
+
+async function choiceEndingContinue(page) {
+  const label = await page.evaluate(() => window.__comradeCandidateTest.game.t("election.continue"));
+  await page.locator(".ending-panel").getByRole("button", { name: label, exact: true }).click();
 }

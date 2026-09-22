@@ -290,3 +290,13 @@ Don't:
 - bake shadows that fight scene lighting
 - change animation IDs without approval
 - polish in-betweens before key poses work
+
+## 22 September action export queue
+
+The Chapter 1 finale is playable with painted state changes. Dedicated action
+exports remain required for posting, accordion performance, own-glass pouring,
+drinking, fountain valve, paper handover/stamp, archive pull/jar swap and ballot
+box placement. Supply reviewed Ludo.ai sprite ZIP + JSON in the existing external
+animation input folder, then register and verify each action at its actual scene
+anchor. Do not substitute a new rig or label static cutouts as completed animation.
+The creditor pair and election staging are review art, not animated sprite sheets.

@@ -1,3 +1,4 @@
+import { stampCue } from "./audio.js";
 import { clerkArchiveChoices } from "./archive.js";
 const receipt = "item.suspicious_receipt";
 const diploma = "item.fake_diploma";
@@ -22,7 +23,7 @@ export const stampRequirements = {
 export const stampRule = {
   requirements: stampRequirements,
   effects: [{ type: "setFlag", key: "mayorDiplomaStamped" }],
-  messageKey: "registration.stamped"
+  soundCue: stampCue, messageKey: "registration.stamped"
 };
 export const registerRule = {
   itemId: diploma,

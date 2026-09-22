@@ -1,9 +1,14 @@
+import { electionBg } from "./chapter1Election.js";
 import { archiveBg } from "./chapter1Archive.js";
 import { registrationBg } from "./chapter1Registration.js";
 import { campaignBg } from "./chapter1Campaign.js";
 import { fountainBg } from "./chapter1Fountain.js";
 
 export const bg = {
+  "ui.sound.on": "Звук: включен",
+  "ui.sound.off": "Звук: изключен",
+
+  ...electionBg,
   ...archiveBg,
   ...registrationBg,
   ...campaignBg,

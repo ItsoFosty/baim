@@ -1,3 +1,5 @@
+> **22 September checkpoint:** Election staging and all three outcome branches are implemented. Both supporters guarantee a win. See [current review and outcome contract](chapter1-review-220926.md), which supersedes earlier “next: election” notes and narrow-win rules below. Human visual/playtest review and dedicated Ludo.ai action exports remain.
+
 # Chapter 1 Gameplay Flow Contract
 
 ## Completion pass — 16 September 2026

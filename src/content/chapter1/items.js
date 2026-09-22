@@ -57,7 +57,8 @@ export const items = [
     ]
   },
   { id: "item.empty_envelope", nameKey: "item.empty_envelope.name", descriptionKey: "item.empty_envelope.desc" },
-  { id: "item.fake_diploma", nameKey: "item.fake_diploma.name", descriptionKey: "item.fake_diploma.desc" },
+  { id: "item.fake_diploma", nameKey: "item.fake_diploma.name", descriptionKey: "item.fake_diploma.desc",
+    iconRules: [{ requirements: { flags: ["mayorDiplomaStamped"] }, slot: "stampedIcon" }] },
   {
     id: "item.rakia",
     nameKey: "item.rakia.name",

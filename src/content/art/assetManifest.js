@@ -61,6 +61,15 @@ export const assetManifest = {
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.election_booth": {
+      penkaSeated: "assets/chapter1/scenes/election_booth/penka-seated-v1.png",
+      tableOccluder: "assets/chapter1/scenes/election_booth/table-occluder-v1.png",
+      background: "assets/chapter1/scenes/election_booth/background-v1.png",
+      mayorStanding: "assets/chapter1/characters/mayor/standing-v1.png",
+      journalistStanding: "assets/chapter1/characters/journalist/standing-v2.png",
+      babaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v1.png",
+      tonySeated: "assets/chapter1/characters/tony_fridge/seated-v1.png",
+      ballotBox: "assets/chapter1/scenes/archive/box-v1.png",
+      creditors: "assets/chapter1/characters/creditors/pair-v1.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     }
   },
@@ -71,6 +80,14 @@ export const assetManifest = {
     }
   },
   items: {
+    "item.fake_diploma": { icon: "assets/chapter1/items/fake-diploma-v1.png", stampedIcon: "assets/chapter1/items/stamped-diploma-v1.png" },
+    "item.campaign_pamphlets": { icon: "assets/chapter1/items/campaign-pamphlets-v1.png" },
+    "item.suspicious_receipt": { icon: "assets/chapter1/items/suspicious-receipt-v1.png" },
+    "item.rakia": { icon: "assets/chapter1/items/rakia-v1.png" },
+    "item.shopska_salad": { icon: "assets/chapter1/items/shopska-salad-v1.png" },
+    "item.tripe_soup": { icon: "assets/chapter1/items/tripe-soup-v1.png" },
+    "item.village_wine": { icon: "assets/chapter1/items/village-wine-v1.png" },
+
     "item.pickle_jar": { icon: "assets/chapter1/scenes/archive/jar-v1.png" },
     "item.ballot_box": { icon: "assets/chapter1/scenes/archive/box-v1.png" },
     "item.municipality_stamp": {

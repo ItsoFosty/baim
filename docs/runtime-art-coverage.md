@@ -1,3 +1,13 @@
+# 22 September runtime checkpoint
+
+The election room now has a painted background, reused character art, table
+occlusion, conditional supporters and ballot-box placement, plus a new creditor
+pair. Every inventory item has an icon; diploma icons reflect stamp state. The
+journalist uses standing-v2 in the square, office and polling room. Earlier debug
+journalist/election-placeholder statements below are historical and superseded.
+See [browser review](chapter1-review-220926.md) for current coverage and remaining
+animation exports. New assets await human visual approval.
+
 # Runtime Art Coverage
 
 ## Current Diagnosis

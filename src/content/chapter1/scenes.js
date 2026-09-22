@@ -1,3 +1,5 @@
+import { electionObjectGeometry } from "./sceneObjectGeometry.generated.js";
+import { electionScene } from "./election.js";
 import { archiveObjectGeometry } from "./sceneObjectGeometry.generated.js";
 import { archiveScene, archiveEntryRules } from "./archive.js";
 import { wireRegistrationScenes } from "./registration.js";
@@ -227,7 +229,7 @@ const rawScenes = [
         rect: { x: 205, y: 448, w: 190, h: 195 },
         requirements: { state: { journalistInterviewCompleted: true, chapter1Completed: false } },
         targetSceneId: "scene.chapter1.election_booth",
-        targetPosition: { x: 230, y: 525 }
+        targetPosition: { x: 230, y: 550 }
       }
     ],
     interactables: [
@@ -752,60 +754,11 @@ const rawScenes = [
       }
     ]
   },
-  {
-    id: "scene.chapter1.election_booth",
-    titleKey: "scene.chapter1.election_booth.title",
-    palette: { sky: "#59656a", wall: "#726b5e", floor: "#373934" },
-    movementSpeed: 70,
-    playerStart: { x: 230, y: 525 },
-    walkPolygons: [
-      {
-        id: "walk.chapter1.election_booth.main",
-        points: [
-          { x: 80, y: 425 },
-          { x: 1190, y: 425 },
-          { x: 1220, y: 590 },
-          { x: 55, y: 590 }
-        ]
-      }
-    ],
-    perspectiveScale: { horizonY: 415, bottomY: 590, far: 0.82, near: 1.1 },
-    anchors: {
-      baiMitkoSpawn: { x: 230, y: 525 },
-      commissionTable: { x: 850, y: 485 },
-      exit: { x: 135, y: 515 }
-    },
-    foregroundLayers: [],
-    exits: [
-      {
-        id: "exit.election_booth.to_square",
-        kind: "exit",
-        nameKey: "exit.to_village_square",
-        rect: { x: 25, y: 300, w: 180, h: 255 },
-        requirements: { state: { chapter1Completed: false } },
-        targetSceneId: "scene.chapter1.village_square",
-        targetPosition: { x: 650, y: 535 }
-      }
-    ],
-    interactables: [
-      {
-        id: "hotspot.election_booth.commission_table",
-        kind: "hotspot",
-        nameKey: "hotspot.election_booth.commission_table.name",
-        rect: { x: 650, y: 300, w: 430, h: 245 },
-        lookKey: "look.election_booth.commission_table",
-        endingTrigger: {
-          groupId: "ending.chapter1",
-          confirmKey: "ui.election.commit_confirm",
-          cancelledMessageKey: "msg.election.deferred"
-        }
-      }
-    ],
-    npcs: []
-  }
+  electionScene
 ];
 
 export const scenes = applySceneObjectGeometry(wireRegistrationScenes(rawScenes), {
+  [electionObjectGeometry.sceneId]: electionObjectGeometry,
   [mayorOfficeObjectGeometry.sceneId]: mayorOfficeObjectGeometry,
   [archiveObjectGeometry.sceneId]: archiveObjectGeometry,
   [apartmentObjectGeometry.sceneId]: apartmentObjectGeometry,

@@ -15,6 +15,7 @@ export const DEFAULT_SAVE = {
   endingId: null,
   currentSceneId: "scene.chapter1.apartment",
   language: "bg",
+  audioEnabled: false,
   influence: 0,
   suspicion: 0,
   publicMood: 50,

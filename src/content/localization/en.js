@@ -1,9 +1,14 @@
+import { electionEn } from "./chapter1Election.js";
 import { archiveEn } from "./chapter1Archive.js";
 import { registrationEn } from "./chapter1Registration.js";
 import { campaignEn } from "./chapter1Campaign.js";
 import { fountainEn } from "./chapter1Fountain.js";
 
 export const en = {
+  "ui.sound.on": "Sound: on",
+  "ui.sound.off": "Sound: off",
+
+  ...electionEn,
   ...archiveEn,
   ...registrationEn,
   ...campaignEn,

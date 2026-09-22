@@ -1,3 +1,4 @@
+import { electionStages } from "./election.js";
 import { archiveStages } from "./archive.js";
 import { registrationStages } from "./registration.js";
 import { fountainQuestStages } from "./fountain.js";
@@ -26,7 +27,8 @@ export const quests = [
         titleKey: "campaign.quest.post",
         requirements: { notFlags: ["campaignPosted"] }
       },
-      ...registrationStages
+      ...registrationStages,
+      ...electionStages
     ]
   },
   {

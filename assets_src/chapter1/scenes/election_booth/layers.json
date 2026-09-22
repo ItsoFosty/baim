@@ -1,0 +1,83 @@
+{
+  "sceneId": "scene.chapter1.election_booth",
+  "sourceBackground": "assets/chapter1/scenes/election_booth/background-v1.png",
+  "layers": [
+    {
+      "id": "layer.election.mayor",
+      "asset": "mayorStanding",
+      "left": 1060,
+      "top": 253,
+      "height": 270,
+      "zIndex": 56
+    },
+    {
+      "id": "layer.election.journalist",
+      "asset": "journalistStanding",
+      "left": 570,
+      "top": 213,
+      "height": 277,
+      "zIndex": 56
+    },
+    {
+      "id": "layer.election.baba",
+      "asset": "babaSeated",
+      "left": 292,
+      "top": 320,
+      "height": 183,
+      "zIndex": 56,
+      "visibleWhenTargetId": "npc.baba_stoyanka"
+    },
+    {
+      "id": "layer.election.tony",
+      "asset": "tonySeated",
+      "left": 420,
+      "top": 265,
+      "height": 243,
+      "zIndex": 56,
+      "visibleWhenTargetId": "npc.tony_fridge"
+    },
+    {
+      "id": "layer.election.box",
+      "asset": "ballotBox",
+      "left": 722,
+      "top": 246,
+      "height": 113,
+      "zIndex": 55,
+      "requirements": {
+        "state": {
+          "ballotBoxDelivered": true
+        }
+      }
+    },
+    {
+      "id": "layer.election.creditors",
+      "asset": "creditors",
+      "left": 70,
+      "top": 250,
+      "height": 310,
+      "zIndex": 15,
+      "requirements": {
+        "state": {
+          "chapter1Completed": true
+        }
+      }
+    },
+    {
+      "id": "layer.election.penka",
+      "asset": "penkaSeated",
+      "left": 805,
+      "top": 175,
+      "height": 300,
+      "zIndex": 60
+    },
+    {
+      "id": "layer.election.table",
+      "asset": "tableOccluder",
+      "left": 680,
+      "top": 331,
+      "width": 390,
+      "height": 166,
+      "zIndex": 58
+    }
+  ]
+}

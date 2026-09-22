@@ -1236,3 +1236,23 @@ button.active {
 .scene-editor-status {
   color: #f0d38e;
 }
+
+/* Keep the creditor pair and the room visible beside the final record. */
+.ending-panel {
+  left: auto;
+  right: 24px;
+  width: 570px;
+  padding: 24px;
+  transform: translateY(-50%);
+  border-top: 5px solid #b99b56;
+}
+.ending-panel[data-ending-id$="loss"] { border-top-color: #a76857; }
+.ending-panel h1 { font-size: 28px; }
+.ending-body { font-size: 16px; line-height: 1.4; }
+.ending-results { margin: 14px 0; }
+.ending-results div { padding: 8px; }
+.ending-report { padding-left: 20px; font-size: 14px; line-height: 1.4; color: #e2d7c5; }
+.ending-report li + li { margin-top: 5px; }
+.ending-epilogue { margin: 14px 0 !important; padding: 12px; border-left: 3px solid #b99b56; background: #29241c; line-height: 1.45; }
+.ending-languages { display: flex; gap: 6px; margin-top: 10px; }
+.ending-languages button { padding: 4px 10px; font-size: 13px; }

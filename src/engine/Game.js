@@ -1,3 +1,5 @@
+import { createReviewSaveSystem } from "./ReviewState.js";
+import { AudioSystem } from "./AudioSystem.js";
 import { DialogueSystem } from "./DialogueSystem.js";
 import { applyEffects, firstMatchingRule, requirementsMet } from "./EffectSystem.js";
 import { resolveEnding } from "./EndingSystem.js";
@@ -62,8 +64,12 @@ export class Game {
   constructor(canvas, uiRoot) {
     this.canvas = canvas;
     this.uiRoot = uiRoot;
-    this.saveSystem = new SaveSystem();
+    const reviewId = new URLSearchParams(globalThis.location?.search || "").get("review");
+    const preset = chapter1.reviewPresets?.[reviewId];
+    this.reviewId = preset ? reviewId : null;
+    this.saveSystem = preset ? createReviewSaveSystem(DEFAULT_SAVE, preset, chapter1) : new SaveSystem();
     this.state = this.saveSystem.load();
+    this.audio = new AudioSystem();
     this.localization = new Localization(strings, this.state.language);
     this.content = buildContentIndex(chapter1);
     this.debugSceneGeometry = this.readDebugGeometrySetting();
@@ -90,7 +96,7 @@ export class Game {
     this.currentScene = this.resolveInitialScene();
     this.player = {
       id: "npc.bai_mitko",
-      position: { ...this.currentScene.playerStart },
+      position: { ...(this.content.endings.find(ending => ending.id === this.state.endingId)?.presentation?.playerPosition || this.currentScene.playerStart) },
       target: null,
       walkPath: [],
       shortWalk: false,
@@ -99,7 +105,7 @@ export class Game {
       interactionDebug: null,
       speed: this.sceneMovementSpeed(this.currentScene),
       animation: "idle",
-      facing: this.characterDefinitions["npc.bai_mitko"].render.defaultFacing,
+      facing: this.content.endings.find(ending => ending.id === this.state.endingId)?.presentation?.facing || this.characterDefinitions["npc.bai_mitko"].render.defaultFacing,
       verticalDirectionBias: this.characterDefinitions["npc.bai_mitko"].render.verticalDirectionBias,
       animationTime: 0,
       facingDebug: null,
@@ -223,6 +229,16 @@ export class Game {
   }
 
   bindInput() {
+    const resumeAudio = async () => {
+      if (this.state.audioEnabled && !this.audio.enabled) {
+        await this.audio.setEnabled(true);
+        this.audio.setAmbience(this.currentScene?.ambience);
+      }
+    };
+    window.addEventListener("pointerdown", resumeAudio);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) this.audio.setEnabled(false);
+    });
     this.canvas.addEventListener("contextmenu", (event) => {
       event.preventDefault();
       if (this.editMode) return;
@@ -1496,7 +1512,9 @@ export class Game {
   }
 
   applyContentEffect(definition = {}, options = {}) {
+    if (definition.endingTrigger) return this.requestEnding(definition.endingTrigger);
     applyEffects(definition.effects, this.effectContext());
+    this.audio?.play(definition.soundCue);
     const stateMessage = definition.messageByState;
     const stateValue = Number(this.state[stateMessage?.key]);
     const matchingMessage = stateMessage?.ranges?.find((range) => (
@@ -1518,6 +1536,10 @@ export class Game {
 
   requestEnding(trigger = {}) {
     if (this.state.chapter1Completed) return false;
+    if (!requirementsMet(trigger.requirements, this.effectContext())) {
+      this.setStatusMessage(this.t("msg.election.not_ready"), { reject: true });
+      return false;
+    }
     this.save();
     const confirmed = globalThis.confirm?.(this.t(trigger.confirmKey || "ui.election.commit_confirm")) ?? false;
     if (!confirmed) {
@@ -1530,6 +1552,13 @@ export class Game {
       this.setStatusMessage(this.t("msg.election.not_ready"), { reject: true });
       return false;
     }
+    this.audio?.setAmbience(null);
+    this.audio?.play(ending.soundCue);
+    if (ending.presentation?.playerPosition) this.player.position = { ...ending.presentation.playerPosition };
+    if (ending.presentation?.facing) this.player.facing = ending.presentation.facing;
+    this.player.target = null;
+    this.player.walkPath = [];
+    this.player.animation = "idle";
     this.dialogue.close();
     this.clearInventoryInteraction();
     this.state.currentSceneId = this.currentScene.id;
@@ -1553,6 +1582,7 @@ export class Game {
       await this.assets.preloadSceneAssets(sceneId);
       if (this.sceneLoadToken !== sceneLoadToken) return;
       this.currentScene = this.sceneWithDroppedItems(this.content.scenes[sceneId]);
+      this.audio?.setAmbience(this.currentScene.ambience);
       this.droppedItemsOpen = false;
       this.clearInventoryInteraction();
       this.state.currentSceneId = sceneId;
@@ -1594,6 +1624,8 @@ export class Game {
     this.state = this.saveSystem.reset();
     this.localization.setLanguage(this.state.language);
     this.currentScene = this.sceneWithDroppedItems(this.content.scenes[this.state.currentSceneId]);
+    this.audio?.setAmbience(null);
+    this.audio?.setEnabled(Boolean(this.state.audioEnabled));
     this.droppedItemsOpen = false;
     this.clearInventoryInteraction();
     this.questListTab = "outstanding";
@@ -1771,7 +1803,8 @@ export class Game {
       itemButton.setAttribute("aria-label", itemName);
       itemButton.setAttribute("aria-describedby", tooltipId);
       itemButton.dataset.itemId = item.id;
-      const iconPath = this.assets.getItemAssetPath(item.id);
+      const iconRule = firstMatchingRule(item.iconRules, this.effectContext());
+      const iconPath = this.assets.getItemAssetPath(item.id, iconRule?.slot || "icon");
       if (iconPath) {
         const icon = document.createElement("img");
         icon.src = iconPath;
@@ -2113,12 +2146,38 @@ export class Game {
         <div><dt>${escapeHtml(this.t("ui.meter.public_mood"))}</dt><dd>${Number(this.state.publicMood) || 0}</dd></div>
       </dl>
     `;
+    const report = element("ul", "ending-report");
+    const reportKeys = this.state.endingReportKeys || (ending?.reportRules || [])
+      .filter(rule => requirementsMet(rule.requirements, this.effectContext())).map(rule => rule.textKey);
+    for (const key of reportKeys) {
+      const line = element("li");
+      line.textContent = this.t(key);
+      report.appendChild(line);
+    }
+    panel.appendChild(report);
+    const epilogueKeys = this.state.endingEpilogueKeys || (ending?.epilogue || [])
+      .filter(rule => requirementsMet(rule.requirements, this.effectContext())).map(rule => rule.textKey);
+    const index = Math.max(0, Math.min(Number(this.state.endingPresentationIndex) || 0, epilogueKeys.length - 1));
+    if (epilogueKeys.length) {
+      const epilogue = element("p", "ending-epilogue");
+      epilogue.setAttribute("aria-live", "polite");
+      epilogue.textContent = this.t(epilogueKeys[index]);
+      panel.appendChild(epilogue);
+      if (index < epilogueKeys.length - 1) panel.appendChild(button(this.t("election.continue"), () => {
+        this.state.endingPresentationIndex = index + 1;
+        this.save();
+        this.renderUi();
+      }));
+    }
     const actions = element("div", "ending-actions");
     actions.append(
       button(this.t("ui.restart"), () => this.restartGame()),
       button(this.t("ui.main_menu"), () => this.returnToMainMenu())
     );
     panel.appendChild(actions);
+    const languages = element("div", "ending-languages");
+    languages.append(button("BG", () => this.setLanguage("bg")), button("EN", () => this.setLanguage("en")));
+    panel.appendChild(languages);
     return panel;
   }
 
@@ -2131,6 +2190,14 @@ export class Game {
       <div class="dev-links">
         <a href="./docs/chapter1-storyboard.html">Chapter 1 Storyboard / Сториборд — Глава 1</a>
       </div>
+      <h2>Chapter 1 visual review</h2>
+      <p>These previews use temporary saves. Reload resets the preview; your normal game is untouched.</p>
+      <div class="dev-links">
+        <a href="./?play=1&review=election">Election room and objections</a>
+        <a href="./?play=1&review=convincing_win">Convincing victory</a>
+        <a href="./?play=1&review=narrow_win">Narrow victory</a>
+        <a href="./?play=1&review=loss">Loss</a>
+      </div>
       <h2>Scene Editors</h2>
       <div class="dev-links dev-scene-editors">
         <a href="./?edit=1&scene=scene.chapter1.apartment">Bai Mitko's Room Editor</a>
@@ -2139,6 +2206,7 @@ export class Game {
         <a href="./?edit=1&scene=scene.chapter1.municipality">Municipality Editor</a>
         <a href="./?edit=1&scene=scene.chapter1.mayor_office">Mayor’s Office Editor</a>
         <a href="./?edit=1&scene=scene.chapter1.archive">Archive Editor</a>
+        <a href="./?edit=1&scene=scene.chapter1.election_booth">Election Room Editor</a>
       </div>
       <div class="dev-status-list">
         <div class="dev-status">
@@ -2538,6 +2606,15 @@ node tools/build-external-runtime-staging.js</pre>
       button(this.t("ui.restart"), () => this.restartGame()),
       button(this.t("ui.main_menu"), () => this.returnToMainMenu())
     );
+    const soundButton = button(this.t(this.state.audioEnabled ? "ui.sound.on" : "ui.sound.off"), async () => {
+      this.state.audioEnabled = !this.state.audioEnabled;
+      await this.audio.setEnabled(this.state.audioEnabled);
+      this.audio.setAmbience(this.state.audioEnabled ? this.currentScene?.ambience : null);
+      this.save();
+      this.renderUi();
+    });
+    soundButton.setAttribute("aria-pressed", String(Boolean(this.state.audioEnabled)));
+    pause.appendChild(soundButton);
     const questViews = {
       outstanding: this.quests.active(),
       completed: this.quests.completed()
@@ -2619,7 +2696,7 @@ node tools/build-external-runtime-staging.js</pre>
     if (!node?.lineKey) return null;
     const dialogue = this.content.dialogues[this.dialogue.current?.id];
     if (!dialogue?.npcId) return null;
-    const npc = this.currentScene.npcs?.find((candidate) => candidate.id === dialogue.npcId);
+    const npc = this.currentScene.npcs?.find((candidate) => candidate.id === (node.npcId || dialogue.npcId));
     const lineKey = firstMatchingRule(node.lineRules, this.effectContext())?.lineKey || node.lineKey;
     return this.createNpcSpeechBubble(npc, this.t(lineKey), "dialogue-speech-bubble");
   }

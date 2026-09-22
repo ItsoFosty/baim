@@ -1,8 +1,10 @@
+import { electionDialogue } from "./election.js";
 import { wireRegistrationDialogues } from "./registration.js";
 import { babaFountainDialogue, oilRefillRule } from "./fountain.js";
 import { campaignDialogues } from "./campaign.js";
 
 const baseDialogues = [
+  electionDialogue,
   ...campaignDialogues,
   {
     id: "dialogue.municipality_clerk",

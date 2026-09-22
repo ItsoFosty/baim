@@ -168,3 +168,18 @@ The reusable renderer animates the stream without modifying the background asset
 - Dialogue nodes can use ordered `lineRules: [{requirements, lineKey}]` to
   choose a progress-dependent greeting, falling back to `lineKey`.
 - `requirements.disabled` retires an interaction while preserving its stable ID.
+
+## Finale presentation additions — 22 September
+
+- Effect definitions may carry `endingTrigger` with a group and requirements;
+  the game validates requirements before showing the irreversible-count prompt.
+- Ending definitions may carry `reportRules`, `epilogue`, `soundCue` and
+  `presentation.playerPosition`/`facing`. Resolution snapshots matching report and
+  epilogue text keys. Resolving an already recorded ending never reapplies effects.
+- Raster layers support the same `requirements` contract as interactions, retained
+  by the scene-layer source builder. Existing visibility fields continue to work.
+- Items may define ordered `iconRules` selecting an asset-manifest slot by progress.
+- Optional content `soundCue` uses notes/interval/duration/wave/volume. Scene
+  `ambience` uses frequency/volume. Audio is user-enabled, not an autoplay gate.
+- Content review presets run in memory-only save storage; they cannot mutate the
+  normal save. See `src/engine/ReviewState.js`.

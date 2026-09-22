@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 const sources = [
+  "assets_src/chapter1/scenes/election_booth/layers.json",
   "assets_src/chapter1/scenes/archive/layers.json",
   "assets_src/chapter1/scenes/mayor_office/layers.json",
   "assets_src/chapter1/scenes/apartment/layers.json",
@@ -45,6 +46,7 @@ function runtimeLayer(layer, sourcePath) {
   copyNumber(layer, result, "width");
   copyNumber(layer, result, "height");
   if (layer.visibleWhenFlag) result.visibleWhenFlag = String(layer.visibleWhenFlag);
+  if (layer.requirements) result.requirements = layer.requirements;
   if (layer.visibleWhenTargetId) result.visibleWhenTargetId = String(layer.visibleWhenTargetId);
   if (layer.hiddenWhenFlag) result.hiddenWhenFlag = String(layer.hiddenWhenFlag);
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);

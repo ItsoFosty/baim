@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 const SOURCES = [
+  { name: "electionObjectGeometry", path: "assets_src/chapter1/scenes/election_booth/object-geometry-v1.json" },
   { name: "archiveObjectGeometry", path: "assets_src/chapter1/scenes/archive/object-geometry-v1.json" },
   { name: "mayorOfficeObjectGeometry", path: "assets_src/chapter1/scenes/mayor_office/object-geometry-v1.json" },
   {

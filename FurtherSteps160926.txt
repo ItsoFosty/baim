@@ -1,3 +1,11 @@
+CURRENT CHECKPOINT — 22 September 2026
+Election staging and all three outcome branches are implemented. Both supporters
+guarantee a win. The new ballot delivery/objection sequence, outcome rules, isolated
+review links and remaining animation production are documented in
+docs/chapter1-review-220926.md (relative to repository root). This checkpoint
+supersedes earlier "next: election" and old narrow-win threshold descriptions.
+Human visual/first-time-player review and dedicated Ludo.ai action exports remain.
+
 Chapter 1 action plan — revised 16 September 2026
 
 AUTHORITATIVE TARGET

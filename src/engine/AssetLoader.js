@@ -51,8 +51,8 @@ export class AssetLoader {
     return this.getImage(path);
   }
 
-  getItemAssetPath(itemId) {
-    return this.manifest.items?.[itemId]?.icon || null;
+  getItemAssetPath(itemId, slot = "icon") {
+    return this.manifest.items?.[itemId]?.[slot] || this.manifest.items?.[itemId]?.icon || null;
   }
 
   getImage(path) {

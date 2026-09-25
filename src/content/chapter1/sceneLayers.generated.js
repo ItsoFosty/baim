@@ -200,6 +200,13 @@ export const sceneLayerGeometry = {
         "width": 165
       },
       {
+        "id": "layer.square.fountain_foreground",
+        "asset": "fountainForeground",
+        "zIndex": 42,
+        "top": 0,
+        "left": 0
+      },
+      {
         "id": "layer.square.baba_stoyanka_seated",
         "asset": "babaStoyankaSeated",
         "zIndex": 90,

@@ -17,6 +17,15 @@
       "width": 165
     },
     {
+      "id": "layer.square.fountain_foreground",
+      "enabled": true,
+      "asset": "fountainForeground",
+      "output": "assets/chapter1/scenes/village_square/fountain-foreground-v1.png",
+      "left": 0,
+      "top": 0,
+      "zIndex": 42
+    },
+    {
       "id": "layer.square.baba_stoyanka_seated",
       "enabled": true,
       "asset": "babaStoyankaSeated",

@@ -20,6 +20,7 @@ export const assetManifest = {
       windowOpenBack: "assets/chapter1/scenes/apartment/window-open-0.png"
     },
     "scene.chapter1.village_square": {
+      campaignPoster: "assets/chapter1/scenes/village_square/campaign-poster-v2.png",
       fountainForeground: "assets/chapter1/scenes/village_square/fountain-foreground-v1.png",
       electionSign: "assets/chapter1/scenes/village_square/election-sign-v1.png",
       journalistStanding: "assets/chapter1/characters/journalist/standing-v2.png",

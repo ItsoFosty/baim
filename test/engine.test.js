@@ -464,12 +464,8 @@ test("village square uses the shared raster, object, and layer scene pipeline", 
     && layer.left === 325
     && layer.top === 330
     && layer.height === 122));
-  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.square.kiosk_papers_pile"
-    && layer.asset === "kioskPapersPile"
-    && layer.zIndex === 40
-    && layer.left === 1095
-    && layer.top === 427
-    && layer.width === 165));
+  // The updated newsstand background already contains the papers.
+  assert.equal(scene.foregroundLayers.some((layer) => layer.id === "layer.square.kiosk_papers_pile"), false);
   for (const object of [...scene.exits, ...scene.interactables, ...scene.npcs]) {
     assert.ok(object.polygon?.length >= 3, `${object.id} needs generated editor geometry`);
   }
@@ -3222,19 +3218,26 @@ test("the old men's bench blocks walking behind its seated figures but remains a
   }
 });
 
-test("the pre-campaign notice covers Mitko's portrait until posting, including old saves", () => {
+test("the full-scene campaign poster appears only after posting, including old saves", () => {
   const scene = chapter1.scenes.find(scene => scene.id === "scene.chapter1.village_square");
-  const layer = scene.foregroundLayers.find(layer => layer.id === "layer.square.poster_before");
+  const layer = scene.foregroundLayers.find(layer => layer.id === "layer.square.campaign_poster");
+  assert.ok(layer);
+  assert.equal(scene.foregroundLayers.some(layer => layer.id === "layer.square.poster_before"), false);
+  assert.equal(assetManifest.scenes[scene.id][layer.asset], "assets/chapter1/scenes/village_square/campaign-poster-v2.png");
   const editedScene = {};
   SceneEditor.prototype.applyLayersToRuntime.call({ layerSource: {}, layers: [layer], game: { currentScene: editedScene } });
-  assert.equal(editedScene.foregroundLayers[0].hiddenWhenFlag, "campaignPosted");
+  assert.equal(editedScene.foregroundLayers[0].visibleWhenFlag, "campaignPosted");
   const renderer = Object.create(Renderer.prototype);
+  assert.deepEqual(renderer.sceneLayerRect(layer, { naturalWidth: 1280, naturalHeight: 720 }),
+    { x: 0, y: 0, w: 1280, h: 720, width: 1280, height: 720 });
   for (const flags of [undefined, {}, { campaignPosted: false }]) {
     renderer.game = { state: { flags } };
-    assert.equal(renderer.sceneLayerVisible(layer), true);
+    assert.equal(renderer.sceneLayerVisible(layer), false);
+    assert.equal(renderer.sceneLayerVisible(editedScene.foregroundLayers[0]), false);
   }
   renderer.game.state.flags = { campaignPosted: true };
-  assert.equal(renderer.sceneLayerVisible(layer), false);
+  assert.equal(renderer.sceneLayerVisible(layer), true);
+  assert.equal(renderer.sceneLayerVisible(editedScene.foregroundLayers[0]), true);
 });
 
 test("relocated stamp station targets the visible seal and releases its old right-hand area", () => {

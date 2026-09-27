@@ -192,14 +192,6 @@ export const sceneLayerGeometry = {
     "sceneId": "scene.chapter1.village_square",
     "foregroundLayers": [
       {
-        "id": "layer.square.kiosk_papers_pile",
-        "asset": "kioskPapersPile",
-        "zIndex": 40,
-        "top": 427,
-        "left": 1095,
-        "width": 165
-      },
-      {
         "id": "layer.square.fountain_foreground",
         "asset": "fountainForeground",
         "zIndex": 42,
@@ -223,14 +215,6 @@ export const sceneLayerGeometry = {
         "height": 99
       },
       {
-        "id": "layer.square.poster_before",
-        "asset": "posterBefore",
-        "zIndex": 100,
-        "top": 238,
-        "left": 1082,
-        "hiddenWhenFlag": "campaignPosted"
-      },
-      {
         "id": "layer.square.journalist",
         "asset": "journalistStanding",
         "zIndex": 46,
@@ -248,6 +232,14 @@ export const sceneLayerGeometry = {
         "left": 205,
         "width": 190,
         "visibleWhenTargetId": "exit.square.to_election_booth"
+      },
+      {
+        "id": "layer.square.campaign_poster",
+        "asset": "campaignPoster",
+        "zIndex": 100,
+        "top": 0,
+        "left": 0,
+        "visibleWhenFlag": "campaignPosted"
       }
     ]
   },

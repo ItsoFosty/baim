@@ -8,7 +8,7 @@
   "layers": [
     {
       "id": "layer.square.kiosk_papers_pile",
-      "enabled": true,
+      "enabled": false,
       "asset": "kioskPapersPile",
       "output": "assets/chapter1/scenes/village_square/kiosk-papers-pile-v1.png",
       "zIndex": 40,
@@ -46,16 +46,6 @@
       "height": 99
     },
     {
-      "id": "layer.square.poster_before",
-      "enabled": true,
-      "asset": "posterBefore",
-      "output": "assets/chapter1/scenes/village_square/poster-before-v1.png",
-      "left": 1082,
-      "top": 238,
-      "zIndex": 100,
-      "hiddenWhenFlag": "campaignPosted"
-    },
-    {
       "id": "layer.square.journalist",
       "asset": "journalistStanding",
       "output": "assets/chapter1/characters/journalist/standing-v2.png",
@@ -77,6 +67,16 @@
       "width": 190,
       "zIndex": 30,
       "visibleWhenTargetId": "exit.square.to_election_booth"
+    },
+    {
+      "id": "layer.square.campaign_poster",
+      "enabled": true,
+      "asset": "campaignPoster",
+      "output": "assets/chapter1/scenes/village_square/campaign-poster-v2.png",
+      "left": 0,
+      "top": 0,
+      "zIndex": 100,
+      "visibleWhenFlag": "campaignPosted"
     }
   ]
 }

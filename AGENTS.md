@@ -1,5 +1,11 @@
 # Comrade Candidate Agent Instructions
 
+## Working Agreement
+
+Read `PROJECT_RULES.md` before making changes. It is the central source for repository scope, Git and
+approval gates, task sizing, verification, and collaboration. Keep detailed workflow rules there rather
+than duplicating them in this file.
+
 ## Project Goal
 
 Build a high-resolution 2D point-and-click adventure prototype:

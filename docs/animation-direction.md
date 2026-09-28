@@ -300,3 +300,13 @@ box placement. Supply reviewed Ludo.ai sprite ZIP + JSON in the existing externa
 animation input folder, then register and verify each action at its actual scene
 anchor. Do not substitute a new rig or label static cutouts as completed animation.
 The creditor pair and election staging are review art, not animated sprite sheets.
+
+## Look Into The Distance Ludo Export
+
+The reviewed east-facing source variant is `look_into_distance_east_1`, imported from
+`bai-mitko-look-into-distance-east-1.zip`. It is a non-looping 16-frame `look` action:
+Bai Mitko shades his eyes and looks into the distance with a slightly confused expression.
+Playback is 6 fps, derived from the Ludo metadata duration of 167 ms per frame. West-facing
+playback mirrors the east source. Treat this as an expressive observation action, not an idle,
+angry reaction, or rejection animation. Scene-specific registration and timing should be added
+when the first hotspot that uses the action is selected.

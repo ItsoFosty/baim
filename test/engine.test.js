@@ -3126,6 +3126,29 @@ test("generated external animations include authored scale and dense offsets", (
   assert.deepEqual(frame.offsets[0], { x: 0, y: 0 });
 });
 
+test("look into distance export is staged as the stable look action", () => {
+  const selection = JSON.parse(readFileSync("assets_src/characters/bai_mitko/external_animation_v1/external-animation-selection.json", "utf8"));
+  const config = selection.animations.look_into_distance_east_1;
+  const runtime = externalAnimationV1.actionAnimations.east.look[0];
+  assert.equal(config.action, "look");
+  assert.match(config.description, /looks into the distance/i);
+  assert.equal(runtime.actionKey, "look_into_distance_east_1");
+  assert.equal(runtime.frameCount, 16);
+  assert.equal(runtime.fps, 6);
+  assert.equal(runtime.loop, false);
+  assert.equal(runtime.movementSpeedMultipliers.every((value) => value === 0), true);
+  assert.equal(externalAnimationV1.actionAnimations.west.look[0].mirrored, true);
+});
+
+test("simple animation viewer resolves the look into distance strip", () => {
+  const game = Object.create(Game.prototype);
+  game.simpleAnim = { mode: "look_into_distance_east_1", direction: "east" };
+  const frame = game.simpleCurrentFrame();
+  assert.equal(frame.slot, "external_look_into_distance_east_1");
+  assert.equal(frame.frameCount, 16);
+  assert.equal(frame.fps, 6);
+});
+
 test("open-window action carries an accepted reproducible registration fit", () => {
   const selection = JSON.parse(readFileSync("assets_src/characters/bai_mitko/external_animation_v1/external-animation-selection.json", "utf8"));
   const config = selection.animations.opens_window;

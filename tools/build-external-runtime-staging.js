@@ -86,7 +86,7 @@ for (const [key, config] of Object.entries(selection.animations || {})) {
   const sourceFrameContentBounds = sourceFrameRects.map((rect) => alphaBoundsRect(sourceSheet, rect) || { x: 0, y: 0, w: rect.w, h: rect.h });
   const frameContentBounds = frameRects.map((rect) => alphaBoundsRect(sourceSheet, rect) || { x: 0, y: 0, w: rect.w, h: rect.h });
   const contentBounds = unionBounds(frameContentBounds) || { x: 0, y: 0, w: info.frameWidth, h: info.frameHeight };
-  const role = roleFromKey(key);
+  const role = roleFromKey(key, config);
   const configuredMovementSpeedMultipliers = Array.isArray(config.movementSpeedMultipliers)
     ? normalizedMovementSpeedMultipliers(config.movementSpeedMultipliers, frameRects.length)
     : null;
@@ -221,10 +221,11 @@ for (const [key, config] of Object.entries(selection.animations || {})) {
   });
 }
 
-function roleFromKey(key) {
+function roleFromKey(key, config = {}) {
   if (key.startsWith("idle_")) return "idle";
   if (key.startsWith("talk_")) return "talk";
   if (key.startsWith("reject_")) return "reject";
+  if (config.action) return "action";
   if (actionNameFromKey(key)) return "action";
   if (key.endsWith("_start")) return "start";
   if (key.endsWith("_short")) return "short";
@@ -234,6 +235,7 @@ function roleFromKey(key) {
 }
 
 function actionNameFromKey(key) {
+  if (key.startsWith("look_into_distance_")) return "look";
   if (key.startsWith("take_")) return "take";
   if (key === "opens_window" || key.startsWith("opens_window_")) return "opensWindow";
   return null;

@@ -9,6 +9,14 @@ This file is the central working agreement for `/home/ZeShad/baim`. Read it befo
 - Treat existing tracked and untracked changes as user work. Preserve them and stop if they overlap the requested task.
 - Do not alter unrelated files, generated assets, approved content, or stable IDs.
 
+## Work Mode Permissions
+
+When operating in Work mode:
+
+- Work may inspect, read, and edit files and run non-destructive commands, builds, and tests inside `/home/ZeShad/baim` without asking conversationally for each small step.
+- Work must not touch `/home/ubuntu/git/baim`.
+- Work must ask before destructive actions; deleting or overwriting user work; committing; pushing; merging; or rewriting Git history.
+
 ## Start Every Session
 
 1. Read `PROJECT_RULES.md`, `AGENTS.md`, `00_START_SESSION.md`, and `docs/Developer-Handbook/PERSONAL_RULES.md`.

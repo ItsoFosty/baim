@@ -2321,7 +2321,9 @@ node tools/build-external-runtime-staging.js</pre>
     if (this.simpleAnim.mode === "short") return this.simpleWalkPart("short");
     if (this.simpleAnim.mode === "stop") return this.simpleWalkPart("stop");
     if (this.simpleAnim.mode === "idle") return this.simpleIdleFrame();
-    if (this.simpleAnim.mode?.startsWith("talk_") || this.simpleAnim.mode?.startsWith("reject_")) return this.simpleActionFrame(this.simpleAnim.mode);
+    if (this.simpleAnim.mode?.startsWith("talk_")
+      || this.simpleAnim.mode?.startsWith("reject_")
+      || this.simpleAnim.mode?.startsWith("look_into_distance_")) return this.simpleActionFrame(this.simpleAnim.mode);
     return null;
   }
 
@@ -2509,6 +2511,7 @@ node tools/build-external-runtime-staging.js</pre>
     const talkLong1 = this.simpleActionFrame("talk_east_long_1");
     const talkLong2 = this.simpleActionFrame("talk_east_long_2");
     const reject = this.simpleActionFrame("reject_east_1");
+    const lookIntoDistance = this.simpleActionFrame("look_into_distance_east_1");
     this.uiRoot.innerHTML = "";
     const panel = element("section", "simple-anim-controls");
     panel.innerHTML = `
@@ -2532,6 +2535,7 @@ node tools/build-external-runtime-staging.js</pre>
         <button data-action="talk_east_long_1" ${talkLong1 ? "" : "disabled"}>Talk Long 1</button>
         <button data-action="talk_east_long_2" ${talkLong2 ? "" : "disabled"}>Talk Long 2</button>
         <button data-action="reject_east_1" ${reject ? "" : "disabled"}>Reject 1</button>
+        <button data-action="look_into_distance_east_1" ${lookIntoDistance ? "" : "disabled"}>Look Into Distance</button>
       </div>
       <div class="simple-anim-row">
         <button data-action="clear-cache">Clear Cache + Reload</button>
@@ -2565,7 +2569,7 @@ node tools/build-external-runtime-staging.js</pre>
       if (action === "start") this.playSimplePart("start");
       if (action === "loop") this.playSimplePart("loop");
       if (action === "stop-part") this.playSimplePart("stop");
-      if (action.startsWith("talk_") || action.startsWith("reject_")) this.playSimplePart(action);
+      if (action.startsWith("talk_") || action.startsWith("reject_") || action.startsWith("look_into_distance_")) this.playSimplePart(action);
       if (action === "full-east") this.playSimpleFullSequence("east");
       if (action === "full-west") this.playSimpleFullSequence("west");
       if (action === "clear-cache") {

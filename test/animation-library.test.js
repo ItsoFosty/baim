@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { assetManifest } from "../src/content/art/assetManifest.js";
 
 const npcHtml = readFileSync("docs/chapter1-npc-animation-catalog.html", "utf8");
+const tonyPilot = JSON.parse(readFileSync("assets_src/characters/tony_fridge/external_animation_v1/animation-pilot.json", "utf8"));
 const worldHtml = readFileSync("docs/chapter1-world-motion-catalog.html", "utf8");
 const indexHtml = readFileSync("docs/animation-library-index.html", "utf8");
 
@@ -25,6 +26,29 @@ test("every Chapter 1 character asset is represented in the NPC catalog", () => 
   for (const path of characterAssets) assert.ok(npcHtml.includes(path), `NPC catalog is missing ${path}`);
   assert.match(npcHtml, /Static only/);
   assert.match(npcHtml, /Future Idle/);
+});
+
+test("Tony's seated idle pilot is cataloged without enabling unapproved runtime art", () => {
+  const pilot = tonyPilot.animations.tony_idle_seated_1;
+  assert.equal(tonyPilot.characterId, "npc.tony_fridge");
+  assert.equal(tonyPilot.scope.sceneId, "scene.chapter1.mehana");
+  assert.deepEqual(tonyPilot.scope.canvas, { width: 1280, height: 720 });
+  assert.deepEqual(tonyPilot.scope.placement, { left: 861, top: 310, height: 244, zIndex: 35 });
+  assert.equal(tonyPilot.scope.fallbackAsset, "assets/chapter1/characters/tony_fridge/seated-v1.png");
+  assert.deepEqual(tonyPilot.scope.excludedScenes, ["scene.chapter1.election_booth"]);
+  assert.equal(pilot.slot, "Idle");
+  assert.equal(pilot.status, "awaiting_source");
+  assert.equal(pilot.use, false);
+  assert.equal(pilot.loop, true);
+  assert.equal(pilot.source.exportFilename, null);
+  assert.equal(pilot.source.sourceZipSha256, null);
+  assert.equal(pilot.generation.creditsSpent, null);
+  assert.equal(pilot.review.candidateStatus, "planned");
+  assert.equal(pilot.source.references[0].sha256, "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8");
+  assert.match(npcHtml, /tony_idle_seated_1/);
+  assert.match(npcHtml, /Pilot planned/);
+  assert.match(npcHtml, /Awaiting Source/);
+  assert.match(npcHtml, /Awaiting generated-source details and human review/);
 });
 
 test("world catalog includes procedural, CSS, and static-state categories", () => {

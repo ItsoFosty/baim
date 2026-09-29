@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "characterId": "npc.tony_fridge",
+  "variant": "external_animation_v1",
+  "status": "planned",
+  "scope": {
+    "sceneId": "scene.chapter1.mehana",
+    "canvas": {
+      "width": 1280,
+      "height": 720
+    },
+    "layerId": "layer.mehana.tony_fridge_seated",
+    "fallbackAsset": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+    "placement": {
+      "left": 861,
+      "top": 310,
+      "height": 244,
+      "zIndex": 35
+    },
+    "excludedScenes": [
+      "scene.chapter1.election_booth"
+    ]
+  },
+  "animations": {
+    "tony_idle_seated_1": {
+      "slot": "Idle",
+      "status": "awaiting_source",
+      "use": false,
+      "loop": true,
+      "description": "A restrained seated idle in which Tony breathes heavily and adds one short finger-drum accent before returning cleanly to the approved pose.",
+      "direction": {
+        "durationSeconds": {
+          "minimum": 4,
+          "maximum": 8
+        },
+        "required": [
+          "Heavy breathing with the chest leading the pose",
+          "One short readable finger-drum accent",
+          "Massive stillness between accents",
+          "Clean return to the approved seated pose"
+        ],
+        "avoid": [
+          "Baseline drift or floating",
+          "Large gestures that compete with dialogue",
+          "Baked table, chair, background, or shadow pixels",
+          "Changes to Tony's face, clothing, proportions, or silhouette"
+        ]
+      },
+      "source": {
+        "exportFilename": null,
+        "sourceZipSha256": null,
+        "references": [
+          {
+            "path": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          },
+          {
+            "path": "assets_src/chapter1/scenes/mehana/tony-fridge-seated-cutout-v1.png",
+            "role": "approved_source_cutout_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          }
+        ]
+      },
+      "generation": {
+        "prompt": null,
+        "tool": "Ludo.ai",
+        "model": null,
+        "settings": null,
+        "resultId": null,
+        "creditsSpent": null
+      },
+      "import": {
+        "frameCount": null,
+        "frameWidth": null,
+        "frameHeight": null,
+        "frameDurationsMs": null,
+        "fps": null,
+        "chromaKeySettings": null,
+        "derivedOutputHashes": {}
+      },
+      "review": {
+        "candidateStatus": "planned",
+        "rejectionReason": null,
+        "reviewer": null,
+        "decision": null,
+        "approvedAt": null
+      }
+    }
+  }
+}

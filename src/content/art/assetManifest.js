@@ -27,7 +27,7 @@ export const assetManifest = {
       background: "assets/chapter1/scenes/village_square/background.png",
       oldMenChorusSeated: "assets/chapter1/characters/old_men_chorus/seated-pair-v1.png",
       posterBefore: "assets/chapter1/scenes/village_square/poster-before-v1.png",
-      babaStoyankaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v1.png",
+      babaStoyankaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
       kioskPapersPile: "assets/chapter1/scenes/village_square/kiosk-papers-pile-v1.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
@@ -69,7 +69,7 @@ export const assetManifest = {
       background: "assets/chapter1/scenes/election_booth/background-v1.png",
       mayorStanding: "assets/chapter1/characters/mayor/standing-v1.png",
       journalistStanding: "assets/chapter1/characters/journalist/standing-v2.png",
-      babaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v1.png",
+      babaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
       tonySeated: "assets/chapter1/characters/tony_fridge/seated-v1.png",
       ballotBox: "assets/chapter1/scenes/archive/box-v1.png",
       creditors: "assets/chapter1/characters/creditors/pair-v1.png",

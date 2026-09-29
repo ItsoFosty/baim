@@ -14,6 +14,8 @@
     "server:https:status": "HTTPS=1 PORT=5174 TLS_CERT=target/server/ip-cert.pem TLS_KEY=target/server/ip-key.pem node tools/server-control.mjs status",
     "server:https:stop": "HTTPS=1 PORT=5174 TLS_CERT=target/server/ip-cert.pem TLS_KEY=target/server/ip-key.pem node tools/server-control.mjs stop",
     "server:https:restart": "HTTPS=1 PORT=5174 TLS_CERT=target/server/ip-cert.pem TLS_KEY=target/server/ip-key.pem node tools/server-control.mjs restart",
+    "workflow:status": "node tools/workflow-assistant.mjs status",
+    "workflow:review": "node tools/workflow-assistant.mjs review",
     "build:walkmasks": "node tools/build-walk-masks.js",
     "build:object-geometry": "node tools/build-scene-object-geometry.js",
     "build:scene-layers": "node tools/build-scene-layers.js",

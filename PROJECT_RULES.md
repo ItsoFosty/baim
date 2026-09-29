@@ -20,10 +20,19 @@ When operating in Work mode:
 ## Start Every Session
 
 1. Read `PROJECT_RULES.md`, `AGENTS.md`, `00_START_SESSION.md`, and `docs/Developer-Handbook/PERSONAL_RULES.md`.
-2. Check the current branch, working tree, and recent commits before editing.
-3. Confirm the task scope, affected files, likely risks, and required verification.
-4. Check `docs/Developer-Handbook/13_Daily_Learning_Log.md` for relevant prior lessons.
-5. Check that the work is not already owned or underway by Itso, Marto, or another contributor.
+2. Run `./start-session.sh` when it is available in the personal VPS checkout. It runs the tracked workflow assistant and reports the next safe step.
+3. Before editing, verify the environment: inspect `hostname`, confirm the repository root is `/home/ZeShad/baim`, confirm the `marto` remote is `https://github.com/tran4o/baim.git`, and check the current branch, upstream, working tree, and recent commits.
+4. Stop if the repository path, canonical remote, or expected working copy does not match. Do not silently substitute a Windows clone, another checkout, or Itso's live checkout.
+5. Confirm the task scope, affected files, likely risks, and required verification.
+6. Check `docs/Developer-Handbook/13_Daily_Learning_Log.md` for relevant prior lessons.
+7. Check that the work is not already owned or underway by Itso, Marto, or another contributor.
+
+## Chat And Task Organization
+
+- Use the BAIM development hub for planning, prioritization, and cross-task decisions.
+- Use a separate focused chat for each distinct implementation outcome or pull request.
+- Keep one task, one branch, and one pull request together; start a new chat when the outcome or branch changes.
+- Archive completed implementation chats after their work is merged and verified.
 
 ## Scope And Implementation
 
@@ -44,8 +53,21 @@ When operating in Work mode:
 - Use one descriptive task branch per task, normally under `feat/` when appropriate.
 - One task should produce one focused pull request.
 - Show the user the diff and verification results before asking for final approval.
+- Make approval requests explicit about the exact next actions: commit, push, and pull-request creation or modification are separate actions unless the user clearly approves them together.
 - Never commit, push, merge, open or modify a pull request, or rewrite history without explicit human approval.
 - Recheck the branch and working tree immediately before any approved commit or push.
+
+## After A Pull Request Is Merged
+
+1. Verify the pull request is merged into `tran4o/baim:master` and record the merge commit.
+2. Confirm the current working tree is safe, switch to local `master`, and fast-forward it to `marto/master`.
+3. Verify local `master` exactly matches `marto/master` and the working tree is clean.
+4. Identify the merged task branch and only the temporary files created for that task.
+5. Before deleting branches or files, list the exact cleanup targets and obtain explicit approval unless that exact cleanup was already authorized for the task.
+6. After approval, delete the merged local branch, delete the matching `zeshad` branch, remove only task-owned temporary files, and prune stale references.
+7. Finish by reporting the branch, canonical commit, working-tree state, preserved services/resources, and any intentionally retained files or branches.
+
+The message `merged` authorizes merge verification and synchronization. It does not by itself authorize deletion unless the user has already established that cleanup permission for the task.
 
 ## Collaboration
 
@@ -57,6 +79,7 @@ When operating in Work mode:
 ## Verification
 
 - Inspect the final diff for scope, accidental changes, secrets, and generated noise.
+- Run `npm run workflow:review` before requesting commit approval. It performs read-only workflow and diff checks, detects visual/Ludo-sensitive files, and prints the remaining human gates.
 - Run the smallest relevant checks while developing, then run `npm test` for code changes unless the task clearly does not affect code.
 - Run `git diff --check` before presenting work for approval.
 - Add or update tests when changing localization, save schema/defaults, geometry, quest state, inventory state, or dialogue effects.

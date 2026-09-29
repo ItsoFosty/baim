@@ -29,7 +29,7 @@
       "id": "layer.square.baba_stoyanka_seated",
       "enabled": true,
       "asset": "babaStoyankaSeated",
-      "output": "assets/chapter1/characters/baba_stoyanka/seated-v1.png",
+      "output": "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
       "zIndex": 90,
       "top": 330,
       "left": 325,

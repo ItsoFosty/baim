@@ -21,7 +21,9 @@
     "build:characters": "node tools/build-character-chroma-assets.js",
     "build:runtime-animations": "node tools/build-external-runtime-staging.js && node tools/optimize-external-runtime-assets.mjs",
     "build:runtime-assets": "node tools/build-runtime-asset-manifest.mjs",
-    "build:runtime": "npm run build:runtime-animations && npm run build:runtime-assets",
+    "build:runtime": "npm run build:runtime-animations && npm run build:runtime-assets && npm run build:animation-catalog",
+    "build:animation-catalog": "node tools/build-animation-catalog.mjs",
+    "check:animation-catalog": "node tools/build-animation-catalog.mjs --check",
     "fit:action": "node tools/register-external-action.mjs",
     "verify:action-render": "node tools/verify-action-render.mjs",
     "test": "node --test test/*.test.js"

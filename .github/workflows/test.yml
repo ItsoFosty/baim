@@ -21,3 +21,5 @@ jobs:
       - run: npm test
       - name: Verify generated animation metadata is current
         run: git diff --exit-code -- src/content/art/externalAnimationV1.generated.js
+      - name: Verify animation catalog is current
+        run: npm run check:animation-catalog

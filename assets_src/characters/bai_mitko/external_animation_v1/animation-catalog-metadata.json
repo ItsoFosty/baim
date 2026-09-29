@@ -1,0 +1,70 @@
+{
+  "walk_east_start": {
+    "label": "Walk - Start",
+    "description": "Bai Mitko shifts out of his standing pose and commits his weight into the first east-facing steps."
+  },
+  "walk_east_loop": {
+    "label": "Walk - Loop",
+    "description": "The repeatable middle section of Bai Mitko's east-facing walk, used while he crosses longer distances."
+  },
+  "walk_east_short": {
+    "label": "Walk - Short",
+    "description": "A compact east-facing walk cycle for short movements where the full start-loop-stop sequence would feel too long."
+  },
+  "walk_east_stop": {
+    "label": "Walk - Stop",
+    "description": "Bai Mitko slows from his east-facing walk and settles back into a stable standing pose."
+  },
+  "idle_east_1": {
+    "label": "Idle - Variant 1",
+    "description": "A one-shot east-facing idle performance used by the automatic idle pool before returning to the neutral stance."
+  },
+  "idle_east_2": {
+    "label": "Idle - Variant 2",
+    "description": "A second one-shot east-facing idle performance that adds variety while Bai Mitko is waiting."
+  },
+  "idle_east_3": {
+    "label": "Idle - Variant 3",
+    "description": "A third one-shot east-facing idle performance selected automatically during inactive moments."
+  },
+  "idle_east_4": {
+    "label": "Idle - Variant 4",
+    "description": "A fourth one-shot east-facing idle performance that breaks up repeated neutral poses."
+  },
+  "idle_east_5": {
+    "label": "Idle - Variant 5",
+    "description": "A fifth one-shot east-facing idle performance used as part of the character's randomized idle behavior."
+  },
+  "idle_east_6": {
+    "label": "Idle - Variant 6",
+    "description": "A sixth one-shot east-facing idle performance that returns cleanly to Bai Mitko's neutral stance."
+  },
+  "talk_east_long_1": {
+    "label": "Talk - Long Sentence",
+    "description": "An east-facing speaking performance timed for a longer sentence, with broader sustained conversational movement."
+  },
+  "talk_east_long_2": {
+    "label": "Talk - Short Sentence",
+    "description": "An east-facing speaking performance for a short sentence, ending sooner than the long dialogue variant."
+  },
+  "talk_east_short_1": {
+    "label": "Talk - Single Word",
+    "description": "A brief east-facing speaking gesture intended for a single word or very short reply."
+  },
+  "reject_east_1": {
+    "label": "Reject Action",
+    "description": "Bai Mitko gives a negative or refusing response when the player tries an action that he will not perform."
+  },
+  "look_into_distance_east_1": {
+    "label": "Look Into the Distance",
+    "description": "Bai Mitko shades his eyes and looks into the distance with a slightly confused expression."
+  },
+  "take_east_forward_default": {
+    "label": "Take Object - Forward",
+    "description": "Bai Mitko reaches forward to collect an object; currently staged for taking the unpaid bills in the apartment."
+  },
+  "opens_window": {
+    "label": "Open Apartment Window",
+    "description": "Bai Mitko approaches and opens the apartment window as part of the window interaction."
+  }
+}

@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 
 export const EXPECTED_ROOT = "/home/ZeShad/baim";
 export const EXPECTED_REMOTE = "https://github.com/tran4o/baim.git";
+export const LUDO_PUBLISH_APPROVAL = "approve runtime and publish";
 
 function runGit(args, { allowFailure = false } = {}) {
   const result = spawnSync("git", args, { encoding: "utf8" });
@@ -79,6 +80,19 @@ export function reviewRequirements(paths) {
   return { visual, ludo, code };
 }
 
+export function approvalGuidance({ ludo = false } = {}) {
+  if (ludo) {
+    return [
+      "Providing the Ludo export authorizes candidate integration and VPS preview on port 5173 without intermediate approval pauses.",
+      `After VPS visual review, ask once for '${LUDO_PUBLISH_APPROVAL}' to bundle runtime approval, commit, push, PR creation, merge-if-green, VPS sync, and the exact listed task cleanup.`
+    ];
+  }
+  return [
+    "Human approval remains required before commit, push, PR changes, merge, or destructive cleanup.",
+    "Related Git actions may be bundled when the exact sequence and cleanup targets are shown before approval."
+  ];
+}
+
 function inspectRepository() {
   const root = runGit(["rev-parse", "--show-toplevel"]).stdout;
   const remote = runGit(["remote", "get-url", "marto"], { allowFailure: true }).stdout;
@@ -125,7 +139,8 @@ function runStatus(info) {
   const result = classifyWorkflow(info);
   console.log(`State: ${result.state}`);
   console.log(`Next: ${result.next}`);
-  console.log("Human gates remain required for visual approval, Ludo credit spending, commit, push, PR changes, merge, and destructive cleanup.");
+  console.log("Human gates remain required for visual approval and Ludo credit spending.");
+  console.log("Commit, push, PR, merge-if-green, synchronization, and exact task cleanup may use one explicit bundled approval.");
   if (result.state === "blocked") process.exitCode = 1;
 }
 
@@ -158,9 +173,10 @@ function runReview(info) {
   if (requirements.ludo) {
     console.log("- Preserve the original Ludo ZIP and record prompt, model/settings, source hash, result ID, credits, candidate status, rejection reason, approval, and export filename.");
     console.log("- Run npm run build:runtime and npm run check:animation-catalogs.");
+    console.log("- Integrate the uncommitted candidate as runtime_review and verify it in the VPS game on port 5173; do not use the Windows clone or a source-only PR.");
   }
   console.log("- Show the final diff and verification results.");
-  console.log("- Ask exactly which actions are approved: commit, push, and PR creation/modification.");
+  for (const line of approvalGuidance({ ludo: requirements.ludo })) console.log(`- ${line}`);
 }
 
 function main() {

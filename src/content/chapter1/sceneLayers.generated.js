@@ -168,17 +168,6 @@ export const sceneLayerGeometry = {
         "hiddenWhenItemOwned": "item.accordion"
       },
       {
-        "id": "layer.apartment.window_open_back",
-        "asset": "windowOpenBack",
-        "zIndex": 100,
-        "top": 51,
-        "left": 150,
-        "visibleDuringAction": {
-          "actionName": "opensWindow",
-          "fromFrame": 10
-        }
-      },
-      {
         "id": "layer.apartment.window_open",
         "asset": "windowOpen",
         "zIndex": 100,

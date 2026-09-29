@@ -314,9 +314,11 @@
       "loop": false,
       "frameStart": 0,
       "frameEndTrim": 0,
+      "frameCount": 10,
       "fps": 12,
       "action": "opensWindow",
       "scale": 1.116,
+      "stableVisualBounds": true,
       "flipXWest": false,
       "registration": {
         "referenceProvider": "background",
@@ -413,30 +415,6 @@
         ],
         [
           23.942,
-          0
-        ],
-        [
-          27.158,
-          0
-        ],
-        [
-          30.374,
-          0
-        ],
-        [
-          31.446,
-          0
-        ],
-        [
-          34.662,
-          0
-        ],
-        [
-          36.448,
-          0
-        ],
-        [
-          36.448,
           0
         ]
       ],

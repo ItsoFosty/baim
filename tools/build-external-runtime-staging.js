@@ -112,6 +112,7 @@ for (const [key, config] of Object.entries(selection.animations || {})) {
     : undefined;
   const flipX = typeof config.flipX === "boolean" ? config.flipX : undefined;
   const flipXWest = typeof config.flipXWest === "boolean" ? config.flipXWest : undefined;
+  const stableVisualBounds = config.stableVisualBounds === true;
   const metadata = {
     src: `target/external_animation_v1/runtime/${key}.png`,
     sourceSheet: portablePath(info.sheetImage),
@@ -150,6 +151,7 @@ for (const [key, config] of Object.entries(selection.animations || {})) {
     scale,
     offsetX,
     offsetY,
+    ...(stableVisualBounds ? { stableVisualBounds: true } : {}),
     ...(offsets === undefined ? {} : { offsets }),
     ...(flipX === undefined ? {} : { flipX }),
     mirroredWest: true

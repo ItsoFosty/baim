@@ -27,9 +27,8 @@ test("every Chapter 1 character asset is represented in the NPC catalog", () => 
   assert.match(npcHtml, /Future Idle/);
 });
 
-test("world catalog includes procedural, CSS, timed-layer, and static-state categories", () => {
+test("world catalog includes procedural, CSS, and static-state categories", () => {
   assert.match(worldHtml, /effect\.fountain_water_stream/);
   assert.match(worldHtml, /UI keyframe/);
-  assert.match(worldHtml, /Action-timed layer/);
   assert.match(worldHtml, /Static state change/);
 });

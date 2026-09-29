@@ -79,6 +79,7 @@ export function stableExternalVisualBounds(definition) {
 }
 
 export function externalFrameVisualBounds(frame, frameIndex, stableBounds = null) {
+  if (frame?.stableVisualBounds && stableBounds) return stableBounds;
   const bounds = frame?.sourceFrameContentBounds?.[frameIndex] || frame?.contentBounds || stableBounds;
   if (!bounds || !Number.isFinite(bounds.h) || bounds.h <= 0) return stableBounds;
   return bounds;

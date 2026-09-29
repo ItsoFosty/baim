@@ -1,0 +1,85 @@
+{
+  "npcs": [
+    {
+      "id": "npc.baba_stoyanka",
+      "label": "Baba Stoyanka",
+      "description": "Seated village-square supporter and fountain-quest character.",
+      "source": "assets/chapter1/characters/baba_stoyanka/seated-v1.png"
+    },
+    {
+      "id": "npc.old_men_chorus",
+      "label": "Old Men Chorus",
+      "description": "Static seated pair who comment on the fountain repair.",
+      "source": "assets/chapter1/characters/old_men_chorus/seated-pair-v1.png"
+    },
+    {
+      "id": "npc.journalist",
+      "label": "Journalist",
+      "description": "Standing investigation character reused across the square, Mayor's office, and election.",
+      "source": "assets/chapter1/characters/journalist/standing-v2.png"
+    },
+    {
+      "id": "npc.mehana_waiter",
+      "label": "Kiro / Mehana Waiter",
+      "description": "Static serving pose for the Mehana waiter and shopkeeper interactions.",
+      "source": "assets/chapter1/characters/mehana_waiter/idle-v1.png"
+    },
+    {
+      "id": "npc.tony_fridge",
+      "label": "Tony Fridge",
+      "description": "Seated Mehana rival and election supporter.",
+      "source": "assets/chapter1/characters/tony_fridge/seated-v1.png"
+    },
+    {
+      "id": "npc.mayor",
+      "label": "Mayor",
+      "description": "Standing Mayor used in the office confrontation and election scene.",
+      "source": "assets/chapter1/characters/mayor/standing-v1.png"
+    },
+    {
+      "id": "npc.municipality_clerk",
+      "label": "Penka / Municipality Clerk",
+      "description": "Seated clerk responsible for credential checks and registration.",
+      "source": "assets/chapter1/scenes/municipality/penka-seated-bordeaux-polka-v2.png"
+    },
+    {
+      "id": "npc.municipality_security_officer",
+      "label": "Municipality Security Officer",
+      "description": "Static officer stationed beside the security table.",
+      "source": "assets/chapter1/scenes/municipality/policeman-security-guard-v2.png"
+    },
+    {
+      "id": "npc.creditors",
+      "label": "Creditors",
+      "description": "Conditional character pair shown in the election ending scene.",
+      "source": "assets/chapter1/characters/creditors/pair-v1.png"
+    },
+    {
+      "id": "npc.municipality_colleague",
+      "label": "Municipality Colleague",
+      "description": "Background clerk with a short help bark; currently baked into the municipality scene.",
+      "source": null
+    },
+    {
+      "id": "npc.municipality_background_clerk",
+      "label": "Municipality Background Clerk",
+      "description": "Background office character with a busy bark; currently baked into the municipality scene.",
+      "source": null
+    }
+  ],
+  "world": {
+    "effect.fountain_water_stream": {
+      "label": "Fountain Water Stream",
+      "description": "Procedural canvas water segments follow the authored fountain path after the repair flag is set.",
+      "scene": "scene.chapter1.village_square",
+      "source": "src/engine/SceneEffects.js",
+      "previewAsset": "assets/chapter1/scenes/village_square/fountain-foreground-v1.png"
+    },
+    "ui.interface_transitions": {
+      "label": "Interface Transitions",
+      "description": "Short CSS transitions animate menus, buttons, panels, and speech-bubble resizing.",
+      "scene": "Global UI",
+      "source": "src/styles.css"
+    }
+  }
+}

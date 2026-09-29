@@ -28,7 +28,8 @@
       "id": "npc.tony_fridge",
       "label": "Tony Fridge",
       "description": "Seated Mehana rival and election supporter.",
-      "source": "assets/chapter1/characters/tony_fridge/seated-v1.png"
+      "source": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+      "animationPilot": "assets_src/characters/tony_fridge/external_animation_v1/animation-pilot.json"
     },
     {
       "id": "npc.mayor",

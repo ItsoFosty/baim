@@ -27,6 +27,33 @@ function titleize(value) {
   return String(value).replace(/^npc\.|^layer\.|^effect\.|^ui\./, "").replaceAll(/[._-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function loadAnimationPilots(path) {
+  if (!path) return [];
+  const absolutePath = join(ROOT, path);
+  if (!existsSync(absolutePath)) throw new Error(`Animation pilot manifest is missing: ${path}`);
+  const manifest = JSON.parse(readFileSync(absolutePath, "utf8"));
+  return Object.entries(manifest.animations || {}).map(([id, animation]) => ({
+    id,
+    slot: animation.slot,
+    status: animation.status,
+    candidateStatus: animation.review?.candidateStatus,
+    sceneId: manifest.scope?.sceneId,
+    manifestPath: path,
+    provenanceComplete: Boolean(
+      animation.generation?.prompt
+      && animation.generation?.model
+      && animation.generation?.settings
+      && animation.generation?.resultId
+      && Number.isFinite(animation.generation?.creditsSpent)
+      && animation.source?.exportFilename
+      && animation.source?.sourceZipSha256
+      && animation.review?.decision
+      && animation.review?.reviewer
+      && animation.review?.approvedAt
+    )
+  }));
+}
+
 function placeholder(label, kind = "Future-ready") {
   const safe = esc(label);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#23184f"/><stop offset="1" stop-color="#4d318f"/></linearGradient></defs><rect width="640" height="420" rx="30" fill="url(#g)"/><circle cx="320" cy="175" r="82" fill="none" stroke="#8cbcff" stroke-width="10" stroke-dasharray="18 12"/><path d="M285 175h70M320 140v70" stroke="#fff" stroke-width="12" stroke-linecap="round"/><text x="320" y="300" fill="#fff" font-family="Arial" font-size="28" text-anchor="middle">${safe}</text><text x="320" y="337" fill="#c9c1e8" font-family="Arial" font-size="18" text-anchor="middle">${esc(kind)}</text></svg>`;
@@ -53,13 +80,19 @@ async function buildNpcEntries() {
   const knownSources = new Set();
   for (const npc of metadata.npcs) {
     if (npc.source) knownSources.add(npc.source);
+    const pilots = loadAnimationPilots(npc.animationPilot);
+    const pilotSlots = new Set(pilots.map((pilot) => pilot.slot));
     entries.push({
       ...npc,
       category: "NPC",
-      status: "Static only",
+      status: pilots.length ? "Pilot planned" : "Static only",
       scenes: scenesForAsset(npc.source),
       source: npc.source || "Baked into scene background",
-      slots: ["Idle", "Talk", "Reaction", "Action"],
+      slots: [
+        ...pilots.map((pilot) => `${pilot.slot} pilot - ${titleize(pilot.status)}`),
+        ...["Idle", "Talk", "Reaction", "Action"].filter((slot) => !pilotSlots.has(slot))
+      ],
+      pilots,
       review: false,
       image: await imageData(npc.source, npc.label, "No animation registered")
     });
@@ -152,7 +185,7 @@ function catalogHtml({ title, intro, entries, emptyMessage }) {
   const live = entries.filter((entry) => entry.status === "Live").length;
   const staticCount = entries.filter((entry) => entry.status === "Static only").length;
   const categories = [...new Set(entries.map((entry) => entry.category))];
-  const cards = entries.map((entry) => `<article class="card" data-entry-id="${esc(entry.id)}" data-category="${esc(entry.category)}" data-status="${esc(entry.status)}"><div class="media"><img src="${entry.image}" alt="${esc(entry.label)} reference"></div><div class="body"><div class="eyebrow"><span class="badge ${statusClass(entry.status)}">${esc(entry.status)}</span><span>${esc(entry.category)}</span></div><h2>${esc(entry.label)}</h2><code>${esc(entry.id)}</code><p class="description">${esc(entry.description)}</p>${entry.review ? '<p class="review">Needs metadata review</p>' : ""}${entry.slots ? `<div class="slots">${entry.slots.map((slot) => `<span class="slot">Future ${esc(slot)}</span>`).join("")}</div>` : ""}<p class="detail"><b>Scene:</b> ${esc((entry.scenes || [entry.scene]).filter(Boolean).join(", ") || "No scene registration")}</p>${entry.trigger ? `<p class="detail"><b>Trigger:</b> ${esc(entry.trigger)}</p>` : ""}<p class="detail"><b>Source:</b> ${esc(entry.source)}</p></div></article>`).join("");
+  const cards = entries.map((entry) => `<article class="card" data-entry-id="${esc(entry.id)}" data-category="${esc(entry.category)}" data-status="${esc(entry.status)}"><div class="media"><img src="${entry.image}" alt="${esc(entry.label)} reference"></div><div class="body"><div class="eyebrow"><span class="badge ${statusClass(entry.status)}">${esc(entry.status)}</span><span>${esc(entry.category)}</span></div><h2>${esc(entry.label)}</h2><code>${esc(entry.id)}</code><p class="description">${esc(entry.description)}</p>${entry.review ? '<p class="review">Needs metadata review</p>' : ""}${entry.slots ? `<div class="slots">${entry.slots.map((slot) => `<span class="slot">${entry.pilots?.some((pilot) => `${pilot.slot} pilot - ${titleize(pilot.status)}` === slot) ? "" : "Future "}${esc(slot)}</span>`).join("")}</div>` : ""}${(entry.pilots || []).map((pilot) => `<p class="detail"><b>Pilot:</b> ${esc(pilot.id)} - ${esc(titleize(pilot.status))}; scene: ${esc(pilot.sceneId)}; candidate: ${esc(titleize(pilot.candidateStatus))}</p><p class="detail"><b>Pilot manifest:</b> ${esc(pilot.manifestPath)}</p><p class="detail"><b>Provenance:</b> ${pilot.provenanceComplete ? "Complete" : "Awaiting generated-source details and human review"}</p>`).join("")}<p class="detail"><b>Scene:</b> ${esc((entry.scenes || [entry.scene]).filter(Boolean).join(", ") || "No scene registration")}</p>${entry.trigger ? `<p class="detail"><b>Trigger:</b> ${esc(entry.trigger)}</p>` : ""}<p class="detail"><b>Source:</b> ${esc(entry.source)}</p></div></article>`).join("");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${style}</style></head><body><header><p>BAIM / CHAPTER 1 ANIMATION LIBRARY</p><h1>${esc(title)}</h1><p>${esc(intro)}</p><div class="summary"><div><strong>${entries.length}</strong><span>catalog entries</span></div><div><strong>${live}</strong><span>live motion</span></div><div><strong>${staticCount}</strong><span>static / future-ready</span></div></div></header><nav class="controls"><button class="active" data-filter="all">All</button>${categories.map((category) => `<button data-filter="${esc(category)}">${esc(category)}</button>`).join("")}<button data-filter="Static only">Static only</button></nav><main>${entries.length ? `<div class="grid">${cards}</div>` : `<div class="empty">${esc(emptyMessage)}</div>`}</main><footer>Generated by npm run build:animation-catalogs. Do not edit this file by hand.</footer><script>document.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-filter]').forEach(item=>item.classList.remove('active'));button.classList.add('active');const filter=button.dataset.filter;document.querySelectorAll('.card').forEach(card=>card.hidden=filter!=='all'&&card.dataset.category!==filter&&card.dataset.status!==filter)}))</script></body></html>`;
 }
 

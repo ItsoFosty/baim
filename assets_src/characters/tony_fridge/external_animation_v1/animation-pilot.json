@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "characterId": "npc.tony_fridge",
+  "variant": "external_animation_v1",
+  "status": "source_received",
+  "scope": {
+    "sceneId": "scene.chapter1.mehana",
+    "canvas": {
+      "width": 1280,
+      "height": 720
+    },
+    "layerId": "layer.mehana.tony_fridge_seated",
+    "fallbackAsset": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+    "placement": {
+      "left": 861,
+      "top": 310,
+      "height": 244,
+      "zIndex": 35
+    },
+    "excludedScenes": [
+      "scene.chapter1.election_booth"
+    ]
+  },
+  "animations": {
+    "tony_idle_seated_1": {
+      "slot": "Idle",
+      "status": "source_received",
+      "use": false,
+      "loop": true,
+      "description": "A restrained seated idle in which Tony breathes heavily and adds one short finger-drum accent before returning cleanly to the approved pose.",
+      "direction": {
+        "durationSeconds": {
+          "minimum": 4,
+          "maximum": 8
+        },
+        "required": [
+          "Heavy breathing with the chest leading the pose",
+          "One short readable finger-drum accent",
+          "Massive stillness between accents",
+          "Clean return to the approved seated pose"
+        ],
+        "avoid": [
+          "Baseline drift or floating",
+          "Large gestures that compete with dialogue",
+          "Baked table, chair, background, or shadow pixels",
+          "Changes to Tony's face, clothing, proportions, or silhouette"
+        ]
+      },
+      "source": {
+        "exportFilename": "sprite-384px-frames-25-rows-5-cols-5.zip",
+        "sourceZipSha256": "070458b291740af5fc75213e9c8f0106e7d54c03e0b3ba1ddd683a8a8dbc966c",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          },
+          {
+            "path": "assets_src/chapter1/scenes/mehana/tony-fridge-seated-cutout-v1.png",
+            "role": "approved_source_cutout_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          }
+        ],
+        "storedFilename": "input/tony-idle-seated-1.zip"
+      },
+      "generation": {
+        "prompt": "Create a seamless five-second seated idle loop. Tony stays heavily still while his chest and shoulders rise slowly with breathing. After a quiet hold, the fingers of one hand drum once on the resting surface, then return exactly to the starting pose. Preserve the exact character, face, clothing, proportions, seated position, scale, framing, and painted style. Keep his body anchored. No talking, head turn, standing, large movement, camera motion, background, new props, extra limbs, or deformation.",
+        "tool": "Ludo.ai",
+        "model": "Hydra",
+        "settings": {
+          "maxDurationSeconds": 5,
+          "animationMargin": "Auto",
+          "maxFrames": 25,
+          "spriteSize": 384,
+          "loopAnimation": true,
+          "trimAnimationWhitespace": false
+        },
+        "resultId": null,
+        "creditsSpent": 15
+      },
+      "import": {
+        "frameCount": 25,
+        "frameWidth": 768,
+        "frameHeight": 768,
+        "frameDurationsMs": [
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198
+        ],
+        "totalDurationMs": 4950,
+        "fps": 5.051,
+        "sheetWidth": 3840,
+        "sheetHeight": 3840,
+        "format": "RGBA8888",
+        "chromaKeySettings": null,
+        "derivedOutputHashes": {}
+      },
+      "review": {
+        "candidateStatus": "source_approved_for_import",
+        "rejectionReason": null,
+        "reviewer": "Svetozar",
+        "decision": "approved_for_source_import_only",
+        "approvedAt": "2026-09-29"
+      }
+    }
+  }
+}

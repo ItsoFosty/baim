@@ -61,6 +61,29 @@ export function animationRenderMirrored(frame, mirrored = false) {
   return Boolean(mirrored);
 }
 
+export function sceneLayerAnimationFrame(animation, timeMs = 0) {
+  const frameCount = Math.max(1, Math.floor(Number(animation?.frameCount) || 1));
+  const durationMs = Number(animation?.frameDurationMs) > 0
+    ? Number(animation.frameDurationMs)
+    : 1000 / Math.max(0.001, Number(animation?.fps) || 1);
+  const elapsedFrame = Math.max(0, Math.floor((Number(timeMs) || 0) / durationMs));
+  return animation?.loop === false ? Math.min(elapsedFrame, frameCount - 1) : elapsedFrame % frameCount;
+}
+
+export function sceneLayerAnimationSourceRect(animation, frameIndex) {
+  const frameWidth = Math.max(1, Math.floor(Number(animation?.frameWidth) || 1));
+  const frameHeight = Math.max(1, Math.floor(Number(animation?.frameHeight) || 1));
+  const columns = Math.max(1, Math.floor(Number(animation?.columns) || 1));
+  const bounds = animation?.contentBounds || { x: 0, y: 0, w: frameWidth, h: frameHeight };
+  const index = Math.max(0, Math.floor(Number(frameIndex) || 0));
+  return {
+    x: (index % columns) * frameWidth + Number(bounds.x || 0),
+    y: Math.floor(index / columns) * frameHeight + Number(bounds.y || 0),
+    w: Number(bounds.w || frameWidth),
+    h: Number(bounds.h || frameHeight)
+  };
+}
+
 function usesExternalWalkPose(player, definition) {
   return player?.id === "npc.bai_mitko" && definition?.animationSource === "external_animation_v1";
 }
@@ -536,10 +559,30 @@ export class Renderer {
   }
 
   drawSceneRasterLayer(scene, layer) {
-    const image = this.game.assets.getSceneImage(scene.id, layer.asset);
-    if (!this.game.assets.isLoaded(image)) return;
-    const rect = this.sceneLayerRect(layer, image);
-    this.ctx.drawImage(image, rect.x, rect.y, rect.w, rect.h);
+    const fallbackImage = this.game.assets.getSceneImage(scene.id, layer.asset);
+    const animationImage = layer.animation?.asset
+      ? this.game.assets.getSceneImage(scene.id, layer.animation.asset)
+      : null;
+    if (layer.animation && this.game.assets.isLoaded(animationImage)) {
+      const frameIndex = sceneLayerAnimationFrame(layer.animation, this.game.lastTime || 0);
+      const source = sceneLayerAnimationSourceRect(layer.animation, frameIndex);
+      const rect = this.sceneLayerRect(layer, { naturalWidth: source.w, naturalHeight: source.h });
+      this.ctx.drawImage(
+        animationImage,
+        source.x,
+        source.y,
+        source.w,
+        source.h,
+        rect.x,
+        rect.y,
+        rect.w,
+        rect.h
+      );
+      return;
+    }
+    if (!this.game.assets.isLoaded(fallbackImage)) return;
+    const rect = this.sceneLayerRect(layer, fallbackImage);
+    this.ctx.drawImage(fallbackImage, rect.x, rect.y, rect.w, rect.h);
   }
 
   sceneLayerRect(layer, image) {

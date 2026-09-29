@@ -1020,6 +1020,7 @@ function runtimeLayerFromSource(layer) {
   if (layer.hiddenWhenFlag) result.hiddenWhenFlag = String(layer.hiddenWhenFlag);
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);
   if (layer.hiddenWhenState) result.hiddenWhenState = String(layer.hiddenWhenState);
+  if (layer.animation) result.animation = structuredClone(layer.animation);
   if (layer.visibleDuringAction) result.visibleDuringAction = structuredClone(layer.visibleDuringAction);
   for (const key of ["top", "left", "right", "bottom", "width", "height"]) {
     if (Number.isFinite(Number(layer[key]))) result[key] = Number(layer[key]);

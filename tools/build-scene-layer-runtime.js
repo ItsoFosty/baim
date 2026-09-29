@@ -51,6 +51,7 @@ function runtimeLayer(layer, sourcePath) {
   if (layer.hiddenWhenFlag) result.hiddenWhenFlag = String(layer.hiddenWhenFlag);
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);
   if (layer.hiddenWhenState) result.hiddenWhenState = String(layer.hiddenWhenState);
+  if (layer.animation) result.animation = runtimeAnimation(layer.animation, sourcePath, layer.id);
   if (layer.visibleDuringAction) {
     result.visibleDuringAction = {
       actionName: String(layer.visibleDuringAction.actionName || ""),
@@ -60,6 +61,38 @@ function runtimeLayer(layer, sourcePath) {
   if (!hasNumber(result, "top") && !hasNumber(result, "bottom")) result.top = 0;
   if (!hasNumber(result, "left") && !hasNumber(result, "right")) result.left = 0;
   return result;
+}
+
+function runtimeAnimation(animation, sourcePath, layerId) {
+  const requiredPositiveNumbers = ["frameWidth", "frameHeight", "frameCount", "columns"];
+  if (!animation.asset) throw new Error(`${sourcePath} ${layerId} animation asset is required`);
+  for (const key of requiredPositiveNumbers) {
+    if (!Number.isFinite(Number(animation[key])) || Number(animation[key]) <= 0) {
+      throw new Error(`${sourcePath} ${layerId} animation ${key} must be a positive number`);
+    }
+  }
+  const frameDurationMs = Number(animation.frameDurationMs);
+  const fps = Number(animation.fps);
+  if (!(frameDurationMs > 0) && !(fps > 0)) {
+    throw new Error(`${sourcePath} ${layerId} animation needs frameDurationMs or fps`);
+  }
+  const bounds = animation.contentBounds;
+  if (!bounds || !["x", "y", "w", "h"].every((key) => Number.isFinite(Number(bounds[key])))) {
+    throw new Error(`${sourcePath} ${layerId} animation contentBounds must contain x, y, w, and h`);
+  }
+  if (Number(bounds.w) <= 0 || Number(bounds.h) <= 0) {
+    throw new Error(`${sourcePath} ${layerId} animation contentBounds must have positive dimensions`);
+  }
+  return {
+    asset: String(animation.asset),
+    frameWidth: Math.floor(Number(animation.frameWidth)),
+    frameHeight: Math.floor(Number(animation.frameHeight)),
+    frameCount: Math.floor(Number(animation.frameCount)),
+    columns: Math.floor(Number(animation.columns)),
+    ...(frameDurationMs > 0 ? { frameDurationMs } : { fps }),
+    loop: animation.loop !== false,
+    contentBounds: Object.fromEntries(["x", "y", "w", "h"].map((key) => [key, Number(bounds[key])]))
+  };
 }
 
 function copyNumber(from, to, key) {

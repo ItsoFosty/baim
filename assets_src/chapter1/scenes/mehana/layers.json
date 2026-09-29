@@ -24,7 +24,22 @@
       "zIndex": 35,
       "top": 310,
       "left": 861,
-      "height": 244
+      "height": 244,
+      "animation": {
+        "asset": "tonyFridgeIdleSeated",
+        "frameWidth": 384,
+        "frameHeight": 384,
+        "frameCount": 25,
+        "columns": 5,
+        "frameDurationMs": 198,
+        "loop": true,
+        "contentBounds": {
+          "x": 116,
+          "y": 91,
+          "w": 152,
+          "h": 198
+        }
+      }
     },
     {
       "id": "layer.mehana.kaliakra_oil",

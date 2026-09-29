@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "characterId": "npc.tony_fridge",
   "variant": "external_animation_v1",
-  "status": "source_received",
+  "status": "runtime_approved",
   "scope": {
     "sceneId": "scene.chapter1.mehana",
     "canvas": {
@@ -24,8 +24,8 @@
   "animations": {
     "tony_idle_seated_1": {
       "slot": "Idle",
-      "status": "source_received",
-      "use": false,
+      "status": "runtime_approved",
+      "use": true,
       "loop": true,
       "description": "A restrained seated idle in which Tony breathes heavily and adds one short finger-drum accent before returning cleanly to the approved pose.",
       "direction": {
@@ -115,14 +115,31 @@
         "sheetHeight": 3840,
         "format": "RGBA8888",
         "chromaKeySettings": null,
-        "derivedOutputHashes": {}
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/tony_fridge/idle-seated-v1.webp": "1cca1e9231c9401f01625f16913e124c0ac3728c2d10f05b862e2836f6e2fd7e"
+        },
+        "runtime": {
+          "asset": "assets/chapter1/characters/tony_fridge/idle-seated-v1.webp",
+          "sheetWidth": 1920,
+          "sheetHeight": 1920,
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "contentBounds": {
+            "x": 116,
+            "y": 91,
+            "w": 152,
+            "h": 198
+          },
+          "sourceScale": 0.5,
+          "format": "alpha-webp"
+        }
       },
       "review": {
-        "candidateStatus": "source_approved_for_import",
+        "candidateStatus": "runtime_approved",
         "rejectionReason": null,
         "reviewer": "Svetozar",
-        "decision": "approved_for_source_import_only",
-        "approvedAt": "2026-09-29"
+        "decision": "approved_for_runtime",
+        "approvedAt": "2026-09-30"
       }
     }
   }

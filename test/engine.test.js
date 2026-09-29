@@ -11,7 +11,7 @@ import { characterHeight } from "../src/engine/CharacterRenderMath.js";
 import { facingFromDelta, MovementSystem, requestWalkStop, eastWestFallbackFacing, motionMultiplierAtFrame, walkMotionMultiplierForFrame } from "../src/engine/MovementSystem.js";
 import { AnimationPlayer } from "../src/engine/AnimationPlayer.js";
 import { Game, SHORT_WALK_PATH_DISTANCE } from "../src/engine/Game.js";
-import { Renderer, animationRenderFrameIndex, animationRenderMirrored, animationRenderOffset, animationRenderScale, externalFrameVisualBounds, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY, targetZIndex } from "../src/engine/Renderer.js";
+import { Renderer, animationRenderFrameIndex, animationRenderMirrored, animationRenderOffset, animationRenderScale, externalFrameVisualBounds, sceneLayerAnimationFrame, sceneLayerAnimationSourceRect, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY, targetZIndex } from "../src/engine/Renderer.js";
 import { applyTimedSobering, intoxicationBandKey, intoxicationColor, intoxicationMovementMultiplier, RAKIA_SOBER_INTERVAL_MS } from "../src/engine/IntoxicationSystem.js";
 import { strings } from "../src/content/localization/index.js";
 import { chapter1 } from "../src/content/chapter1/index.js";
@@ -836,11 +836,57 @@ test("Mehana sideboard props, larger furniture, and moved cellar align with the 
   assert.equal(rightTableLayer.width, 414);
   assert.equal(tonyLayer.height, 244);
   assert.equal(tonyLayer.top, 310);
+  assert.deepEqual(tonyLayer.animation, {
+    asset: "tonyFridgeIdleSeated",
+    frameWidth: 384,
+    frameHeight: 384,
+    frameCount: 25,
+    columns: 5,
+    frameDurationMs: 198,
+    loop: true,
+    contentBounds: { x: 116, y: 91, w: 152, h: 198 }
+  });
+  assert.equal(assetManifest.scenes[scene.id].tonyFridgeIdleSeated, "assets/chapter1/characters/tony_fridge/idle-seated-v1.webp");
   assert.equal(newspaperLayer.asset, "todayNewspaper");
   assert.equal(scene.interactables.find((target) => target.id === "hotspot.mehana.newspaper").lookKey, "look.mehana.newspaper");
   assert.equal(scene.interactables.find((target) => target.id === "hotspot.mehana.radio").lookKey, "look.mehana.radio");
   assert.ok(sceneScale(scene, scene.playerStart) > 1.3);
   assert.ok(sceneScale(scene, scene.playerStart) < 1.4);
+});
+
+test("animated scene layers use exported timing, atlas coordinates, and a static fallback", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.mehana");
+  const layer = scene.foregroundLayers.find((candidate) => candidate.id === "layer.mehana.tony_fridge_seated");
+  assert.equal(sceneLayerAnimationFrame(layer.animation, 0), 0);
+  assert.equal(sceneLayerAnimationFrame(layer.animation, 198), 1);
+  assert.equal(sceneLayerAnimationFrame(layer.animation, 4950), 0);
+  assert.deepEqual(sceneLayerAnimationSourceRect(layer.animation, 0), { x: 116, y: 91, w: 152, h: 198 });
+  assert.deepEqual(sceneLayerAnimationSourceRect(layer.animation, 6), { x: 500, y: 475, w: 152, h: 198 });
+  assert.deepEqual(sceneLayerAnimationSourceRect(layer.animation, 24), { x: 1652, y: 1627, w: 152, h: 198 });
+
+  const calls = [];
+  const animationImage = { id: "animation" };
+  const fallbackImage = { id: "fallback", naturalWidth: 914, naturalHeight: 1166 };
+  const loaded = new Set([animationImage]);
+  const renderer = Object.assign(Object.create(Renderer.prototype), {
+    ctx: { drawImage: (...args) => calls.push(args) },
+    game: {
+      lastTime: 198,
+      assets: {
+        getSceneImage: (_sceneId, asset) => asset === layer.animation.asset ? animationImage : fallbackImage,
+        isLoaded: (image) => loaded.has(image)
+      }
+    }
+  });
+  renderer.drawSceneRasterLayer(scene, layer);
+  assert.deepEqual(calls[0].slice(0, 8), [animationImage, 500, 91, 152, 198, 861, 310, 187.3131313131313]);
+  assert.equal(calls[0][8], 244);
+
+  calls.length = 0;
+  loaded.clear();
+  loaded.add(fallbackImage);
+  renderer.drawSceneRasterLayer(scene, layer);
+  assert.deepEqual(calls[0], [fallbackImage, 861, 310, 191.26586620926244, 244]);
 });
 
 test("Bai Mitko keeps his calibrated entrance height in the apartment and Mehana", () => {

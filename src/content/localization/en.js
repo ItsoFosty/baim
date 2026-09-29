@@ -155,6 +155,8 @@ export const en = {
 
   "look.apartment.wallpaper": "The wallpaper is peeling with the quiet dignity of a retired minister.",
   "look.apartment.window": "A window to fresh air, as far as the district allows.",
+  "look.apartment.window.closed": "The window is closed. The fresh air is waiting outside for authorization.",
+  "look.apartment.window.open": "The window is open. The fresh air is still deciding whether to come in.",
   "look.apartment.accordion": "My accordion. The only thing I ever played honestly.",
   "look.apartment.mirror": "The mirror shows him in three pieces. Coalition energy.",
   "look.apartment.tv": "The TV is explaining that the situation is stable, but in an emergency way.",
@@ -167,6 +169,7 @@ export const en = {
     "Mmmm. Smells like elections.",
     "Someone must have aired out the coalition again."
   ],
+  "msg.apartment.window_closed": "That is enough fresh air. We might end up with a draft.",
   "look.apartment.poster": "VOTE MITKO: AT LEAST YOU KNOW HIM. A strong platform when the village has run out of options.",
   "look.square.poster_board": "Poster over poster over promise. Archaeology of hope.",
   "look.square.fountain": "The fountain does not work, but at least it is not stealing electricity.",

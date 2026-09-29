@@ -47,17 +47,37 @@ const rawScenes = [
         kind: "hotspot",
         nameKey: "hotspot.window.name",
         rect: { x: 145, y: 75, w: 240, h: 280 },
-        lookKey: "look.apartment.window",
+        requirements: { notFlags: ["apartmentWindowOpen"] },
+        lookKey: "look.apartment.window.closed",
         actions: {
-          look: {
+          use: {
             approachCell: { x: 16, y: 23 },
             requireExactApproach: true,
             facing: "west",
             animation: "opensWindow",
             holdFinalFrame: false,
-            flagOnComplete: "apartmentWindowOpen",
-            skipAnimationWhenFlag: "apartmentWindowOpen",
+            effectsOnComplete: [{ type: "setFlag", key: "apartmentWindowOpen", value: true }],
             messageKey: "msg.apartment.window_opened"
+          }
+        }
+      },
+      {
+        id: "window.open",
+        kind: "hotspot",
+        nameKey: "hotspot.window.name",
+        rect: { x: 340, y: 50, w: 125, h: 340 },
+        requirements: { flags: ["apartmentWindowOpen"] },
+        lookKey: "look.apartment.window.open",
+        actions: {
+          use: {
+            approachCell: { x: 24, y: 25 },
+            requireExactApproach: true,
+            facing: "west",
+            animation: "opensWindow",
+            reverseAnimation: true,
+            holdFinalFrame: false,
+            effectsOnComplete: [{ type: "setFlag", key: "apartmentWindowOpen", value: false }],
+            messageKey: "msg.apartment.window_closed"
           }
         }
       },

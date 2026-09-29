@@ -24185,11 +24185,11 @@ export const externalAnimationV1 = {
           "frameHeight": 600,
           "sheetWidth": 1544,
           "sheetHeight": 2400,
-          "frameCount": 16,
+          "frameCount": 10,
           "sourceFrameCount": 16,
           "frameStart": 0,
           "frameEndTrim": 0,
-          "configuredFrameCount": null,
+          "configuredFrameCount": 10,
           "fps": 12,
           "loop": false,
           "pingPong": false,
@@ -24203,10 +24203,10 @@ export const externalAnimationV1 = {
           },
           "baselineY": 600,
           "contentBounds": {
-            "x": 47,
-            "y": 20,
-            "w": 260,
-            "h": 560
+            "x": 61,
+            "y": 60,
+            "w": 201,
+            "h": 520
           },
           "sourceContentBounds": {
             "x": 47,
@@ -24518,42 +24518,6 @@ export const externalAnimationV1 = {
               "y": 143,
               "w": 166,
               "h": 437
-            },
-            {
-              "x": 65,
-              "y": 38,
-              "w": 158,
-              "h": 541
-            },
-            {
-              "x": 77,
-              "y": 34,
-              "w": 144,
-              "h": 545
-            },
-            {
-              "x": 52,
-              "y": 32,
-              "w": 169,
-              "h": 547
-            },
-            {
-              "x": 47,
-              "y": 25,
-              "w": 171,
-              "h": 555
-            },
-            {
-              "x": 69,
-              "y": 22,
-              "w": 196,
-              "h": 558
-            },
-            {
-              "x": 68,
-              "y": 20,
-              "w": 239,
-              "h": 560
             }
           ],
           "frameRects": [
@@ -24646,69 +24610,9 @@ export const externalAnimationV1 = {
               "name": "frame_009",
               "duration": 68,
               "sourceFrameIndex": 9
-            },
-            {
-              "x": 772,
-              "y": 1200,
-              "w": 386,
-              "h": 600,
-              "name": "frame_010",
-              "duration": 68,
-              "sourceFrameIndex": 10
-            },
-            {
-              "x": 1158,
-              "y": 1200,
-              "w": 386,
-              "h": 600,
-              "name": "frame_011",
-              "duration": 68,
-              "sourceFrameIndex": 11
-            },
-            {
-              "x": 0,
-              "y": 1800,
-              "w": 386,
-              "h": 600,
-              "name": "frame_012",
-              "duration": 68,
-              "sourceFrameIndex": 12
-            },
-            {
-              "x": 386,
-              "y": 1800,
-              "w": 386,
-              "h": 600,
-              "name": "frame_013",
-              "duration": 68,
-              "sourceFrameIndex": 13
-            },
-            {
-              "x": 772,
-              "y": 1800,
-              "w": 386,
-              "h": 600,
-              "name": "frame_014",
-              "duration": 68,
-              "sourceFrameIndex": 14
-            },
-            {
-              "x": 1158,
-              "y": 1800,
-              "w": 386,
-              "h": 600,
-              "name": "frame_015",
-              "duration": 68,
-              "sourceFrameIndex": 15
             }
           ],
           "movementSpeedMultipliers": [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
             0,
             0,
             0,
@@ -24723,6 +24627,7 @@ export const externalAnimationV1 = {
           "scale": 1.116,
           "offsetX": 6.825,
           "offsetY": -48.036,
+          "stableVisualBounds": true,
           "offsets": [
             {
               "x": 0,
@@ -24762,30 +24667,6 @@ export const externalAnimationV1 = {
             },
             {
               "x": 23.942,
-              "y": 0
-            },
-            {
-              "x": 27.158,
-              "y": 0
-            },
-            {
-              "x": 30.374,
-              "y": 0
-            },
-            {
-              "x": 31.446,
-              "y": 0
-            },
-            {
-              "x": 34.662,
-              "y": 0
-            },
-            {
-              "x": 36.448,
-              "y": 0
-            },
-            {
-              "x": 36.448,
               "y": 0
             }
           ],
@@ -25994,11 +25875,11 @@ export const externalAnimationV1 = {
           "frameHeight": 600,
           "sheetWidth": 1544,
           "sheetHeight": 2400,
-          "frameCount": 16,
+          "frameCount": 10,
           "sourceFrameCount": 16,
           "frameStart": 0,
           "frameEndTrim": 0,
-          "configuredFrameCount": null,
+          "configuredFrameCount": 10,
           "fps": 12,
           "loop": false,
           "pingPong": false,
@@ -26012,10 +25893,10 @@ export const externalAnimationV1 = {
           },
           "baselineY": 600,
           "contentBounds": {
-            "x": 47,
-            "y": 20,
-            "w": 260,
-            "h": 560
+            "x": 61,
+            "y": 60,
+            "w": 201,
+            "h": 520
           },
           "sourceContentBounds": {
             "x": 47,
@@ -26327,42 +26208,6 @@ export const externalAnimationV1 = {
               "y": 143,
               "w": 166,
               "h": 437
-            },
-            {
-              "x": 65,
-              "y": 38,
-              "w": 158,
-              "h": 541
-            },
-            {
-              "x": 77,
-              "y": 34,
-              "w": 144,
-              "h": 545
-            },
-            {
-              "x": 52,
-              "y": 32,
-              "w": 169,
-              "h": 547
-            },
-            {
-              "x": 47,
-              "y": 25,
-              "w": 171,
-              "h": 555
-            },
-            {
-              "x": 69,
-              "y": 22,
-              "w": 196,
-              "h": 558
-            },
-            {
-              "x": 68,
-              "y": 20,
-              "w": 239,
-              "h": 560
             }
           ],
           "frameRects": [
@@ -26455,69 +26300,9 @@ export const externalAnimationV1 = {
               "name": "frame_009",
               "duration": 68,
               "sourceFrameIndex": 9
-            },
-            {
-              "x": 772,
-              "y": 1200,
-              "w": 386,
-              "h": 600,
-              "name": "frame_010",
-              "duration": 68,
-              "sourceFrameIndex": 10
-            },
-            {
-              "x": 1158,
-              "y": 1200,
-              "w": 386,
-              "h": 600,
-              "name": "frame_011",
-              "duration": 68,
-              "sourceFrameIndex": 11
-            },
-            {
-              "x": 0,
-              "y": 1800,
-              "w": 386,
-              "h": 600,
-              "name": "frame_012",
-              "duration": 68,
-              "sourceFrameIndex": 12
-            },
-            {
-              "x": 386,
-              "y": 1800,
-              "w": 386,
-              "h": 600,
-              "name": "frame_013",
-              "duration": 68,
-              "sourceFrameIndex": 13
-            },
-            {
-              "x": 772,
-              "y": 1800,
-              "w": 386,
-              "h": 600,
-              "name": "frame_014",
-              "duration": 68,
-              "sourceFrameIndex": 14
-            },
-            {
-              "x": 1158,
-              "y": 1800,
-              "w": 386,
-              "h": 600,
-              "name": "frame_015",
-              "duration": 68,
-              "sourceFrameIndex": 15
             }
           ],
           "movementSpeedMultipliers": [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
             0,
             0,
             0,
@@ -26532,6 +26317,7 @@ export const externalAnimationV1 = {
           "scale": 1.116,
           "offsetX": 6.825,
           "offsetY": -48.036,
+          "stableVisualBounds": true,
           "offsets": [
             {
               "x": 0,
@@ -26571,30 +26357,6 @@ export const externalAnimationV1 = {
             },
             {
               "x": 23.942,
-              "y": 0
-            },
-            {
-              "x": 27.158,
-              "y": 0
-            },
-            {
-              "x": 30.374,
-              "y": 0
-            },
-            {
-              "x": 31.446,
-              "y": 0
-            },
-            {
-              "x": 34.662,
-              "y": 0
-            },
-            {
-              "x": 36.448,
-              "y": 0
-            },
-            {
-              "x": 36.448,
               "y": 0
             }
           ],
@@ -42745,11 +42507,11 @@ export const externalAnimationV1 = {
       "frameHeight": 600,
       "sheetWidth": 1544,
       "sheetHeight": 2400,
-      "frameCount": 16,
+      "frameCount": 10,
       "sourceFrameCount": 16,
       "frameStart": 0,
       "frameEndTrim": 0,
-      "configuredFrameCount": null,
+      "configuredFrameCount": 10,
       "fps": 12,
       "loop": false,
       "pingPong": false,
@@ -42763,10 +42525,10 @@ export const externalAnimationV1 = {
       },
       "baselineY": 600,
       "contentBounds": {
-        "x": 47,
-        "y": 20,
-        "w": 260,
-        "h": 560
+        "x": 61,
+        "y": 60,
+        "w": 201,
+        "h": 520
       },
       "sourceContentBounds": {
         "x": 47,
@@ -43078,42 +42840,6 @@ export const externalAnimationV1 = {
           "y": 143,
           "w": 166,
           "h": 437
-        },
-        {
-          "x": 65,
-          "y": 38,
-          "w": 158,
-          "h": 541
-        },
-        {
-          "x": 77,
-          "y": 34,
-          "w": 144,
-          "h": 545
-        },
-        {
-          "x": 52,
-          "y": 32,
-          "w": 169,
-          "h": 547
-        },
-        {
-          "x": 47,
-          "y": 25,
-          "w": 171,
-          "h": 555
-        },
-        {
-          "x": 69,
-          "y": 22,
-          "w": 196,
-          "h": 558
-        },
-        {
-          "x": 68,
-          "y": 20,
-          "w": 239,
-          "h": 560
         }
       ],
       "frameRects": [
@@ -43206,69 +42932,9 @@ export const externalAnimationV1 = {
           "name": "frame_009",
           "duration": 68,
           "sourceFrameIndex": 9
-        },
-        {
-          "x": 772,
-          "y": 1200,
-          "w": 386,
-          "h": 600,
-          "name": "frame_010",
-          "duration": 68,
-          "sourceFrameIndex": 10
-        },
-        {
-          "x": 1158,
-          "y": 1200,
-          "w": 386,
-          "h": 600,
-          "name": "frame_011",
-          "duration": 68,
-          "sourceFrameIndex": 11
-        },
-        {
-          "x": 0,
-          "y": 1800,
-          "w": 386,
-          "h": 600,
-          "name": "frame_012",
-          "duration": 68,
-          "sourceFrameIndex": 12
-        },
-        {
-          "x": 386,
-          "y": 1800,
-          "w": 386,
-          "h": 600,
-          "name": "frame_013",
-          "duration": 68,
-          "sourceFrameIndex": 13
-        },
-        {
-          "x": 772,
-          "y": 1800,
-          "w": 386,
-          "h": 600,
-          "name": "frame_014",
-          "duration": 68,
-          "sourceFrameIndex": 14
-        },
-        {
-          "x": 1158,
-          "y": 1800,
-          "w": 386,
-          "h": 600,
-          "name": "frame_015",
-          "duration": 68,
-          "sourceFrameIndex": 15
         }
       ],
       "movementSpeedMultipliers": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
         0,
         0,
         0,
@@ -43283,6 +42949,7 @@ export const externalAnimationV1 = {
       "scale": 1.116,
       "offsetX": 6.825,
       "offsetY": -48.036,
+      "stableVisualBounds": true,
       "offsets": [
         {
           "x": 0,
@@ -43322,30 +42989,6 @@ export const externalAnimationV1 = {
         },
         {
           "x": 23.942,
-          "y": 0
-        },
-        {
-          "x": 27.158,
-          "y": 0
-        },
-        {
-          "x": 30.374,
-          "y": 0
-        },
-        {
-          "x": 31.446,
-          "y": 0
-        },
-        {
-          "x": 34.662,
-          "y": 0
-        },
-        {
-          "x": 36.448,
-          "y": 0
-        },
-        {
-          "x": 36.448,
           "y": 0
         }
       ],

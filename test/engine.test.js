@@ -442,13 +442,7 @@ test("apartment uses a raster walk mask for walkable floor", () => {
     && layer.left === 150
     && layer.top === 51
     && layer.visibleWhenFlag === "apartmentWindowOpen"));
-  assert.ok(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.window_open_back"
-    && layer.asset === "windowOpenBack"
-    && layer.zIndex === 100
-    && layer.left === 150
-    && layer.top === 51
-    && layer.visibleDuringAction.actionName === "opensWindow"
-    && layer.visibleDuringAction.fromFrame === 10));
+  assert.equal(scene.foregroundLayers.some((layer) => layer.id === "layer.apartment.window_open_back"), false);
 });
 
 test("village square uses the shared raster, object, and layer scene pipeline", () => {
@@ -1275,6 +1269,20 @@ test("Bai Mitko walk frames normalize their visible height instead of contractin
   }
 });
 
+test("authored actions can keep one visual scale while the silhouette changes", () => {
+  const stableBounds = { x: 0, y: 0, w: 214, h: 442, baselineY: 476 };
+  const frame = {
+    stableVisualBounds: true,
+    sourceFrameContentBounds: [
+      { x: 10, y: 20, w: 150, h: 390 },
+      { x: 8, y: 4, w: 170, h: 520 }
+    ]
+  };
+
+  assert.equal(externalFrameVisualBounds(frame, 0, stableBounds), stableBounds);
+  assert.equal(externalFrameVisualBounds(frame, 1, stableBounds), stableBounds);
+});
+
 test("Bai Mitko idle directions use walk-start animation frames instead of static images", () => {
   const idle = characterDefinitions["npc.bai_mitko"].animations.idle.directions;
   const baiMitkoAssets = assetManifest.characters["npc.bai_mitko"];
@@ -1360,8 +1368,9 @@ test("Bai Mitko external take action is generated for east and mirrored west", (
   assert.equal(externalAnimationV1.actionAnimations.east.opensWindow[0].slot, "external_opens_window");
   assert.equal(externalAnimationV1.actionAnimations.east.opensWindow[0].role, "action");
   assert.equal(externalAnimationV1.actionAnimations.east.opensWindow[0].fps, 12);
+  assert.equal(externalAnimationV1.actionAnimations.east.opensWindow[0].stableVisualBounds, true);
   assert.equal(externalAnimationV1.actionAnimations.east.opensWindow[0].flipX, undefined);
-  assert.deepEqual(externalAnimationV1.actionAnimations.east.opensWindow[0].movementSpeedMultipliers, Array(16).fill(0));
+  assert.deepEqual(externalAnimationV1.actionAnimations.east.opensWindow[0].movementSpeedMultipliers, Array(10).fill(0));
   assert.equal(externalAnimationV1.actionAnimations.west.opensWindow[0].slot, "external_opens_window");
   assert.equal(externalAnimationV1.actionAnimations.west.opensWindow[0].mirrored, true);
   assert.equal(externalAnimationV1.actionAnimations.west.opensWindow[0].flipX, false);
@@ -3154,6 +3163,7 @@ test("open-window action carries an accepted reproducible registration fit", () 
   const config = selection.animations.opens_window;
   const fit = config.registration.lastFit;
   assert.equal(config.offsets.length, externalAnimationV1.actionAnimations.east.opensWindow[0].frameCount);
+  assert.equal(config.frameCount, 10);
   assert.ok(fit.score >= config.registration.acceptance.minimumGlobalScore);
   assert.ok(fit.minimumFrameScore >= config.registration.acceptance.minimumFrameScore);
   assert.equal(externalAnimationV1.actionAnimations.east.opensWindow[0].scale, config.scale);

@@ -28,7 +28,7 @@ test("every Chapter 1 character asset is represented in the NPC catalog", () => 
   assert.match(npcHtml, /Future Idle/);
 });
 
-test("Tony's seated idle pilot is cataloged without enabling unapproved runtime art", () => {
+test("Tony's seated idle pilot records runtime approval after local review", () => {
   const pilot = tonyPilot.animations.tony_idle_seated_1;
   assert.equal(tonyPilot.characterId, "npc.tony_fridge");
   assert.equal(tonyPilot.scope.sceneId, "scene.chapter1.mehana");
@@ -37,17 +37,22 @@ test("Tony's seated idle pilot is cataloged without enabling unapproved runtime 
   assert.equal(tonyPilot.scope.fallbackAsset, "assets/chapter1/characters/tony_fridge/seated-v1.png");
   assert.deepEqual(tonyPilot.scope.excludedScenes, ["scene.chapter1.election_booth"]);
   assert.equal(pilot.slot, "Idle");
-  assert.equal(pilot.status, "source_received");
-  assert.equal(pilot.use, false);
+  assert.equal(pilot.status, "runtime_approved");
+  assert.equal(pilot.use, true);
   assert.equal(pilot.loop, true);
   assert.equal(pilot.source.exportFilename, "sprite-384px-frames-25-rows-5-cols-5.zip");
   assert.equal(pilot.source.sourceZipSha256, "070458b291740af5fc75213e9c8f0106e7d54c03e0b3ba1ddd683a8a8dbc966c");
   assert.equal(pilot.generation.creditsSpent, 15);
-  assert.equal(pilot.review.candidateStatus, "source_approved_for_import");
+  assert.equal(pilot.review.candidateStatus, "runtime_approved");
+  assert.equal(pilot.review.decision, "approved_for_runtime");
+  assert.equal(pilot.review.approvedAt, "2026-09-30");
+  assert.equal(pilot.import.runtime.asset, "assets/chapter1/characters/tony_fridge/idle-seated-v1.webp");
+  assert.equal(pilot.import.derivedOutputHashes[pilot.import.runtime.asset], "1cca1e9231c9401f01625f16913e124c0ac3728c2d10f05b862e2836f6e2fd7e");
   assert.equal(pilot.source.references[0].sha256, "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8");
   assert.match(npcHtml, /tony_idle_seated_1/);
-  assert.match(npcHtml, /Pilot planned/);
-  assert.match(npcHtml, /Source Received/);
+  assert.match(npcHtml, /Runtime approved/);
+  assert.match(npcHtml, /Runtime Approved/);
+  assert.match(npcHtml, /assets\/chapter1\/characters\/tony_fridge\/idle-seated-v1\.webp/);
   assert.match(npcHtml, /Awaiting generated-source details and human review/);
 });
 

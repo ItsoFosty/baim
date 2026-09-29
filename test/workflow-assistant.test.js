@@ -1,6 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { changedPathsFromStatus, classifyWorkflow, reviewRequirements } from "../tools/workflow-assistant.mjs";
+import {
+  LUDO_PUBLISH_APPROVAL,
+  approvalGuidance,
+  changedPathsFromStatus,
+  classifyWorkflow,
+  reviewRequirements
+} from "../tools/workflow-assistant.mjs";
 
 test("workflow assistant blocks a dirty master checkout", () => {
   const result = classifyWorkflow({ branch: "master", dirty: true });
@@ -43,4 +49,18 @@ test("Git status parsing preserves filenames for unstaged changes", () => {
     "PROJECT_RULES.md",
     "tools/example.mjs"
   ]);
+});
+
+test("Ludo guidance removes intermediate approval pauses before VPS preview", () => {
+  const guidance = approvalGuidance({ ludo: true }).join("\n");
+  assert.match(guidance, /VPS preview on port 5173 without intermediate approval pauses/);
+  assert.match(guidance, new RegExp(LUDO_PUBLISH_APPROVAL));
+  assert.match(guidance, /merge-if-green/);
+  assert.match(guidance, /exact listed task cleanup/);
+});
+
+test("non-Ludo guidance retains explicit Git and destructive cleanup approval", () => {
+  const guidance = approvalGuidance().join("\n");
+  assert.match(guidance, /approval remains required before commit/);
+  assert.match(guidance, /may be bundled/);
 });

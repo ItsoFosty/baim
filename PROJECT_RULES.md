@@ -14,6 +14,7 @@ This file is the central working agreement for `/home/ZeShad/baim`. Read it befo
 When operating in Work mode:
 
 - Work may inspect, read, and edit files and run non-destructive commands, builds, and tests inside `/home/ZeShad/baim` without asking conversationally for each small step.
+- Starting a focused task authorizes creation of its task branch and reversible implementation work inside that branch. Ludo candidate integration has the additional preview authorization described below.
 - Work must not touch `/home/ubuntu/git/baim`.
 - Work must ask before destructive actions; deleting or overwriting user work; committing; pushing; merging; or rewriting Git history.
 
@@ -53,9 +54,22 @@ When operating in Work mode:
 - Use one descriptive task branch per task, normally under `feat/` when appropriate.
 - One task should produce one focused pull request.
 - Show the user the diff and verification results before asking for final approval.
-- Make approval requests explicit about the exact next actions: commit, push, and pull-request creation or modification are separate actions unless the user clearly approves them together.
+- Make approval requests explicit about the exact next actions. Commit, push, pull-request creation/modification, merge-if-green, synchronization, and exact task cleanup may be bundled when the user clearly approves the whole sequence.
 - Never commit, push, merge, open or modify a pull request, or rewrite history without explicit human approval.
 - Recheck the branch and working tree immediately before any approved commit or push.
+
+## Ludo Animation Candidate Workflow
+
+Follow `docs/ludo-animation-production-workflow.md` for Ludo sprite-sheet work.
+
+- Ludo credit spending or generation controlled by the agent always requires explicit approval. When the user generates the candidate themselves, their choice to download it is the generation decision.
+- Providing an exported Ludo ZIP or its path for a focused animation task authorizes the agent to inspect it, copy the unchanged source to the VPS task branch, record provenance, derive runtime assets, integrate it as `runtime_review`, run builds/tests, and serve or refresh the candidate on port 5173. Do not stop for separate approvals between those reversible preview steps.
+- Review the candidate in the real VPS runtime at 1280x720. Do not use the obsolete Windows clone as an animation staging or merge step, and never use port 5174.
+- Keep the candidate uncommitted and unpublished until the user has seen it on the VPS. Do not create a source-only PR when the intended outcome is a runnable animation; source, provenance, runtime integration, and tests belong to one task branch and one PR.
+- Before final approval, show the complete diff, verification results, PR scope, and exact branch/temporary-file cleanup targets.
+- After VPS visual review, one explicit `approve runtime and publish` decision may authorize marking the candidate `runtime_approved`, committing, pushing to `zeshad`, creating the PR against `tran4o/baim:master`, merging after required checks pass, synchronizing `/home/ZeShad/baim` master, rebuilding ignored runtime outputs, and performing the listed task cleanup.
+- That bundled approval expires if checks fail, the scope changes materially, or the branch changes after review. Stop and explain the new decision instead of merging altered work.
+- Rejected or revised candidates remain on the same focused branch until accepted or explicitly abandoned. Record rejection reasons when the provenance schema supports them.
 
 ## After A Pull Request Is Merged
 

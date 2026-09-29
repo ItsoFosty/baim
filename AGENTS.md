@@ -96,10 +96,13 @@ Do not mass-produce final art before the style frame, Bai Mitko, and first scene
 ## Animation Direction
 
 Follow `docs/animation-direction.md`.
+Follow `docs/ludo-animation-production-workflow.md` for the Ludo-to-VPS preview, approval, and publication sequence.
 
 Current Bai Mitko animation path:
 
 - Use Ludo.ai external sprite sheet ZIPs plus JSON frame metadata under `assets_src/characters/bai_mitko/external_animation_v1/`.
+- Integrate each downloaded candidate on its VPS feature branch and review it in the actual game on port 5173 before committing or publishing it.
+- Keep source, provenance, runtime integration, and tests in one focused branch and PR; do not insert the obsolete Windows clone or a source-only PR into the review path.
 - Keep previous failed rig/layer experiments out of the active dev surfaces.
 - Sprite atlases/sheets are the reliable browser runtime path unless the user explicitly changes direction.
 

@@ -951,7 +951,9 @@ export class Game {
   }
 
   actionSequenceForTarget(target, verb) {
-    return target?.actions?.[verb] || null;
+    const configured = target?.actions?.[verb];
+    if (Array.isArray(configured)) return firstMatchingRule(configured, this.effectContext()) || null;
+    return configured || null;
   }
 
   actionSequenceSkipsAnimation(sequence) {
@@ -964,7 +966,8 @@ export class Game {
     if (!actionName) return null;
     const facing = eastWestFallbackFacing(sequence.facing || this.player.facing) || "east";
     const byFacing = externalAnimationV1.actionAnimations?.[facing] || externalAnimationV1.actionAnimations?.east || {};
-    return this.randomAnimationFrame(byFacing[actionName] || []);
+    const frame = this.randomAnimationFrame(byFacing[actionName] || []);
+    return frame && sequence?.reverseAnimation ? { ...frame, reverseFrames: true } : frame;
   }
 
   actionSequenceApproachPoint(sequence) {
@@ -1052,12 +1055,18 @@ export class Game {
       this.setIdleHoldFrame(frame, Math.max(0, (frame.frameCount || 1) - 1));
     }
     this.player.animation = "idle";
+    let stateChanged = false;
     const flagOnComplete = actionSequence.sequence?.flagOnComplete;
     if (flagOnComplete) {
       this.state.flags ||= {};
       this.state.flags[flagOnComplete] = true;
-      this.save();
+      stateChanged = true;
     }
+    if (actionSequence.sequence?.effectsOnComplete?.length) {
+      applyEffects(actionSequence.sequence.effectsOnComplete, this.effectContext());
+      stateChanged = true;
+    }
+    if (stateChanged) this.save();
     if (actionSequence.verb === VERBS.TAKE && actionSequence.target?.takeItemId) {
       if (!actionSequence.effectApplied) {
         this.takeTarget(actionSequence.target, { messageKey: actionSequence.sequence?.messageKey });

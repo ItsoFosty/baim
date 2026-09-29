@@ -37,6 +37,12 @@ export function animationRenderScale(frame) {
   return Number.isFinite(scale) && scale > 0 ? scale : 1;
 }
 
+export function animationRenderFrameIndex(frame, frameIndex) {
+  const count = Math.max(1, Number(frame?.frameCount) || 1);
+  const index = Math.max(0, Math.min(Number(frameIndex) || 0, count - 1));
+  return frame?.reverseFrames ? count - 1 - index : index;
+}
+
 export function animationRenderOffset(frame, frameIndex, mirrored = false) {
   const globalX = Number.isFinite(Number(frame?.offsetX)) ? Number(frame.offsetX) : 0;
   const globalY = Number.isFinite(Number(frame?.offsetY)) ? Number(frame.offsetY) : 0;
@@ -745,9 +751,10 @@ export class Renderer {
     const sourceWidth = preserveFrameLayout && spriteInfo.frame ? spriteInfo.frame.frameWidth : boundsForSize?.w || spriteInfo.frame?.frameWidth || sprite.width;
     const sourceHeight = preserveFrameLayout && spriteInfo.frame ? spriteInfo.frame.frameHeight : boundsForSize?.h || spriteInfo.frame?.frameHeight || sprite.height;
     const stableBounds = preserveFrameLayout && usesExternalWalkPose(p, definition) ? stableExternalVisualBounds(definition) : null;
-    const frameIndex = spriteInfo.frame
+    const logicalFrameIndex = spriteInfo.frame
       ? Number.isInteger(spriteInfo.staticFrameIndex) ? spriteInfo.staticFrameIndex : this.game.player.animator.frameIndex % spriteInfo.frame.frameCount
       : 0;
+    const frameIndex = animationRenderFrameIndex(spriteInfo.frame, logicalFrameIndex);
     const currentVisualBounds = stableBounds ? externalFrameVisualBounds(spriteInfo.frame, frameIndex, stableBounds) : null;
     const visualHeight = currentVisualBounds?.h || (preserveFrameLayout ? sourceHeight : boundsForSize?.h || sourceHeight);
     const animationScale = animationRenderScale(spriteInfo.frame);

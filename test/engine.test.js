@@ -11,7 +11,7 @@ import { characterHeight } from "../src/engine/CharacterRenderMath.js";
 import { facingFromDelta, MovementSystem, requestWalkStop, eastWestFallbackFacing, motionMultiplierAtFrame, walkMotionMultiplierForFrame } from "../src/engine/MovementSystem.js";
 import { AnimationPlayer } from "../src/engine/AnimationPlayer.js";
 import { Game, SHORT_WALK_PATH_DISTANCE } from "../src/engine/Game.js";
-import { Renderer, animationRenderMirrored, animationRenderOffset, animationRenderScale, externalFrameVisualBounds, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY, targetZIndex } from "../src/engine/Renderer.js";
+import { Renderer, animationRenderFrameIndex, animationRenderMirrored, animationRenderOffset, animationRenderScale, externalFrameVisualBounds, sceneZIndexForPoint, stableExternalVisualBounds, stopRenderOffsetX, stopRenderOffsetY, targetZIndex } from "../src/engine/Renderer.js";
 import { applyTimedSobering, intoxicationBandKey, intoxicationColor, intoxicationMovementMultiplier, RAKIA_SOBER_INTERVAL_MS } from "../src/engine/IntoxicationSystem.js";
 import { strings } from "../src/content/localization/index.js";
 import { chapter1 } from "../src/content/chapter1/index.js";
@@ -1418,18 +1418,48 @@ test("apartment accordion is collectible through the generic take flow", () => {
   assert.equal(saves, 1);
 });
 
-test("apartment window defines a look action sequence from raster cell to west-facing open animation", () => {
+test("apartment window uses separate state-aware hotspots for opening and closing", () => {
   const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.apartment");
-  const window = scene.interactables.find((candidate) => candidate.id === "window");
-  assert.equal(window.nameKey, "hotspot.window.name");
-  assert.deepEqual(window.actions.look.approachCell, { x: 16, y: 23 });
-  assert.equal(window.actions.look.requireExactApproach, true);
-  assert.equal(window.actions.look.facing, "west");
-  assert.equal(window.actions.look.animation, "opensWindow");
-  assert.equal(window.actions.look.holdFinalFrame, false);
-  assert.equal(window.actions.look.flagOnComplete, "apartmentWindowOpen");
-  assert.equal(window.actions.look.skipAnimationWhenFlag, "apartmentWindowOpen");
-  assert.equal(window.actions.look.messageKey, "msg.apartment.window_opened");
+  const closedWindow = scene.interactables.find((candidate) => candidate.id === "window");
+  const openWindow = scene.interactables.find((candidate) => candidate.id === "window.open");
+  assert.equal(closedWindow.nameKey, "hotspot.window.name");
+  assert.equal(openWindow.nameKey, "hotspot.window.name");
+  assert.deepEqual(closedWindow.requirements, { notFlags: ["apartmentWindowOpen"] });
+  assert.deepEqual(openWindow.requirements, { flags: ["apartmentWindowOpen"] });
+  assert.deepEqual(openWindow.rect, { x: 340, y: 50, w: 125, h: 340 });
+  assert.equal(closedWindow.lookKey, "look.apartment.window.closed");
+  assert.equal(openWindow.lookKey, "look.apartment.window.open");
+  const open = closedWindow.actions.use;
+  const close = openWindow.actions.use;
+  for (const action of [open, close]) {
+    assert.equal(action.requireExactApproach, true);
+    assert.equal(action.facing, "west");
+    assert.equal(action.animation, "opensWindow");
+    assert.equal(action.holdFinalFrame, false);
+  }
+  assert.deepEqual(open.approachCell, { x: 16, y: 23 });
+  assert.deepEqual(close.approachCell, { x: 24, y: 25 });
+  assert.equal(close.reverseAnimation, true);
+  assert.deepEqual(close.effectsOnComplete, [{ type: "setFlag", key: "apartmentWindowOpen", value: false }]);
+  assert.equal(close.messageKey, "msg.apartment.window_closed");
+  assert.equal(open.reverseAnimation, undefined);
+  assert.deepEqual(open.effectsOnComplete, [{ type: "setFlag", key: "apartmentWindowOpen", value: true }]);
+  assert.equal(open.messageKey, "msg.apartment.window_opened");
+});
+
+test("only the visible apartment window state receives pointer hits", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.apartment");
+  const game = Object.create(Game.prototype);
+  game.state = { flags: {} };
+  game.inventory = { has: () => false };
+  game.quests = {};
+  const available = (target) => game.targetAvailable(target);
+
+  assert.equal(findTargetAt(scene, { x: 200, y: 200 }, available)?.id, "window");
+  assert.notEqual(findTargetAt(scene, { x: 430, y: 200 }, available)?.id, "window.open");
+  game.state.flags.apartmentWindowOpen = true;
+  assert.notEqual(findTargetAt(scene, { x: 200, y: 200 }, available)?.id, "window");
+  assert.equal(findTargetAt(scene, { x: 430, y: 200 }, available)?.id, "window.open");
 });
 
 test("stateful scene layers stay hidden until their save flag is set", () => {
@@ -1559,6 +1589,35 @@ test("action completion reveals and persists its stateful scene layer flag", () 
   assert.equal(game.state.flags.apartmentWindowOpen, true);
   assert.equal(saves, 1);
   assert.equal(heldFrames, 0);
+});
+
+test("action completion applies declarative effects that can clear a scene-layer flag", () => {
+  const game = Object.create(Game.prototype);
+  let saves = 0;
+  game.player = { actionAnimation: { frameCount: 16 }, actionSequence: {}, animation: "action" };
+  game.state = { flags: { apartmentWindowOpen: true } };
+  game.inventory = { has: () => false };
+  game.quests = {};
+  game.save = () => { saves += 1; };
+  game.setIdleHoldFrame = () => {};
+  game.setStatusMessage = () => {};
+  game.completeInteractionActionSequence({
+    target: { id: "window" },
+    verb: VERBS.USE,
+    sequence: {
+      effectsOnComplete: [{ type: "setFlag", key: "apartmentWindowOpen", value: false }],
+      holdFinalFrame: false
+    },
+    frame: { frameCount: 16 }
+  });
+  assert.equal(game.state.flags.apartmentWindowOpen, false);
+  assert.equal(saves, 1);
+});
+
+test("reverse action frames render from the end of the same sprite sheet", () => {
+  assert.equal(animationRenderFrameIndex({ frameCount: 10 }, 0), 0);
+  assert.equal(animationRenderFrameIndex({ frameCount: 10, reverseFrames: true }, 0), 9);
+  assert.equal(animationRenderFrameIndex({ frameCount: 10, reverseFrames: true }, 9), 0);
 });
 
 test("take action applies inventory and layer state on its configured contact frame", () => {
@@ -2409,7 +2468,10 @@ test("registered action requiring exact approach walks to its anchor even from h
   const target = scene.interactables.find((candidate) => candidate.id === "window");
   const game = Object.create(Game.prototype);
   game.currentScene = scene;
-  game.selectedVerb = "look";
+  game.selectedVerb = "use";
+  game.state = { flags: {} };
+  game.inventory = { has: () => false };
+  game.quests = {};
   game.player = {
     position: { x: 350, y: 470 },
     target: null,
@@ -2459,9 +2521,9 @@ test("village-square poster-board clicks share one fixed east-facing look approa
   assert.deepEqual(approaches, [{ x: 976, y: 625 }, { x: 976, y: 625 }]);
 });
 
-test("looking at an already-open window still approaches but skips animation and repeats its talk", () => {
+test("looking at an open window reports its state without triggering an action animation", () => {
   const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.apartment");
-  const target = scene.interactables.find((candidate) => candidate.id === "window");
+  const target = scene.interactables.find((candidate) => candidate.id === "window.open");
   const game = Object.create(Game.prototype);
   game.currentScene = scene;
   game.selectedVerb = "look";
@@ -2474,21 +2536,38 @@ test("looking at an already-open window still approaches but skips animation and
     pendingInteraction: null
   };
   game.inventory = { has: () => false };
+  game.quests = {};
   game.t = (key) => `translated:${key}`;
   game.setStatusMessage = (message) => { game.spokenMessage = message; };
-  game.walkToPoint = (point) => { game.walkedTo = { ...point }; };
-  game.actionAnimationForSequence = () => { throw new Error("open window animation should not replay"); };
+  game.save = () => {};
+  game.renderUi = () => {};
+  game.actionAnimationForSequence = () => { throw new Error("look must not select a window animation"); };
 
-  game.handleTarget(target, { x: 300, y: 250 });
+  game.performTargetAction(target);
 
-  assert.deepEqual(game.walkedTo, { x: 330, y: 470 });
-  assert.deepEqual(game.player.pendingInteraction.approach, { x: 330, y: 470 });
-  assert.equal(game.player.facing, "west");
-  game.player.position = { x: 330, y: 470 };
-  game.resolvePendingInteraction();
-  assert.equal(game.player.pendingInteraction, null);
   assert.equal(game.player.animation, "idle");
-  assert.equal(game.spokenMessage, "translated:msg.apartment.window_opened");
+  assert.equal(game.spokenMessage, "translated:look.apartment.window.open");
+});
+
+test("using each apartment window hotspot selects its matching direction and approach", () => {
+  const scene = chapter1.scenes.find((candidate) => candidate.id === "scene.chapter1.apartment");
+  const closedWindow = scene.interactables.find((candidate) => candidate.id === "window");
+  const openWindow = scene.interactables.find((candidate) => candidate.id === "window.open");
+  const game = Object.create(Game.prototype);
+  game.state = { flags: {} };
+  game.inventory = { has: () => false };
+  game.quests = {};
+
+  const open = game.actionSequenceForTarget(closedWindow, VERBS.USE);
+  assert.equal(open.reverseAnimation, undefined);
+  assert.equal(open.messageKey, "msg.apartment.window_opened");
+  assert.deepEqual(open.approachCell, { x: 16, y: 23 });
+
+  game.state.flags.apartmentWindowOpen = true;
+  const close = game.actionSequenceForTarget(openWindow, VERBS.USE);
+  assert.equal(close.reverseAnimation, true);
+  assert.equal(close.messageKey, "msg.apartment.window_closed");
+  assert.deepEqual(close.approachCell, { x: 24, y: 25 });
 });
 
 test("world clicks cannot trigger an exit while an interaction action is running", () => {

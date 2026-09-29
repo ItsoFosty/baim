@@ -26,7 +26,7 @@ const EDITOR_SCENES = {
         id: "opens_window",
         label: "Open window",
         sceneObjectId: "window",
-        verb: "look"
+        verb: "use"
       },
       {
         id: "take_east_forward_default",
@@ -624,7 +624,7 @@ export class SceneEditor {
     const action = this.selectedActionDefinition();
     if (!action) return;
     const target = this.runtimeObject(action.sceneObjectId);
-    const sequence = target?.actions?.[action.verb];
+    const sequence = this.game.actionSequenceForTarget?.(target, action.verb);
     if (!target || !sequence) {
       this.status = `Action target not found: ${action.sceneObjectId}.${action.verb}`;
       this.game.renderUi();

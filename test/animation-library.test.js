@@ -37,17 +37,17 @@ test("Tony's seated idle pilot is cataloged without enabling unapproved runtime 
   assert.equal(tonyPilot.scope.fallbackAsset, "assets/chapter1/characters/tony_fridge/seated-v1.png");
   assert.deepEqual(tonyPilot.scope.excludedScenes, ["scene.chapter1.election_booth"]);
   assert.equal(pilot.slot, "Idle");
-  assert.equal(pilot.status, "awaiting_source");
+  assert.equal(pilot.status, "source_received");
   assert.equal(pilot.use, false);
   assert.equal(pilot.loop, true);
-  assert.equal(pilot.source.exportFilename, null);
-  assert.equal(pilot.source.sourceZipSha256, null);
-  assert.equal(pilot.generation.creditsSpent, null);
-  assert.equal(pilot.review.candidateStatus, "planned");
+  assert.equal(pilot.source.exportFilename, "sprite-384px-frames-25-rows-5-cols-5.zip");
+  assert.equal(pilot.source.sourceZipSha256, "070458b291740af5fc75213e9c8f0106e7d54c03e0b3ba1ddd683a8a8dbc966c");
+  assert.equal(pilot.generation.creditsSpent, 15);
+  assert.equal(pilot.review.candidateStatus, "source_approved_for_import");
   assert.equal(pilot.source.references[0].sha256, "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8");
   assert.match(npcHtml, /tony_idle_seated_1/);
   assert.match(npcHtml, /Pilot planned/);
-  assert.match(npcHtml, /Awaiting Source/);
+  assert.match(npcHtml, /Source Received/);
   assert.match(npcHtml, /Awaiting generated-source details and human review/);
 });
 

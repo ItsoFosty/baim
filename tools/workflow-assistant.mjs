@@ -171,6 +171,10 @@ function runReview(info) {
   else console.log("- Application tests are optional for documentation-only changes; explain why if skipped.");
   if (requirements.visual) console.log("- Verify the result in the actual runtime and obtain human visual approval.");
   if (requirements.ludo) {
+    console.log("- Capture the stable candidate label and result ID/URL when available; document unavailable evidence explicitly.");
+    console.log("- Reconcile approval status/date across source prompts, animation manifests, and review notes before publication.");
+    console.log("- Verify matching HTML/PDF catalog state and retain final runtime/test evidence before temporary-file cleanup.");
+    console.log("- Quiet browser tests may still be running: inspect elapsed time, process state, and timeout; require the final summary and exit status.");
     console.log("- Preserve the original Ludo ZIP and record prompt, model/settings, source hash, result ID, credits, candidate status, rejection reason, approval, and export filename.");
     console.log("- Run npm run build:runtime and npm run check:animation-catalogs.");
     console.log("- Integrate the uncommitted candidate as runtime_review and verify it in the VPS game on port 5173; do not use the Windows clone or a source-only PR.");

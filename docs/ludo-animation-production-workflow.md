@@ -12,6 +12,8 @@ The normal path is **Ludo export -> VPS feature-branch preview on port 5173 -> o
 ## Stage 1: Candidate Generation
 
 - Agree on one animation slot, approved reference asset, prompt, model/settings, and expected runtime scene.
+- Give the candidate a stable label before export (for example `bs-idle-seated-c01`), and capture its result ID or result URL while the generation is open. If unavailable, record that explicitly with the reason; never invent an ID.
+- Evaluate motion at its actual game size. Preserve an approved idle unless a visible issue warrants revision; choose the next useful slot, such as Talk, as a separate focused task. Low frame rate alone is not a reason to spend credits regenerating approved work.
 - Agent-controlled credit spending requires explicit approval before generation.
 - Preserve the downloaded ZIP exactly. Do not rename files inside it or re-encode the source sheet.
 - Providing the ZIP or its path to the focused task chat authorizes Stage 2. No additional approval is needed to copy and integrate it for preview.
@@ -49,6 +51,19 @@ The exact response `approve runtime and publish`, or equally explicit wording, a
 7. Fast-forward `/home/ZeShad/baim` master to `marto/master`.
 8. Rebuild ignored runtime outputs and verify the port 5173 preview from canonical master.
 9. Delete only the previously listed merged task branch and task-owned temporary files, then prune references.
+
+Before committing, reconcile all source-art and animation approval records with the user's decision, reviewer, date, and approved scene scope. Verification-only reruns need not repeat checks already passed for identical inputs; approval metadata or generated catalog changes require their relevant freshness checks.
+
+Before cleanup, retain the final test summary, runtime verification, and review images in a durable location documented in the review record. Distinguish retained evidence from deleted temporary files. Local evidence may remain local, but record its actual location and do not imply it is available from the repository.
+
+When regenerating catalogs, check both HTML and the corresponding PDF for the final animation status. Keep relevant PDF changes; discard only unrelated re-render noise produced by the current task.
+
+## Test Progress And Completion
+
+- Announce the active test phase and elapsed time during long runs; browser journeys may continue quietly for several minutes after the first passing test.
+- Inspect configured timeouts, process state, and available logs before diagnosing a hang. Silence alone is not evidence of a stall.
+- Let a healthy run finish. Stop only a confirmed stalled task-owned process, and record that run as interrupted/incomplete.
+- Require the final suite summary and exit status before claiming the suite passed. Explain any force-exit workaround and verify it did not skip tests; do not use it as a substitute for diagnosing leaked resources.
 
 Stop and request a new decision if checks fail, conflict resolution or material edits are required, the reviewed diff changes, or any action would touch `/home/ubuntu/git/baim`, port 5174, unrelated work, approved production assets outside scope, or Git history.
 

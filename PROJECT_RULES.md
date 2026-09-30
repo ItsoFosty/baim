@@ -99,6 +99,9 @@ The message `merged` authorizes merge verification and synchronization. It does 
 - Add or update tests when changing localization, save schema/defaults, geometry, quest state, inventory state, or dialogue effects.
 - Verify behavior in the actual runtime when changing visuals or interaction; isolated previews are not sufficient.
 - Report any check that could not be run and why.
+- Quiet test output does not establish a hang. Report the active phase and elapsed time; inspect process state and the configured timeout before stopping a task-owned test process. Report interrupted runs as incomplete, never as passing.
+- Before publication, reconcile approval status/date in source prompts, animation manifests, and review notes. Retain verification evidence in a durable documented location before deleting temporary review files.
+- When updating generated catalogs, verify the corresponding HTML and PDF describe the same approved runtime state; HTML freshness alone does not verify the PDF.
 
 ## Art And Content Safeguards
 

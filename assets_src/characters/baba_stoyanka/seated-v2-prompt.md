@@ -2,10 +2,11 @@
 
 ## Status
 
-- Candidate state: `runtime_review`
+- Candidate state: `runtime_approved`
 - Selected concept: Variant 2D, the fourth refinement of scratchy Variant 2
 - Reviewer: Svetozar
-- Production visual approval: pending actual-runtime review
+- Production visual approval: Svetozar approved the actual VPS preview and publication on 2026-09-30 with "approve Baba art and publish".
+- Publication: https://github.com/tran4o/baim/pull/20 (merge commit `1de06e9`).
 - Generator: OpenAI built-in image tool
 - Result ID: unavailable
 
@@ -45,6 +46,6 @@ Constraints: genuinely transparent background; one character only; complete uncr
 - Runtime SHA-256: `65e1893cd678f0f05796e80c82d8f1b7d8dcc756f71bd86a0a8dfc3e0a552742`
 - Resampling: Sharp Lanczos3
 - PNG compression: level 9
-- Existing scene geometry remains unchanged pending visual review:
+- Approved scene geometry remains unchanged:
   - Village square: `left: 325`, `top: 330`, `height: 122`
   - Election booth: `left: 292`, `top: 320`, `height: 183`

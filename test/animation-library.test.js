@@ -53,11 +53,16 @@ test("Tony's seated idle pilot records runtime approval after local review", () 
   assert.match(npcHtml, /Runtime approved/);
   assert.match(npcHtml, /Runtime Approved/);
   assert.match(npcHtml, /assets\/chapter1\/characters\/tony_fridge\/idle-seated-v1\.webp/);
-  assert.match(npcHtml, /Awaiting generated-source details and human review/);
+  assert.doesNotMatch(npcHtml, /Awaiting generated-source details and human review/);
 });
 
 test("world catalog includes procedural, CSS, and static-state categories", () => {
   assert.match(worldHtml, /effect\.fountain_water_stream/);
   assert.match(worldHtml, /UI keyframe/);
   assert.match(worldHtml, /Static state change/);
+});
+
+test("approved NPC motion is counted without claiming missing evidence needs approval", () => {
+  assert.match(npcHtml, /<strong>2<\/strong><span>live motion<\/span>/);
+  assert.match(npcHtml, /Runtime approved; generation evidence incomplete \(see manifest\)/);
 });

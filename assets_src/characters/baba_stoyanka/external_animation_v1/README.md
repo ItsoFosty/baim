@@ -22,10 +22,10 @@ The user generated and accepted the Ludo preview, then supplied the source ZIP. 
 - `git diff --check`: passed.
 - `npm run workflow:review`: passed automated checks; human runtime review approved on 2026-09-30.
 - Final publication verification: `npm run build:runtime`, `npm run check:animation-catalogs`, and `npm test -- --test-force-exit` passed. All 271 tests passed, including complete Bulgarian/English browser gameplay journeys (201.7 seconds). The earlier apparent hang was additional long-running browser journeys continuing without progress output; the initial candidate-review run was stopped prematurely.
-- Dedicated Playwright check on the existing port 5173 service at 1280×720: all 25 frame positions observed across a full loop, 359 draw calls, no page errors or failed HTTP responses. Placement x325 y330 height122 preserved. Screenshot and draw evidence retained in `target/baba-idle-review/`.
+- Dedicated Playwright check on the existing port 5173 service at 1280×720: all 25 frame positions observed across a full loop, 359 draw calls, no page errors or failed HTTP responses. Placement x325 y330 height122 preserved. Local verification evidence was retained under `C:/Users/SveBiS/Desktop/myStuff/2026_GitPro/extraFixes/08_BabaStoyanka/`; the temporary VPS `target/baba-idle-review/` directory was removed after publication.
 
 Review URL: http://51.38.50.3:5173/?play=1&scene=scene.chapter1.village_square
 
 Publication scope: original ZIP, candidate provenance, derived WebP, asset alias, village-square layer animation, generated scene layers, and NPC catalog metadata/HTML. No engine changes.
 
-After explicit runtime/publication approval, proposed cleanup is limited to the merged local and zeshad branches `feat/baba-stoyanka-seated-idle`, `/home/ZeShad/baim/target/baba-idle-review/`, and `/home/ZeShad/baim/target/baba-idle-frame0.png`. Local source/export files are retained.
+Published through https://github.com/tran4o/baim/pull/21 (merge commit `c77c054`). Approved cleanup completed for the local and zeshad branches `feat/baba-stoyanka-seated-idle`, `/home/ZeShad/baim/target/baba-idle-review/`, and `/home/ZeShad/baim/target/baba-idle-frame0.png`. Local source/export files are retained.

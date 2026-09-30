@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "characterId": "npc.baba_stoyanka",
+  "variant": "external_animation_v1",
+  "status": "runtime_approved",
+  "scope": {
+    "sceneId": "scene.chapter1.village_square",
+    "canvas": {
+      "width": 1280,
+      "height": 720
+    },
+    "layerId": "layer.square.baba_stoyanka_seated",
+    "fallbackAsset": "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
+    "placement": {
+      "left": 325,
+      "top": 330,
+      "height": 122,
+      "zIndex": 90
+    },
+    "excludedScenes": [
+      "scene.chapter1.election_booth"
+    ]
+  },
+  "animations": {
+    "baba_idle_seated_1": {
+      "label": "bs-idle-seated-c01",
+      "slot": "Idle",
+      "status": "runtime_approved",
+      "use": true,
+      "loop": true,
+      "description": "Subtle seated breathing, blinking, a small head tilt and minimal hand motion returning to the approved pose.",
+      "source": {
+        "exportFilename": "sprite-384px-frames-25-rows-5-cols-5.zip",
+        "storedFilename": "input/bs-idle-seated-c01.zip",
+        "sourceZipSha256": "5c3429e10f96dd974ef4a7609189e8498492e5e38abcc85d916a8efd8fe56501",
+        "sourceSheetSha256": "a0f657b25b13d2b7eedc59317601f6f9fd4218eb358fc613fff0478e26a350af",
+        "sourceMetadataSha256": "da239d0e8d5a2c0200b362d802d4132e813715434639c2cec9528136aba3484d",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "65e1893cd678f0f05796e80c82d8f1b7d8dcc756f71bd86a0a8dfc3e0a552742"
+          },
+          {
+            "path": "assets_src/characters/baba_stoyanka/baba-stoyanka-seated-v2-source.png",
+            "role": "approved_generation_reference",
+            "sha256": "09df105b2fc11784b8a68aa57bf59e0dd47dae181ad2412a92e439286fb5b7db"
+          }
+        ]
+      },
+      "generation": {
+        "prompt": "Create a seamless five-second seated idle loop. Baba Stoyanka remains anchored in the exact supplied pose while breathing gently, blinking naturally, making one small head tilt, and moving one hand only slightly before returning exactly to the starting pose. Preserve her exact face, compact silhouette, scarf, clothing, colors, proportions, seated position, scale, framing, and painted cartoon style. Fixed camera. No talking, body drift, standing, large gestures, costume changes, new props, background, extra limbs, or deformation.",
+        "tool": "Ludo.ai",
+        "model": "Hydra",
+        "settings": {
+          "maxDurationSeconds": 5,
+          "animationMargin": "Auto",
+          "maxFrames": 25,
+          "spriteSize": 384,
+          "loopAnimation": true,
+          "trimAnimationWhitespace": false
+        },
+        "resultId": null,
+        "creditsSpent": 15
+      },
+      "import": {
+        "frameCount": 25,
+        "frameWidth": 768,
+        "frameHeight": 768,
+        "frameDurationsMs": [
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198
+        ],
+        "totalDurationMs": 4950,
+        "fps": 5.05050505050505,
+        "sheetWidth": 3840,
+        "sheetHeight": 3840,
+        "format": "RGBA8888",
+        "chromaKeySettings": null,
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/baba_stoyanka/idle-seated-v1.webp": "d2acc087aa8e92cf8d9f72ddb7b67a7bd1ef144cb432c2df63c28c5b14e274b5"
+        },
+        "runtime": {
+          "asset": "assets/chapter1/characters/baba_stoyanka/idle-seated-v1.webp",
+          "sheetWidth": 1920,
+          "sheetHeight": 1920,
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "contentBounds": {
+            "x": 132,
+            "y": 95,
+            "w": 119,
+            "h": 193
+          },
+          "sourceScale": 0.5,
+          "format": "alpha-webp"
+        }
+      },
+      "review": {
+        "candidateStatus": "runtime_approved",
+        "rejectionReason": null,
+        "reviewer": "Svetozar",
+        "decision": "approved_for_runtime",
+        "approvedAt": "2026-09-30"
+      }
+    }
+  }
+}

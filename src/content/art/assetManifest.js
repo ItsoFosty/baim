@@ -28,6 +28,7 @@ export const assetManifest = {
       oldMenChorusSeated: "assets/chapter1/characters/old_men_chorus/seated-pair-v1.png",
       posterBefore: "assets/chapter1/scenes/village_square/poster-before-v1.png",
       babaStoyankaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
+      babaStoyankaIdleSeated: "assets/chapter1/characters/baba_stoyanka/idle-seated-v1.webp",
       kioskPapersPile: "assets/chapter1/scenes/village_square/kiosk-papers-pile-v1.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },

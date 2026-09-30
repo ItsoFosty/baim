@@ -193,7 +193,22 @@ export const sceneLayerGeometry = {
         "zIndex": 90,
         "top": 330,
         "left": 325,
-        "height": 122
+        "height": 122,
+        "animation": {
+          "asset": "babaStoyankaIdleSeated",
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "frameCount": 25,
+          "columns": 5,
+          "frameDurationMs": 198,
+          "loop": true,
+          "contentBounds": {
+            "x": 132,
+            "y": 95,
+            "w": 119,
+            "h": 193
+          }
+        }
       },
       {
         "id": "layer.square.old_men_chorus",

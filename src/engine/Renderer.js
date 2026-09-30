@@ -560,13 +560,33 @@ export class Renderer {
 
   drawSceneRasterLayer(scene, layer) {
     const fallbackImage = this.game.assets.getSceneImage(scene.id, layer.asset);
-    const animationImage = layer.animation?.asset
-      ? this.game.assets.getSceneImage(scene.id, layer.animation.asset)
+    const speechTime = layer.talkAnimation
+      ? this.game.npcSpeechAnimationTime?.(layer.talkAnimation.npcId)
       : null;
-    if (layer.animation && this.game.assets.isLoaded(animationImage)) {
-      const frameIndex = sceneLayerAnimationFrame(layer.animation, this.game.lastTime || 0);
-      const source = sceneLayerAnimationSourceRect(layer.animation, frameIndex);
+    const talkImage = speechTime != null
+      ? this.game.assets.getSceneImage(scene.id, layer.talkAnimation.asset)
+      : null;
+    const talking = speechTime != null && this.game.assets.isLoaded(talkImage);
+    const animation = talking ? layer.talkAnimation : layer.animation;
+    const animationImage = talking ? talkImage : animation?.asset
+      ? this.game.assets.getSceneImage(scene.id, animation.asset)
+      : null;
+    if (animation && this.game.assets.isLoaded(animationImage)) {
+      const frameIndex = sceneLayerAnimationFrame(animation, talking ? speechTime : this.game.lastTime || 0);
+      const source = sceneLayerAnimationSourceRect(animation, frameIndex);
       const rect = this.sceneLayerRect(layer, { naturalWidth: source.w, naturalHeight: source.h });
+      // Register an alternate crop against the approved idle coordinate system,
+      // keeping the same scale and anchor without clipping its animated bounds.
+      if (animation.registrationBounds) {
+        const bounds = animation.registrationBounds;
+        const reference = this.sceneLayerRect(layer, { naturalWidth: bounds.w, naturalHeight: bounds.h });
+        const scaleX = reference.w / bounds.w;
+        const scaleY = reference.h / bounds.h;
+        rect.x = reference.x + (animation.contentBounds.x - bounds.x) * scaleX;
+        rect.y = reference.y + (animation.contentBounds.y - bounds.y) * scaleY;
+        rect.w = source.w * scaleX;
+        rect.h = source.h * scaleY;
+      }
       this.ctx.drawImage(
         animationImage,
         source.x,

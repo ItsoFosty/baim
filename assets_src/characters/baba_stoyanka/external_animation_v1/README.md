@@ -29,3 +29,11 @@ Review URL: http://51.38.50.3:5173/?play=1&scene=scene.chapter1.village_square
 Publication scope: original ZIP, candidate provenance, derived WebP, asset alias, village-square layer animation, generated scene layers, and NPC catalog metadata/HTML. No engine changes.
 
 Published through https://github.com/tran4o/baim/pull/21 (merge commit `c77c054`). Approved cleanup completed for the local and zeshad branches `feat/baba-stoyanka-seated-idle`, `/home/ZeShad/baim/target/baba-idle-review/`, and `/home/ZeShad/baim/target/baba-idle-frame0.png`. Local source/export files are retained.
+
+## Seated talk follow-up
+
+The approved idle above is preserved. Svetozar approved the actual VPS runtime and the reviewed
+publication sequence for `bs-talk-seated-c01` on 2026-09-30 by replying "Approval". Its status is
+`runtime_approved`. See
+[talk-seated-candidate.md](talk-seated-candidate.md) and the Talk entry in `animation-pilot.json`
+for its prompt, 15-credit generation evidence, hashes, registration, and review state.

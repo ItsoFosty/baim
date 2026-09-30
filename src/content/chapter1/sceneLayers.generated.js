@@ -208,6 +208,28 @@ export const sceneLayerGeometry = {
             "w": 119,
             "h": 193
           }
+        },
+        "talkAnimation": {
+          "registrationBounds": {
+            "x": 132,
+            "y": 95,
+            "w": 119,
+            "h": 193
+          },
+          "asset": "babaStoyankaTalkSeated",
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "frameCount": 25,
+          "columns": 5,
+          "frameDurationMs": 190,
+          "loop": true,
+          "contentBounds": {
+            "x": 132,
+            "y": 94,
+            "w": 119,
+            "h": 194
+          },
+          "npcId": "npc.baba_stoyanka"
         }
       },
       {

@@ -94,6 +94,7 @@ export class Game {
     this.speechBubblePauseRemaining = 0;
     this.speechBubbleSequence = 0;
     this.npcSpeechBubble = null;
+    this.npcDialogueSpeech = null;
     this.currentScene = this.resolveInitialScene();
     this.player = {
       id: "npc.bai_mitko",
@@ -232,6 +233,7 @@ export class Game {
       this.updateSpeechBubble(dt);
       this.updateNpcSpeechBubble(dt);
     }
+    this.updateNpcDialogueSpeech(dt);
     this.renderer.draw();
     requestAnimationFrame((next) => this.tick(next));
   }
@@ -1706,6 +1708,7 @@ export class Game {
       return;
     }
     const dialogueNode = this.dialogue.getNode();
+    this.updateNpcDialogueSpeech();
     this.uiRoot.innerHTML = "";
     if (this.editMode) {
       if (this.sceneEditor) this.uiRoot.appendChild(this.sceneEditor.createPanel());
@@ -2734,6 +2737,44 @@ node tools/build-external-runtime-staging.js</pre>
     }
     if (choices.childElementCount) panel.appendChild(choices);
     return panel;
+  }
+
+  // Dialogue text remains visible while choices are considered. Mouth motion has
+  // a separate, reading-length window and never changes dialogue or save state.
+  updateNpcDialogueSpeech(dt = 0) {
+    const session = this.dialogue.current;
+    const node = this.dialogue.getNode();
+    const dialogue = this.content.dialogues[session?.id];
+    const npcId = node?.npcId || dialogue?.npcId;
+    const npc = this.currentScene.npcs?.find((candidate) => candidate.id === npcId);
+    if (!node?.lineKey || !dialogue?.npcId || !npc) {
+      this.npcDialogueSpeech = null;
+      return;
+    }
+    const lineKey = firstMatchingRule(node.lineRules, this.effectContext())?.lineKey || node.lineKey;
+    const text = this.t(lineKey);
+    const previous = this.npcDialogueSpeech;
+    if (!previous || previous.session !== session || previous.nodeId !== session.nodeId
+      || previous.sceneId !== this.currentScene.id || previous.npcId !== npcId || previous.text !== text) {
+      this.npcDialogueSpeech = {
+        session, nodeId: session.nodeId, sceneId: this.currentScene.id, npcId, text,
+        elapsed: 0, visibleSeconds: this.speechBubbleVisibleSeconds(text)
+      };
+    } else if (!this.paused && !this.menuOpen && !this.devHome && !this.editMode) {
+      previous.elapsed += Math.max(0, Number(dt) || 0);
+    }
+  }
+
+  npcSpeechAnimationTime(npcId) {
+    if (this.dialogue.current) {
+      const speech = this.npcDialogueSpeech;
+      return speech?.session === this.dialogue.current && speech.nodeId === this.dialogue.current.nodeId
+        && speech.sceneId === this.currentScene.id && speech.npcId === npcId
+        && speech.elapsed < speech.visibleSeconds ? speech.elapsed * 1000 : null;
+    }
+    const speech = this.npcSpeechBubble;
+    return speech?.npcId === npcId && speech.phase !== "out"
+      && speech.elapsed < speech.visibleSeconds ? speech.elapsed * 1000 : null;
   }
 
   createDialogueSpeechBubble(node) {

@@ -52,6 +52,13 @@ function runtimeLayer(layer, sourcePath) {
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);
   if (layer.hiddenWhenState) result.hiddenWhenState = String(layer.hiddenWhenState);
   if (layer.animation) result.animation = runtimeAnimation(layer.animation, sourcePath, layer.id);
+  if (layer.talkAnimation) {
+    if (!layer.talkAnimation.npcId) throw new Error(`${sourcePath} ${layer.id} talkAnimation npcId is required`);
+    result.talkAnimation = {
+      ...runtimeAnimation(layer.talkAnimation, sourcePath, layer.id),
+      npcId: String(layer.talkAnimation.npcId)
+    };
+  }
   if (layer.visibleDuringAction) {
     result.visibleDuringAction = {
       actionName: String(layer.visibleDuringAction.actionName || ""),
@@ -83,7 +90,13 @@ function runtimeAnimation(animation, sourcePath, layerId) {
   if (Number(bounds.w) <= 0 || Number(bounds.h) <= 0) {
     throw new Error(`${sourcePath} ${layerId} animation contentBounds must have positive dimensions`);
   }
+  const registration = animation.registrationBounds;
+  if (registration && (!["x", "y", "w", "h"].every((key) => Number.isFinite(Number(registration[key])))
+    || Number(registration.w) <= 0 || Number(registration.h) <= 0)) {
+    throw new Error(`${sourcePath} ${layerId} animation registrationBounds must contain finite x, y and positive w, h`);
+  }
   return {
+    ...(registration ? { registrationBounds: Object.fromEntries(["x", "y", "w", "h"].map((key) => [key, Number(registration[key])])) } : {}),
     asset: String(animation.asset),
     frameWidth: Math.floor(Number(animation.frameWidth)),
     frameHeight: Math.floor(Number(animation.frameHeight)),

@@ -126,6 +126,281 @@
         "decision": "approved_for_runtime",
         "approvedAt": "2026-09-30"
       }
+    },
+    "baba_talk_seated_1": {
+      "label": "bs-talk-seated-c01",
+      "slot": "Talk",
+      "status": "runtime_approved",
+      "use": true,
+      "loop": true,
+      "description": "Restrained seated speech, only during Baba speech windows; approved idle resumes while dialogue choices remain.",
+      "source": {
+        "exportFilename": "sprite-384px-frames-25-rows-5-cols-5.zip",
+        "storedFilename": "input/bs-talk-seated-c01.zip",
+        "sourceZipSha256": "2764cba67144f11c8f755553f1f425baf2516a12e002de37cd443b7e8222f27c",
+        "sourceSheetSha256": "cb184806f32bd6dfeecab5d1e9e468fae193de1a615d8d23eb543f8e93db428b",
+        "sourceMetadataSha256": "b75668f298e076210bbe688938e08691c46714a874131d85ffba64827538f839",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "65e1893cd678f0f05796e80c82d8f1b7d8dcc756f71bd86a0a8dfc3e0a552742"
+          },
+          {
+            "path": "assets_src/characters/baba_stoyanka/baba-stoyanka-seated-v2-source.png",
+            "role": "approved_generation_reference",
+            "sha256": "09df105b2fc11784b8a68aa57bf59e0dd47dae181ad2412a92e439286fb5b7db"
+          }
+        ]
+      },
+      "generation": {
+        "prompt": "Create a seamless five-second seated talking loop for Baba Stoyanka. She stays seated and anchored in exactly the reference pose. Animate subtle conversational mouth shapes, one small head nod, gentle breathing, natural blinking, and very restrained movement of one hand. Keep her expression warm and mildly mischievous. Hands remain close to their resting positions; the cane and shopping bag stay fixed. Return smoothly to the reference resting pose at the loop boundary. Preserve her exact face, age, nose, silhouette, proportions, scarf, costume, colors, props, framing, and painted cartoon style. Fixed camera and scale. Transparent background. No body drift, standing, large gestures, new props, extra limbs, or facial redesign.",
+        "promptEvidence": "Prompt supplied in this chat for manual phone generation; exact submitted field not independently captured.",
+        "tool": "Ludo.ai",
+        "model": "Hydra",
+        "settings": {
+          "maxDurationSeconds": 5,
+          "animationMargin": "Auto",
+          "maxFrames": 25,
+          "spriteSize": 384,
+          "loopAnimation": true,
+          "trimAnimationWhitespace": false,
+          "finalFrame": "Copy 1st Frame"
+        },
+        "settingsEvidence": "User screenshots show Hydra, 5s, Auto, 25 frames, 384, loop on, trim off, copied final frame.",
+        "resultId": null,
+        "resultUrl": null,
+        "unavailableEvidenceReason": "User generated on a separate phone browser and supplied the ZIP; no result identifier or URL is embedded in exported metadata or provided screenshots.",
+        "creditsSpent": 15,
+        "creditsEvidence": "User screenshot: generation queued, account balance 404 to 389.",
+        "generationMode": "user_operated_phone_browser",
+        "generationIncident": "Tapping the warning icon inside Animate started generation, following incorrect assistant guidance; no additional generation requested."
+      },
+      "import": {
+        "frameCount": 25,
+        "frameWidth": 768,
+        "frameHeight": 768,
+        "frameDurationsMs": [
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190,
+          190
+        ],
+        "totalDurationMs": 4750,
+        "fps": 5.2631578947368425,
+        "sheetWidth": 3840,
+        "sheetHeight": 3840,
+        "format": "RGBA8888",
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/baba_stoyanka/talk-seated-v1.webp": "1b59039a718224709bb30dfcecaab4d37f6b5f33a0fdac056ff6de02a7f1be8c"
+        },
+        "runtime": {
+          "asset": "assets/chapter1/characters/baba_stoyanka/talk-seated-v1.webp",
+          "sheetWidth": 1920,
+          "sheetHeight": 1920,
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "contentBounds": {
+            "x": 132,
+            "y": 94,
+            "w": 119,
+            "h": 194
+          },
+          "sourceScale": 0.5,
+          "format": "alpha-webp",
+          "registrationBounds": {
+            "x": 132,
+            "y": 95,
+            "w": 119,
+            "h": 193
+          }
+        },
+        "frameContentBounds": [
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 95,
+            "w": 119,
+            "h": 193
+          },
+          {
+            "x": 132,
+            "y": 94,
+            "w": 119,
+            "h": 194
+          },
+          {
+            "x": 132,
+            "y": 94,
+            "w": 119,
+            "h": 194
+          },
+          {
+            "x": 132,
+            "y": 94,
+            "w": 119,
+            "h": 194
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          },
+          {
+            "x": 132,
+            "y": 96,
+            "w": 119,
+            "h": 192
+          }
+        ],
+        "chromaKeySettings": null
+      },
+      "review": {
+        "candidateStatus": "runtime_approved",
+        "rejectionReason": null,
+        "reviewer": "Svetozar",
+        "decision": "approved_for_runtime",
+        "approvedAt": "2026-09-30",
+        "ludoPreviewDecision": "User: Looks good here it is",
+        "ludoPreviewAcceptedAt": "2026-09-30",
+        "evidenceLocation": "C:/Users/SveBiS/Desktop/myStuff/2026_GitPro/extraFixes/08_BabaStoyanka/talk/",
+        "approvalEvidence": "User replied Approval after actual-game recording, direct VPS preview, complete diff, publication sequence and exact cleanup targets were presented."
+      }
     }
   }
 }

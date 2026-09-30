@@ -63,6 +63,7 @@ When operating in Work mode:
 Follow `docs/ludo-animation-production-workflow.md` for Ludo sprite-sheet work.
 
 - Ludo credit spending or generation controlled by the agent always requires explicit approval. When the user generates the candidate themselves, their choice to download it is the generation decision.
+- Treat controls inside or overlapping Generate/Animate as generation actions, including warning icons. Never instruct a user to tap one merely to inspect a warning. For manual phone generation, explain the displayed cost before an intentional Generate/Animate tap; inspect uncertain warnings through a screenshot or separate non-generating help surface.
 - Providing an exported Ludo ZIP or its path for a focused animation task authorizes the agent to inspect it, copy the unchanged source to the VPS task branch, record provenance, derive runtime assets, integrate it as `runtime_review`, run builds/tests, and serve or refresh the candidate on port 5173. Do not stop for separate approvals between those reversible preview steps.
 - Review the candidate in the real VPS runtime at 1280x720. Do not use the obsolete Windows clone as an animation staging or merge step, and never use port 5174.
 - Keep the candidate uncommitted and unpublished until the user has seen it on the VPS. Do not create a source-only PR when the intended outcome is a runnable animation; source, provenance, runtime integration, and tests belong to one task branch and one PR.

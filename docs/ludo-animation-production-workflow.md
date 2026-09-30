@@ -18,6 +18,15 @@ The normal path is **Ludo export -> VPS feature-branch preview on port 5173 -> o
 - Preserve the downloaded ZIP exactly. Do not rename files inside it or re-encode the source sheet.
 - Providing the ZIP or its path to the focused task chat authorizes Stage 2. No additional approval is needed to copy and integrate it for preview.
 
+### Manual Phone Generation And Uncertain Controls
+
+- Identify the current screen from the user's screenshot. Do not imply the agent can operate or verify a separate phone browser.
+- Treat the full Generate/Animate button, including embedded or overlapping icons, as one generation action unless a separate non-generating control is verified. Never ask the user to tap its warning icon to discover what the warning means.
+- Inspect uncertain warnings through a screenshot, visible text, or a separate help/settings surface whose action is known. If the warning cannot be read, say so; do not probe it through the generation button or claim the warning is harmless.
+- Before intentional generation, summarize the candidate label, reference, current settings, and displayed credit cost. Make the instruction explicit: "Tapping Animate starts this candidate and spends the displayed credits." Use an already given generation approval when it covers that candidate and cost; do not add a duplicate approval gate.
+- Once generation starts, have the user wait for that result. Do not recommend another tap or retry while it is queued/running. If generation starts unexpectedly, record the incident and observed cost, review that result first, and require explicit authorization before a new paid attempt. Do not assume a refund.
+- Distinguish the recommended prompt/settings from independently observed or user-confirmed submission evidence in provenance. Capture the result ID/URL when accessible; otherwise record why it is unavailable.
+
 ## Stage 2: Automatic VPS Candidate Preview
 
 On the existing focused task branch in `/home/ZeShad/baim`, the agent should continue through all of these steps without conversational approval pauses:

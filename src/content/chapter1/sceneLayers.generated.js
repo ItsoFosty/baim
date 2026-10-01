@@ -326,6 +326,30 @@ export const sceneLayerGeometry = {
             "h": 198
           },
           "npcId": "npc.tony_fridge"
+        },
+        "reactionAnimations": {
+          "confident_chuckle": {
+            "registrationBounds": {
+              "x": 116,
+              "y": 91,
+              "w": 152,
+              "h": 198
+            },
+            "asset": "tonyFridgeChuckleSeated",
+            "frameWidth": 384,
+            "frameHeight": 384,
+            "frameCount": 25,
+            "columns": 5,
+            "frameDurationMs": 112,
+            "loop": false,
+            "contentBounds": {
+              "x": 116,
+              "y": 92,
+              "w": 152,
+              "h": 196
+            },
+            "npcId": "npc.tony_fridge"
+          }
         }
       },
       {

@@ -59,6 +59,14 @@ function runtimeLayer(layer, sourcePath) {
       npcId: String(layer.talkAnimation.npcId)
     };
   }
+  if (layer.reactionAnimations) {
+    result.reactionAnimations = Object.fromEntries(Object.entries(layer.reactionAnimations).map(([id, animation]) => {
+      if (!animation.npcId || animation.loop !== false) {
+        throw new Error(`${sourcePath} ${layer.id} reaction ${id} needs npcId and loop: false`);
+      }
+      return [id, { ...runtimeAnimation(animation, sourcePath, layer.id), npcId: String(animation.npcId) }];
+    }));
+  }
   if (layer.visibleDuringAction) {
     result.visibleDuringAction = {
       actionName: String(layer.visibleDuringAction.actionName || ""),

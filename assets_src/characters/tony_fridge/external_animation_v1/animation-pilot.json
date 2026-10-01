@@ -425,6 +425,309 @@
         "approvedAt": "2026-10-01",
         "evidenceLocation": "C:/Users/SveBiS/Desktop/myStuff/2026_GitPro/extraFixes/09_TonyFridge/talk/"
       }
+    },
+    "tony_chuckle_seated_1": {
+      "label": "toni-chuckle-seated-c01",
+      "slot": "Reaction",
+      "status": "runtime_approved",
+      "use": true,
+      "loop": false,
+      "description": "One seated confident chuckle on entering challenge_accepted in Mehana. Remains screen-left-facing, then resumes active talk or quiet frame 4. Includes a small generated hand accent accepted during human runtime review.",
+      "trigger": {
+        "dialogueId": "dialogue.tony_fridge",
+        "nodeId": "challenge_accepted",
+        "reactionId": "confident_chuckle",
+        "oncePer": "node_entry"
+      },
+      "source": {
+        "exportFilename": "sprite-384px-frames-25-rows-5-cols-5 (1).zip",
+        "storedFilename": "input/toni-chuckle-seated-c01.zip",
+        "sourceZipSha256": "fb5e2b6fce3b925f045f31531f7385fbdc4caa16bbf23a9c6767a4f9f9ffa27e",
+        "sourceSheetSha256": "43f7822f2320710d960f5d87449d90e4b4ad80b60a0022de495cd69f8ae39cdb",
+        "sourceMetadataSha256": "dcce820afcc5286939023e9e7f016e9660117f83885a3afac84ed6140c141711",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          },
+          {
+            "path": "assets_src/chapter1/scenes/mehana/tony-fridge-seated-cutout-v1.png",
+            "role": "approved_source_cutout_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          },
+          {
+            "path": "assets_src/characters/tony_fridge/external_animation_v1/references/talk-seated-left-frame004.png",
+            "role": "derived_approved_left_facing_talk_frame_004",
+            "sha256": "911e8e3bc413dbfed39059f977b27b38cb9eb3f2e99fbf70bbefb9820d8dd587",
+            "derivedFrom": {
+              "zip": "input/toni-talk-seated-c01.zip",
+              "frameIndex": 4,
+              "rectangle": {
+                "x": 3072,
+                "y": 0,
+                "w": 768,
+                "h": 768
+              },
+              "synthesis": false
+            }
+          }
+        ]
+      },
+      "generation": {
+        "prompt": "3-second one-shot seated confident chuckle. Start in the supplied SCREEN-LEFT-facing pose. Hold briefly, then give one quiet, self-assured chuckle: a small smile and two short chest/shoulder pulses. Settle back to the exact supplied pose, mouth closed, during the final second. Keep looking SCREEN-LEFT throughout. Preserve face, moustache, large build, clothes, painted style, seated proportions, canvas framing and scale. Hands, hips, legs and feet stay anchored. Fixed camera; transparent background. No speaking, head turn, mirroring, drift, standing, broad grin, new props, table, chair, shadow or background.",
+        "promptEvidence": "Agent independently verified immediately before Animate and completed result panel.",
+        "tool": "Ludo.ai",
+        "model": "Hydra",
+        "settings": {
+          "maxDurationSeconds": 3,
+          "animationMargin": "Auto",
+          "maxFrames": 25,
+          "spriteSize": 384,
+          "loopAnimation": false,
+          "trimAnimationWhitespace": false,
+          "finalFrame": "Copy 1st Frame"
+        },
+        "settingsEvidence": "Prepared controls and completed result Change Sprite Settings dialog observed independently.",
+        "resultId": null,
+        "resultUrl": null,
+        "unavailableEvidenceReason": "Result panel and More options expose no unique ID/share URL; generic page URL; exported metadata contains no generation identifier.",
+        "resultThumbnailUrl": "https://storage.googleapis.com/ludo-assets/9fcd623ba643abb2c02649b1bda4a814.webp",
+        "creditsSpent": 9,
+        "creditsEvidence": "Displayed 9 credits; balance374to365; one pending job then queue0.",
+        "generationMode": "agent_operated_browser",
+        "spendingApproval": "User replied aproved after exact single-candidate 9-credit request on2026-10-01."
+      },
+      "import": {
+        "frameCount": 25,
+        "frameWidth": 768,
+        "frameHeight": 768,
+        "frameDurationsMs": [
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112,
+          112
+        ],
+        "totalDurationMs": 2800,
+        "fps": 8.928571428571429,
+        "sheetWidth": 3840,
+        "sheetHeight": 3840,
+        "format": "RGBA8888",
+        "alphaRange": [
+          0,
+          255
+        ],
+        "chromaKeySettings": null,
+        "frameContentBounds": [
+          {
+            "x": 117,
+            "y": 96,
+            "w": 150,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 95,
+            "w": 151,
+            "h": 193
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 97,
+            "w": 151,
+            "h": 191
+          },
+          {
+            "x": 116,
+            "y": 97,
+            "w": 151,
+            "h": 191
+          },
+          {
+            "x": 116,
+            "y": 93,
+            "w": 149,
+            "h": 195
+          },
+          {
+            "x": 116,
+            "y": 92,
+            "w": 149,
+            "h": 196
+          },
+          {
+            "x": 116,
+            "y": 93,
+            "w": 149,
+            "h": 195
+          },
+          {
+            "x": 116,
+            "y": 97,
+            "w": 152,
+            "h": 191
+          },
+          {
+            "x": 116,
+            "y": 98,
+            "w": 152,
+            "h": 190
+          },
+          {
+            "x": 116,
+            "y": 98,
+            "w": 152,
+            "h": 190
+          },
+          {
+            "x": 116,
+            "y": 97,
+            "w": 151,
+            "h": 191
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          }
+        ],
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/tony_fridge/chuckle-seated-v1.webp": "6d2fc49711cf9c62d33bf85576df2f3becd242614d9b3ecab2ceac6a40757092"
+        },
+        "runtime": {
+          "asset": "assets/chapter1/characters/tony_fridge/chuckle-seated-v1.webp",
+          "sheetWidth": 1920,
+          "sheetHeight": 1920,
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "contentBounds": {
+            "x": 116,
+            "y": 92,
+            "w": 152,
+            "h": 196
+          },
+          "registrationBounds": {
+            "x": 116,
+            "y": 91,
+            "w": 152,
+            "h": 198
+          },
+          "sourceScale": 0.5,
+          "format": "alpha-webp",
+          "oneShotStartFrame": 0,
+          "oneShotEndFrame": 24,
+          "frameDurationMs": 112
+        }
+      },
+      "review": {
+        "candidateStatus": "runtime_approved",
+        "rejectionReason": null,
+        "reviewer": "Svetozar",
+        "decision": "approved_for_runtime",
+        "approvedAt": "2026-10-01",
+        "evidenceLocation": "C:/Users/SveBiS/Desktop/myStuff/2026_GitPro/extraFixes/09_TonyFridge/chuckle/",
+        "promptDeviation": "Small hand lift during chuckle; explicitly accepted in human runtime approval on 2026-10-01."
+      }
     }
   }
 }

@@ -162,6 +162,7 @@ const baseDialogues = [
       },
       challenge_accepted: {
         lineKey: "dialogue.tony.challenge_accepted",
+        reactionId: "confident_chuckle",
         choices: [{ textKey: "dialogue.tony.choice.prepare" }]
       },
       challenge_deferred: {

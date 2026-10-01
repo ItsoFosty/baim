@@ -18,6 +18,12 @@ The normal path is **Ludo export -> VPS feature-branch preview on port 5173 -> o
 - Preserve the downloaded ZIP exactly. Do not rename files inside it or re-encode the source sheet.
 - Providing the ZIP or its path to the focused task chat authorizes Stage 2. No additional approval is needed to copy and integrate it for preview.
 
+### Export Failure Fallback
+
+- Attempt the completed candidate's free Sheet + JSON export once and wait for the normal download result. If automation fails or times out, check whether that attempt already saved a file, then ask the user to download the same labeled candidate manually and provide its saved ZIP path.
+- Do not keep retrying an unverified download mechanism. A different automated recovery may be attempted only after a specific cause and safe remedy are established; record that reason.
+- An export failure is not a generation failure. Preserve the completed result, do not regenerate or use paid repair controls, and do not request another spending approval just to export it.
+
 ### Manual Phone Generation And Uncertain Controls
 
 - Identify the current screen from the user's screenshot. Do not imply the agent can operate or verify a separate phone browser.
@@ -64,6 +70,14 @@ The exact response `approve runtime and publish`, or equally explicit wording, a
 Before committing, reconcile all source-art and animation approval records with the user's decision, reviewer, date, and approved scene scope. Verification-only reruns need not repeat checks already passed for identical inputs; approval metadata or generated catalog changes require their relevant freshness checks.
 
 Before cleanup, retain the final test summary, runtime verification, and review images in a durable location documented in the review record. Distinguish retained evidence from deleted temporary files. Local evidence may remain local, but record its actual location and do not imply it is available from the repository.
+
+### Evidence Index And Task Closeout
+
+- Keep one README index at the durable evidence root, using `docs/ludo-animation-evidence-template.md`. Identify the candidate, current status, source/export and runtime hashes, approval/date, PR and feature/merge commits, final test summary/exit status, pre-publication versus post-merge runtime evidence, and exact retained locations.
+- Preserve dated review packages as historical snapshots. When publication completes, add a prominent historical banner linking to the evidence index/completion record; do not leave an earlier snapshot labeled as the current pending gate.
+- Update the candidate note's current-status section and the evidence index to say whether publication, canonical synchronization, runtime verification, and approved cleanup actually completed. Keep earlier dated observations unchanged; approval alone is not evidence of a successful merge.
+- Before removing duplicates, verify their hashes against retained copies or original ZIP members. Retain one final reviewed patch or identify its reproducible Git commit. Remove only explicitly approved extraction copies/intermediate patches, record exact paths and recovery sources in the index, and preserve original ZIPs, provenance, final logs, screenshots/videos, and approved production assets.
+- Shared workflow/templates belong under `docs/`; per-candidate prompts/provenance belong beside the character source in `assets_src/`; runtime assets belong under `assets/`. Personal learning notes may remain ignored/local-only. Keep local evidence paths explicit so collaborators do not mistake them for repository files.
 
 When regenerating catalogs, check both HTML and the corresponding PDF for the final animation status. Keep relevant PDF changes; discard only unrelated re-render noise produced by the current task.
 

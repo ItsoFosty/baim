@@ -67,7 +67,46 @@ export function sceneLayerAnimationFrame(animation, timeMs = 0) {
     ? Number(animation.frameDurationMs)
     : 1000 / Math.max(0.001, Number(animation?.fps) || 1);
   const elapsedFrame = Math.max(0, Math.floor((Number(timeMs) || 0) / durationMs));
-  return animation?.loop === false ? Math.min(elapsedFrame, frameCount - 1) : elapsedFrame % frameCount;
+  if (animation?.loop === false) return Math.min(elapsedFrame, frameCount - 1);
+  const start = Math.max(0, Math.min(Number(animation?.loopStartFrame) || 0, frameCount - 1));
+  const end = Math.max(start, Math.min(animation?.loopEndFrame ?? frameCount - 1, frameCount - 1));
+  return elapsedFrame <= end ? elapsedFrame : start + (elapsedFrame - end - 1) % (end - start + 1);
+}
+
+// Optional intro -> sustained speech -> return playback. State belongs to the
+// renderer, freezes in menus, and is discarded on scene changes, never saved.
+export function npcTalkPlaybackFrame(animation, speechTime, timeMs, previous = {}, paused = false, conversation = null) {
+  const state = { ...previous, lastTime: timeMs };
+  if (conversation) {
+    const continuing = previous.phase === "conversation" && previous.conversation === conversation;
+    state.phase = "conversation";
+    state.conversation = conversation;
+    state.elapsed = continuing ? previous.elapsed + (paused ? 0 : Math.max(0, timeMs - previous.lastTime)) : 0;
+    const duration = animation.frameDurationMs || 1000 / animation.fps;
+    const turned = state.elapsed >= animation.loopStartFrame * duration;
+    // Keep a quiet left-facing pose while the player reads or chooses a reply.
+    return { state, frameIndex: turned && speechTime == null ? animation.loopStartFrame
+      : sceneLayerAnimationFrame(animation, state.elapsed) };
+  }
+  if (speechTime != null) {
+    state.phase = "speech";
+    state.elapsed = 0;
+    return { state, frameIndex: sceneLayerAnimationFrame(animation, speechTime) };
+  }
+  if (previous.phase === "speech" || previous.phase === "conversation") {
+    state.phase = "return";
+    state.elapsed = 0;
+  } else if (previous.phase === "return" && !paused) {
+    state.elapsed += Math.max(0, timeMs - (previous.lastTime ?? timeMs));
+  }
+  if (state.phase !== "return") return { state, frameIndex: null };
+  const duration = animation.frameDurationMs || 1000 / animation.fps;
+  const index = animation.returnStartFrame + Math.floor(state.elapsed / duration);
+  if (index >= animation.frameCount) {
+    state.phase = "idle";
+    return { state, frameIndex: null };
+  }
+  return { state, frameIndex: index };
 }
 
 export function sceneLayerAnimationSourceRect(animation, frameIndex) {
@@ -563,16 +602,30 @@ export class Renderer {
     const speechTime = layer.talkAnimation
       ? this.game.npcSpeechAnimationTime?.(layer.talkAnimation.npcId)
       : null;
-    const talkImage = speechTime != null
+    const talkImage = layer.talkAnimation
       ? this.game.assets.getSceneImage(scene.id, layer.talkAnimation.asset)
       : null;
-    const talking = speechTime != null && this.game.assets.isLoaded(talkImage);
+    let talkFrame = null;
+    if (this.npcTalkSceneId !== scene.id) {
+      this.npcTalkSceneId = scene.id;
+      this.npcTalkPlayback = new Map();
+    }
+    if (layer.talkAnimation?.returnStartFrame != null) {
+      const result = npcTalkPlaybackFrame(layer.talkAnimation, speechTime, this.game.lastTime || 0,
+        this.npcTalkPlayback.get(layer.id), Boolean(this.game.paused || this.game.menuOpen || this.game.devHome || this.game.editMode),
+        this.game.content?.dialogues?.[this.game.dialogue?.current?.id]?.npcId === layer.talkAnimation.npcId
+          ? this.game.dialogue.current : null);
+      this.npcTalkPlayback.set(layer.id, result.state);
+      talkFrame = result.frameIndex;
+    }
+    const talking = (speechTime != null || talkFrame != null) && this.game.assets.isLoaded(talkImage);
     const animation = talking ? layer.talkAnimation : layer.animation;
     const animationImage = talking ? talkImage : animation?.asset
       ? this.game.assets.getSceneImage(scene.id, animation.asset)
       : null;
     if (animation && this.game.assets.isLoaded(animationImage)) {
-      const frameIndex = sceneLayerAnimationFrame(animation, talking ? speechTime : this.game.lastTime || 0);
+      const frameIndex = talking && talkFrame != null ? talkFrame
+        : sceneLayerAnimationFrame(animation, talking ? speechTime : this.game.lastTime || 0);
       const source = sceneLayerAnimationSourceRect(animation, frameIndex);
       const rect = this.sceneLayerRect(layer, { naturalWidth: source.w, naturalHeight: source.h });
       // Register an alternate crop against the approved idle coordinate system,

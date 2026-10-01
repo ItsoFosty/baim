@@ -9,6 +9,14 @@ Move one Ludo export from candidate to approved production animation with two hu
 
 The normal path is **Ludo export -> VPS feature-branch preview on port 5173 -> one approval to publish and merge**. The obsolete Windows clone is not a staging, preview, or merge environment.
 
+## Review Responsibilities
+
+- The agent reads accessible project files and performs technical review, documentation consistency checks, relative-link validation, builds, tests, evidence verification, and checkout readiness checks. Do not ask the user to copy accessible files or perform routine technical checks on the agent's behalf.
+- The user decides artistic intent, visual acceptance at actual game size, credit spending, and publication authorization. Ask for missing access or files only after establishing the specific access limitation; explain what remains unverified.
+- Two human decisions are the normal animation path, not a waiver of safety boundaries. Unexpected spending, material scope changes, failed checks, or separately protected actions remain exceptions. Do not add duplicate approvals for already authorized, unchanged work.
+- Scope status reports explicitly: publication of an animation does not imply publication of later CI/documentation fixes. Historical audits cannot declare themselves the current authority; link to the current candidate record or evidence index instead.
+- Cleanup reports distinguish byte-identical recovery copies from superseded intermediates whose final implementation is preserved but whose exact original bytes may not be recoverable.
+
 ## Stage 1: Candidate Generation
 
 - Agree on one animation slot, approved reference asset, prompt, model/settings, and expected runtime scene.
@@ -46,6 +54,8 @@ On the existing focused task branch in `/home/ZeShad/baim`, the agent should con
 7. Serve or refresh `/home/ZeShad/baim` on port 5173 and provide the direct review URL.
 8. Verify the animation in the real 1280x720 game scene, not only as an isolated sprite sheet.
 
+Before step 8, wait for the runtime build to finish successfully, including manifest generation. A running build or HTTP 200 on the scene page is not readiness. Verify served manifest/source parity with the reviewed checkout and each new asset's registration, availability and recorded hash. Start a fresh dialogue entry after readiness: missing-asset fallback may consume a one-shot reaction during an earlier incomplete attempt. Never report that incomplete review as passing.
+
 Keep this work uncommitted and unpublished during review. Do not create a source-only PR when the task is intended to deliver a runnable animation.
 
 ## Stage 3: Human Runtime Decision
@@ -78,6 +88,7 @@ Before cleanup, retain the final test summary, runtime verification, and review 
 - Update the candidate note's current-status section and the evidence index to say whether publication, canonical synchronization, runtime verification, and approved cleanup actually completed. Keep earlier dated observations unchanged; approval alone is not evidence of a successful merge.
 - Before removing duplicates, verify their hashes against retained copies or original ZIP members. Retain one final reviewed patch or identify its reproducible Git commit. Remove only explicitly approved extraction copies/intermediate patches, record exact paths and recovery sources in the index, and preserve original ZIPs, provenance, final logs, screenshots/videos, and approved production assets.
 - Shared workflow/templates belong under `docs/`; per-candidate prompts/provenance belong beside the character source in `assets_src/`; runtime assets belong under `assets/`. Personal learning notes may remain ignored/local-only. Keep local evidence paths explicit so collaborators do not mistake them for repository files.
+- Keep the current README index concise; move chronological preparation/generation history into a separately labeled audit file. Validate file links relative to each document's own folder before publication, including copied review packages. Tracked documentation must not use relative links to screenshots held only on the user's computer; state the explicit local evidence root instead. Keep cleanup manifests separate from immutable hash inventories captured at earlier stages.
 
 When regenerating catalogs, check both HTML and the corresponding PDF for the final animation status. Keep relevant PDF changes; discard only unrelated re-render noise produced by the current task.
 

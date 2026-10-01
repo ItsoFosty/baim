@@ -11,6 +11,8 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      BAIM_REQUIRE_BROWSER_TESTS: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,6 +20,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install required Chromium and system dependencies
+        run: npx playwright install --with-deps chromium
       - run: npm test
       - name: Verify generated animation metadata is current
         run: git diff --exit-code -- src/content/art/externalAnimationV1.generated.js

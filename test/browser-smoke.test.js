@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { browserAvailable } from "./helpers/browser-availability.js";
 import { createServer } from "node:net";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
@@ -9,10 +9,7 @@ import { chromium } from "playwright";
 const projectRoot = fileURLToPath(new URL("..", import.meta.url));
 
 test("browser completes the required Chapter 1 path and restores the ending after reload", { timeout: 60_000 }, async (t) => {
-  if (!existsSync(chromium.executablePath())) {
-    t.skip("Playwright Chromium is not installed; run `npx playwright install chromium`");
-    return;
-  }
+  if (!browserAvailable(t, chromium.executablePath())) return;
 
   const port = await availablePort();
   const server = spawn(process.execPath, ["tools/dev-server.mjs"], {
@@ -268,10 +265,7 @@ async function availablePort() {
 }
 
 test("fresh Chapter 1 journeys reach all three endings through real clicks in Bulgarian and English", { timeout: 600_000 }, async (t) => {
-  if (!existsSync(chromium.executablePath())) {
-    t.skip("Playwright Chromium is not installed");
-    return;
-  }
+  if (!browserAvailable(t, chromium.executablePath())) return;
   const port = await availablePort();
   const server = spawn(process.execPath, ["tools/dev-server.mjs"], {
     cwd: projectRoot, env: { ...process.env, PORT: String(port) }, stdio: "ignore"
@@ -536,10 +530,7 @@ async function waitForServer(url) {
 }
 
 test("fountain repair supports real clicks, consumed-oil recovery and mid-puzzle reloads", { timeout: 120_000 }, async (t) => {
-  if (!existsSync(chromium.executablePath())) {
-    t.skip("Playwright Chromium is not installed");
-    return;
-  }
+  if (!browserAvailable(t, chromium.executablePath())) return;
   const port = await availablePort();
   const server = spawn(process.execPath, ["tools/dev-server.mjs"], {
     cwd: projectRoot, env: { ...process.env, PORT: String(port) }, stdio: "ignore"

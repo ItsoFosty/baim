@@ -109,6 +109,28 @@ export function npcTalkPlaybackFrame(animation, speechTime, timeMs, previous = {
   return { state, frameIndex: index };
 }
 
+// Runtime-only presentation keyed by a dialogue entry object, never save flags.
+// Missing assets consume the entry too, so late loading cannot replay a reaction.
+export function npcReactionPlaybackFrame(animation, entry, timeMs, previous = {}, paused = false, ready = true, available = true) {
+  const continuing = previous.entry === entry;
+  const state = continuing ? { ...previous, lastTime: timeMs }
+    : { entry, lastTime: timeMs, elapsed: 0, phase: animation && entry ? "pending" : "idle" };
+  if (!animation || !entry) return { state, frameIndex: null };
+  if (!available) state.phase = "done";
+  if (state.phase === "pending" && ready && !paused) state.phase = "playing";
+  else if (state.phase === "playing" && !paused) {
+    state.elapsed += Math.max(0, timeMs - (previous.lastTime ?? timeMs));
+  }
+  if (state.phase !== "playing") return { state, frameIndex: null };
+  const duration = animation.frameDurationMs || 1000 / animation.fps;
+  const index = Math.floor(state.elapsed / duration);
+  if (index >= animation.frameCount) {
+    state.phase = "done";
+    return { state, frameIndex: null };
+  }
+  return { state, frameIndex: index };
+}
+
 export function sceneLayerAnimationSourceRect(animation, frameIndex) {
   const frameWidth = Math.max(1, Math.floor(Number(animation?.frameWidth) || 1));
   const frameHeight = Math.max(1, Math.floor(Number(animation?.frameHeight) || 1));
@@ -609,6 +631,7 @@ export class Renderer {
     if (this.npcTalkSceneId !== scene.id) {
       this.npcTalkSceneId = scene.id;
       this.npcTalkPlayback = new Map();
+      this.npcReactionPlayback = new Map();
     }
     if (layer.talkAnimation?.returnStartFrame != null) {
       const result = npcTalkPlaybackFrame(layer.talkAnimation, speechTime, this.game.lastTime || 0,
@@ -618,13 +641,31 @@ export class Renderer {
       this.npcTalkPlayback.set(layer.id, result.state);
       talkFrame = result.frameIndex;
     }
+    const entry = this.game.dialogue?.entry;
+    const candidate = layer.reactionAnimations?.[entry?.reactionId];
+    const reaction = candidate && entry.session === this.game.dialogue.current
+      && entry.nodeId === this.game.dialogue.current.nodeId
+      && this.game.content?.dialogues?.[entry.session.id]?.npcId === candidate.npcId ? candidate : null;
+    const reactionImage = reaction ? this.game.assets.getSceneImage(scene.id, reaction.asset) : null;
+    const talkState = this.npcTalkPlayback.get(layer.id);
+    const turnDuration = layer.talkAnimation?.loopStartFrame * (layer.talkAnimation?.frameDurationMs || 1000 / layer.talkAnimation?.fps);
+    const ready = !Number.isFinite(turnDuration) || (talkState?.phase === "conversation" && talkState.elapsed >= turnDuration);
+    this.npcReactionSeenEntries ||= new WeakSet();
+    const previousReaction = this.npcReactionPlayback.get(layer.id);
+    const alreadyConsumed = entry && previousReaction?.entry !== entry && this.npcReactionSeenEntries.has(entry);
+    const reactionResult = npcReactionPlaybackFrame(reaction, entry, this.game.lastTime || 0,
+      previousReaction, Boolean(this.game.paused || this.game.menuOpen || this.game.devHome || this.game.editMode),
+      ready, !alreadyConsumed && this.game.assets.isLoaded(reactionImage));
+    if (reaction && entry) this.npcReactionSeenEntries.add(entry);
+    this.npcReactionPlayback.set(layer.id, reactionResult.state);
+    const reacting = reactionResult.frameIndex != null;
     const talking = (speechTime != null || talkFrame != null) && this.game.assets.isLoaded(talkImage);
-    const animation = talking ? layer.talkAnimation : layer.animation;
-    const animationImage = talking ? talkImage : animation?.asset
+    const animation = reacting ? reaction : talking ? layer.talkAnimation : layer.animation;
+    const animationImage = reacting ? reactionImage : talking ? talkImage : animation?.asset
       ? this.game.assets.getSceneImage(scene.id, animation.asset)
       : null;
     if (animation && this.game.assets.isLoaded(animationImage)) {
-      const frameIndex = talking && talkFrame != null ? talkFrame
+      const frameIndex = reacting ? reactionResult.frameIndex : talking && talkFrame != null ? talkFrame
         : sceneLayerAnimationFrame(animation, talking ? speechTime : this.game.lastTime || 0);
       const source = sceneLayerAnimationSourceRect(animation, frameIndex);
       const rect = this.sceneLayerRect(layer, { naturalWidth: source.w, naturalHeight: source.h });

@@ -42,6 +42,7 @@ export const assetManifest = {
       tonyFridgeIdleSeated: "assets/chapter1/characters/tony_fridge/idle-seated-v1.webp",
       tonyFridgeTalkSeated: "assets/chapter1/characters/tony_fridge/talk-seated-v1.webp",
       tonyFridgeChuckleSeated: "assets/chapter1/characters/tony_fridge/chuckle-seated-v1.webp",
+      tonyFridgeSkepticalSeated: "assets/chapter1/characters/tony_fridge/skeptical-seated-v1.webp",
       kaliakraOil: "assets/chapter1/scenes/mehana/kaliakra-oil-v1.png",
       mitkoCompetitionGlass: "assets/chapter1/scenes/mehana/competition-glass-v1.png",
       waterJug: "assets/chapter1/scenes/mehana/water-jug-v1.png",

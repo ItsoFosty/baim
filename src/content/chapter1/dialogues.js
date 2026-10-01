@@ -171,6 +171,7 @@ const baseDialogues = [
       },
       challenge_waiting: {
         lineKey: "dialogue.tony.challenge_waiting",
+        reactionId: "skeptical_glance",
         choicesFrom: "start"
       },
       contest_result: {

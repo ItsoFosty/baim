@@ -728,6 +728,310 @@
         "evidenceLocation": "C:/Users/SveBiS/Desktop/myStuff/2026_GitPro/extraFixes/09_TonyFridge/chuckle/",
         "promptDeviation": "Small hand lift during chuckle; explicitly accepted in human runtime approval on 2026-10-01."
       }
+    },
+    "tony_skeptical_seated_1": {
+      "label": "toni-skeptical-seated-c01",
+      "slot": "Reaction",
+      "status": "runtime_approved",
+      "use": true,
+      "loop": false,
+      "description": "One restrained seated skeptical look on challenge_waiting entry in Mehana, returning to active speech or quiet talk frame 4. Includes a brief head rotation toward viewer accepted during human runtime review.",
+      "trigger": {
+        "dialogueId": "dialogue.tony_fridge",
+        "nodeId": "challenge_waiting",
+        "reactionId": "skeptical_glance",
+        "oncePer": "node_entry"
+      },
+      "source": {
+        "exportFilename": "sprite-384px-frames-25-rows-5-cols-5 (1).zip",
+        "storedFilename": "input/toni-skeptical-seated-c01.zip",
+        "sourceZipSha256": "b6c57a2686d5e0d9654379825ecbcf412fdbb10cd2af855f10dde049b730dc0e",
+        "sourceSheetSha256": "0314b19a956ef35a5afecec7d7a70b348078d87086a96ec17559fa4c823722d5",
+        "sourceMetadataSha256": "2789017b0bc94bd9b9aa0271ef0bcbfd3c7d217ca760b43fe09b183290eb46f9",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          },
+          {
+            "path": "assets_src/chapter1/scenes/mehana/tony-fridge-seated-cutout-v1.png",
+            "role": "approved_source_cutout_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          },
+          {
+            "path": "assets_src/characters/tony_fridge/external_animation_v1/references/talk-seated-left-frame004.png",
+            "role": "derived_approved_left_facing_talk_frame_004",
+            "sha256": "911e8e3bc413dbfed39059f977b27b38cb9eb3f2e99fbf70bbefb9820d8dd587",
+            "derivedFrom": {
+              "zip": "input/toni-talk-seated-c01.zip",
+              "frameIndex": 4,
+              "rectangle": {
+                "x": 3072,
+                "y": 0,
+                "w": 768,
+                "h": 768
+              },
+              "synthesis": false
+            }
+          }
+        ]
+      },
+      "generation": {
+        "prompt": "3-second one-shot seated skeptical reaction. Start in the supplied SCREEN-LEFT-facing pose. Give a brief suspicious look with one subtle eyebrow lift and a tiny doubtful head tilt, then settle to the exact starting pose with mouth closed. Keep looking toward the off-screen listener on SCREEN-LEFT. Preserve face, moustache, large build, clothing, painted style, seated proportions, canvas and scale. Hands, hips, legs and feet stay anchored. Fixed camera; transparent background. No speaking, chuckling, large head turn, mirroring, drift, standing, new props, chair, table, shadow or background.",
+        "promptEvidence": "Exact prompt verified before single Animate click and in completed result panel.",
+        "tool": "Ludo.ai",
+        "model": "Hydra",
+        "settings": {
+          "maxDurationSeconds": 3,
+          "animationMargin": "Auto",
+          "maxFrames": 25,
+          "spriteSize": 384,
+          "loopAnimation": false,
+          "trimAnimationWhitespace": false,
+          "finalFrame": "Retained first-frame copy from prior approved preparation"
+        },
+        "settingsEvidence": "Prepared controls and completed Change Sprite Settings dialog observed; retained first/final thumbnails use same768px source URL. Remote reference bytes could not be independently hashed after pageAssets fetch failure.",
+        "resultId": null,
+        "resultUrl": null,
+        "unavailableEvidenceReason": "Inspected result panel and menus expose no unique generation ID/share link; export metadata contains no generation identifier.",
+        "resultThumbnailUrl": "https://storage.googleapis.com/ludo-assets/4d27c7135e97852e47394690655305ee.webp",
+        "creditsSpent": 9,
+        "creditsEvidence": "Balance365to356; one pending job then queue0.",
+        "generationMode": "agent_operated_browser",
+        "spendingApproval": "User replied Approved to exact one-candidate9-credit request on2026-10-01.",
+        "exportEvidence": "Single automated Sheet+JSON attempt timed out; no saved ZIP found. User then supplied this export path; unchanged SHA256 verified locally and on VPS."
+      },
+      "import": {
+        "frameCount": 25,
+        "frameWidth": 768,
+        "frameHeight": 768,
+        "frameDurationsMs": [
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118,
+          118
+        ],
+        "totalDurationMs": 2950,
+        "fps": 8.474576271186441,
+        "sheetWidth": 3840,
+        "sheetHeight": 3840,
+        "format": "RGBA8888",
+        "alphaRange": [
+          0,
+          255
+        ],
+        "chromaKeySettings": null,
+        "frameContentBounds": [
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 152,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 152,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 152,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 152,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 152,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 152,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          },
+          {
+            "x": 116,
+            "y": 96,
+            "w": 151,
+            "h": 192
+          }
+        ],
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/tony_fridge/skeptical-seated-v1.webp": "26bac7a7fdf49c9a453070ef0ecb623207e33591da1b7af1bfbcc2e80d9219ed"
+        },
+        "runtime": {
+          "asset": "assets/chapter1/characters/tony_fridge/skeptical-seated-v1.webp",
+          "sheetWidth": 1920,
+          "sheetHeight": 1920,
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "contentBounds": {
+            "x": 116,
+            "y": 96,
+            "w": 153,
+            "h": 192
+          },
+          "registrationBounds": {
+            "x": 116,
+            "y": 91,
+            "w": 152,
+            "h": 198
+          },
+          "sourceScale": 0.5,
+          "format": "alpha-webp",
+          "oneShotStartFrame": 0,
+          "oneShotEndFrame": 24,
+          "frameDurationMs": 118
+        }
+      },
+      "review": {
+        "candidateStatus": "runtime_approved",
+        "rejectionReason": null,
+        "reviewer": "Svetozar",
+        "decision": "approved_for_runtime",
+        "approvedAt": "2026-10-01",
+        "evidenceLocation": "C:/Users/SveBiS/Desktop/myStuff/2026_GitPro/extraFixes/09_TonyFridge/skeptical/",
+        "promptDeviation": "Brief face/head rotation toward viewer instead of looking screen-left throughout; explicitly accepted in human runtime approval on 2026-10-01."
+      }
     }
   }
 }

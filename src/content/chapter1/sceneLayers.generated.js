@@ -349,6 +349,28 @@ export const sceneLayerGeometry = {
               "h": 196
             },
             "npcId": "npc.tony_fridge"
+          },
+          "skeptical_glance": {
+            "registrationBounds": {
+              "x": 116,
+              "y": 91,
+              "w": 152,
+              "h": 198
+            },
+            "asset": "tonyFridgeSkepticalSeated",
+            "frameWidth": 384,
+            "frameHeight": 384,
+            "frameCount": 25,
+            "columns": 5,
+            "frameDurationMs": 118,
+            "loop": false,
+            "contentBounds": {
+              "x": 116,
+              "y": 96,
+              "w": 153,
+              "h": 192
+            },
+            "npcId": "npc.tony_fridge"
           }
         }
       },

@@ -98,7 +98,7 @@ test('skipping cancels a chuckle and same-node UI refresh cannot retrigger it', 
   const f = fixture(); f.accept();
   f.draw(1016); f.dialogue.getNode();
   assert.equal(frame(f.draw(1128)), 1);
-  f.dialogue.choose({ next: 'challenge_waiting' });
+  f.dialogue.choose({ next: 'challenge_deferred' });
   assert.equal(f.draw(1144)[0], f.images.talk);
   f.dialogue.choose({ next: 'challenge_accepted' });
   assert.equal(frame(f.draw(1160)), 0);

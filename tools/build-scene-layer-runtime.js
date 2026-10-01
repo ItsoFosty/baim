@@ -95,7 +95,22 @@ function runtimeAnimation(animation, sourcePath, layerId) {
     || Number(registration.w) <= 0 || Number(registration.h) <= 0)) {
     throw new Error(`${sourcePath} ${layerId} animation registrationBounds must contain finite x, y and positive w, h`);
   }
+  const phaseKeys = ["loopStartFrame", "loopEndFrame", "returnStartFrame"];
+  const phases = {};
+  for (const key of phaseKeys) if (animation[key] != null) {
+    if (!Number.isInteger(animation[key]) || animation[key] < 0 || animation[key] >= Number(animation.frameCount)) {
+      throw new Error(sourcePath + ' ' + layerId + ' ' + key + ' must be a valid frame index');
+    }
+    phases[key] = animation[key];
+  }
+  if (animation.loopEndFrame != null && animation.loopEndFrame < (animation.loopStartFrame || 0)) {
+    throw new Error(sourcePath + ' ' + layerId + ' loop range is reversed');
+  }
+  if (animation.returnStartFrame != null && animation.returnStartFrame <= (animation.loopEndFrame ?? Number(animation.frameCount) - 1)) {
+    throw new Error(sourcePath + ' ' + layerId + ' return must follow the speech loop');
+  }
   return {
+    ...phases,
     ...(registration ? { registrationBounds: Object.fromEntries(["x", "y", "w", "h"].map((key) => [key, Number(registration[key])])) } : {}),
     asset: String(animation.asset),
     frameWidth: Math.floor(Number(animation.frameWidth)),

@@ -301,6 +301,31 @@ export const sceneLayerGeometry = {
             "w": 152,
             "h": 198
           }
+        },
+        "talkAnimation": {
+          "loopStartFrame": 4,
+          "loopEndFrame": 21,
+          "returnStartFrame": 22,
+          "registrationBounds": {
+            "x": 116,
+            "y": 91,
+            "w": 152,
+            "h": 198
+          },
+          "asset": "tonyFridgeTalkSeated",
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "frameCount": 25,
+          "columns": 5,
+          "frameDurationMs": 187,
+          "loop": true,
+          "contentBounds": {
+            "x": 114,
+            "y": 93,
+            "w": 156,
+            "h": 198
+          },
+          "npcId": "npc.tony_fridge"
         }
       },
       {

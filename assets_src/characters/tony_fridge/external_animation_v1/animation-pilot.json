@@ -141,6 +141,290 @@
         "decision": "approved_for_runtime",
         "approvedAt": "2026-09-30"
       }
+    },
+    "tony_talk_seated_1": {
+      "label": "toni-talk-seated-c01",
+      "slot": "Talk",
+      "status": "runtime_approved",
+      "use": true,
+      "loop": true,
+      "description": "Turns toward screen-left once per conversation, holds left through speech and reply choices, then turns right and resumes approved idle only when the conversation closes. Mehana only.",
+      "source": {
+        "exportFilename": "sprite-384px-frames-25-rows-5-cols-5.zip",
+        "storedFilename": "input/toni-talk-seated-c01.zip",
+        "sourceZipSha256": "51469c2e21de203e2aac6be1658ac78e1838dba898d58a9824feaf6761a9dc56",
+        "sourceSheetSha256": "2a33ed92dc37a095ef9563334872d5c2bedd61475529573a01bfd1a5dae8cebd",
+        "sourceMetadataSha256": "9b53872ae9f6b765cf3e20cb6fd6d9a468a739570399657a65da112c89801f55",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          },
+          {
+            "path": "assets_src/chapter1/scenes/mehana/tony-fridge-seated-cutout-v1.png",
+            "role": "approved_source_cutout_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          }
+        ]
+      },
+      "generation": {
+        "prompt": "5-second seated talk loop. In the first 0.7s, turn his head and eyes toward SCREEN-LEFT to face an off-screen listener. Hold this three-quarter view while talking with clear mouth shapes, subtle breathing and one confident nod. Return to the exact starting pose in the final 0.6s. Keep body, legs and hands anchored. Preserve his face, build, clothing and painted style. Fixed camera and scale; transparent background. No mirroring, body drift, new props or exaggerated grin.",
+        "promptEvidence": "Exact prompt independently verified before Animate and in the completed result details.",
+        "tool": "Ludo.ai",
+        "model": "Hydra",
+        "settings": {
+          "maxDurationSeconds": 5,
+          "animationMargin": "Auto",
+          "maxFrames": 25,
+          "spriteSize": 384,
+          "loopAnimation": true,
+          "trimAnimationWhitespace": false,
+          "finalFrame": "Copy 1st Frame"
+        },
+        "settingsEvidence": "Agent observed generation controls and completed result Adjust Sprite Sheet dialog.",
+        "resultId": null,
+        "resultUrl": null,
+        "unavailableEvidenceReason": "Inspected result panel and More options expose no unique result ID or share URL; page URL is generic. Export metadata has no generation identifier.",
+        "resultThumbnailUrl": "https://storage.googleapis.com/ludo-assets/22bc5504967df73fc7612ca15ba907f5.webp",
+        "creditsSpent": 15,
+        "creditsEvidence": "Displayed15credits; observed balance389to374 and one pending generation.",
+        "generationMode": "agent_operated_browser",
+        "spendingApproval": "User replied yes to the explicit request to start toni-talk-seated-c01 for15credits on2026-09-30."
+      },
+      "import": {
+        "sourceZipSha256": "51469c2e21de203e2aac6be1658ac78e1838dba898d58a9824feaf6761a9dc56",
+        "sourceSheetSha256": "2a33ed92dc37a095ef9563334872d5c2bedd61475529573a01bfd1a5dae8cebd",
+        "sourceMetadataSha256": "9b53872ae9f6b765cf3e20cb6fd6d9a468a739570399657a65da112c89801f55",
+        "runtimeSha256": "9ad05841d2f274e9c66574dca99cf802a41207c7468b7db4bad4ed77436c3ac0",
+        "frameCount": 25,
+        "frameWidth": 768,
+        "frameHeight": 768,
+        "frameDurationsMs": [
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187,
+          187
+        ],
+        "totalDurationMs": 4675,
+        "fps": 5.347593582887701,
+        "sheetWidth": 3840,
+        "sheetHeight": 3840,
+        "format": "RGBA8888",
+        "alphaRange": [
+          0,
+          255
+        ],
+        "runtime": {
+          "asset": "assets/chapter1/characters/tony_fridge/talk-seated-v1.webp",
+          "sheetWidth": 1920,
+          "sheetHeight": 1920,
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "contentBounds": {
+            "x": 114,
+            "y": 93,
+            "w": 156,
+            "h": 198
+          },
+          "registrationBounds": {
+            "x": 116,
+            "y": 91,
+            "w": 152,
+            "h": 198
+          },
+          "sourceScale": 0.5,
+          "format": "alpha-webp",
+          "loopStartFrame": 4,
+          "loopEndFrame": 21,
+          "returnStartFrame": 22
+        },
+        "frameContentBounds": [
+          {
+            "x": 114,
+            "y": 94,
+            "w": 156,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 156,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 156,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 95,
+            "w": 156,
+            "h": 196
+          },
+          {
+            "x": 114,
+            "y": 93,
+            "w": 155,
+            "h": 198
+          },
+          {
+            "x": 114,
+            "y": 93,
+            "w": 155,
+            "h": 198
+          },
+          {
+            "x": 114,
+            "y": 93,
+            "w": 155,
+            "h": 198
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 93,
+            "w": 155,
+            "h": 198
+          },
+          {
+            "x": 114,
+            "y": 93,
+            "w": 155,
+            "h": 198
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 93,
+            "w": 155,
+            "h": 198
+          },
+          {
+            "x": 114,
+            "y": 93,
+            "w": 155,
+            "h": 198
+          },
+          {
+            "x": 114,
+            "y": 93,
+            "w": 155,
+            "h": 198
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 155,
+            "h": 197
+          },
+          {
+            "x": 114,
+            "y": 95,
+            "w": 155,
+            "h": 196
+          },
+          {
+            "x": 114,
+            "y": 95,
+            "w": 156,
+            "h": 196
+          },
+          {
+            "x": 114,
+            "y": 94,
+            "w": 156,
+            "h": 197
+          }
+        ],
+        "chromaKeySettings": null,
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/tony_fridge/talk-seated-v1.webp": "9ad05841d2f274e9c66574dca99cf802a41207c7468b7db4bad4ed77436c3ac0"
+        }
+      },
+      "review": {
+        "candidateStatus": "runtime_approved",
+        "rejectionReason": null,
+        "reviewer": "Svetozar",
+        "decision": "approved_for_runtime",
+        "approvedAt": "2026-10-01",
+        "evidenceLocation": "C:/Users/SveBiS/Desktop/myStuff/2026_GitPro/extraFixes/09_TonyFridge/talk/"
+      }
     }
   }
 }

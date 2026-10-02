@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import { createServer } from 'node:net';
@@ -68,9 +68,12 @@ test('Tony approving nod renders in the actual BG/EN preview with retained evide
       await page.screenshot({ path: path.join(out, `${language}-after.png`) });
       const video = page.video(); await context.close();
       const webm = await video.path();
-      const mp4 = path.join(out, `${language}-gameplay.mp4`);
-      execFileSync('/usr/bin/ffmpeg', ['-nostdin', '-v', 'error', '-i', webm, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', mp4], { timeout: 30000 });
-      captures.push({ language, mp4, screenshots: ['before', 'nod', 'after'].map(stage => path.join(out, `${language}-${stage}.png`)) });
+      assert.ok(statSync(webm).size > 1000, 'actual gameplay video must be retained');
+      // CI retains the native recording; canonical VPS evidence also requires MP4.
+      const mp4 = existsSync('/usr/bin/ffmpeg') ? path.join(out, `${language}-gameplay.mp4`) : null;
+      if (process.env.BAIM_TONY_PREVIEW_URL) assert.ok(mp4, 'VPS evidence requires FFmpeg and real MP4');
+      if (mp4) execFileSync('/usr/bin/ffmpeg', ['-nostdin', '-v', 'error', '-i', webm, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', mp4], { timeout: 30000 });
+      captures.push({ language, webm, mp4, screenshots: ['before', 'nod', 'after'].map(stage => path.join(out, `${language}-${stage}.png`)) });
     }
     writeFileSync(path.join(out, 'capture.json'), JSON.stringify({ taskId: 'tony-approve', candidate: 'toni-approve-seated-c01', sourceSHA256, origin, width: 1280, height: 720, captures, visualReviewPending: true }, null, 2), { flag: 'wx' });
     console.log(`Tony evidence saved: ${out}`);

@@ -62,6 +62,9 @@ When operating in Work mode:
 
 Follow `docs/ludo-animation-production-workflow.md` for Ludo sprite-sheet work.
 
+- The optional one-animation REST API pilot follows `docs/ludo-api-pilot.md`. Setup approval is not generation/spending approval. Require an exact reviewed plan, unchanged approved references and explicit maximum credit approval before the one paid submission; never generate or retry paid work automatically.
+- Keep API credentials and raw job responses in protected private state, never player-facing assets, Git, chat or logs. API source collection is not runtime approval: continue the same feature-branch integration/testing/port-5173 preview before the normal publication decision. Preserve native API outputs; do not describe derived atlas timing or packages as original website exports.
+
 - Ludo credit spending or generation controlled by the agent always requires explicit approval. When the user generates the candidate themselves, their choice to download it is the generation decision.
 - Treat controls inside or overlapping Generate/Animate as generation actions, including warning icons. Never instruct a user to tap one merely to inspect a warning. For manual phone generation, explain the displayed cost before an intentional Generate/Animate tap; inspect uncertain warnings through a screenshot or separate non-generating help surface.
 - Providing an exported Ludo ZIP or its path for a focused animation task authorizes the agent to inspect it, copy the unchanged source to the VPS task branch, record provenance, derive runtime assets, integrate it as `runtime_review`, run builds/tests, and serve or refresh the candidate on port 5173. Do not stop for separate approvals between those reversible preview steps.

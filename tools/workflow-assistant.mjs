@@ -175,7 +175,7 @@ function runReview(info) {
     console.log("- Reconcile approval status/date across source prompts, animation manifests, and review notes before publication.");
     console.log("- Verify matching HTML/PDF catalog state and retain final runtime/test evidence before temporary-file cleanup.");
     console.log("- Quiet browser tests may still be running: inspect elapsed time, process state, and timeout; require the final summary and exit status.");
-    console.log("- Preserve the original Ludo ZIP and record prompt, model/settings, source hash, result ID, credits, candidate status, rejection reason, approval, and export filename.");
+    console.log("- Preserve the original website ZIP or native API source/response; record prompt, model/settings, source hash, request/job/result ID, credits, candidate status, rejection reason, approval, and timing origin. API setup is not spending approval; see docs/ludo-api-pilot.md.");
     console.log("- Run npm run build:runtime and npm run check:animation-catalogs.");
     console.log("- Integrate the uncommitted candidate as runtime_review and verify it in the VPS game on port 5173; do not use the Windows clone or a source-only PR.");
   }

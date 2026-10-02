@@ -19,11 +19,17 @@ The normal path is **Ludo export -> VPS feature-branch preview on port 5173 -> o
 
 ## Stage 1: Candidate Generation
 
+### Optional API Pilot
+
+Follow [Ludo API pilot](ludo-api-pilot.md) for private setup and exact command steps. The pilot supports one reviewed character animation at a time, not batches. The agent prepares a no-spend plan and shows reference hashes, prompt/settings, live documented estimate, maximum charge and plan hash. One explicit generation approval authorizes that exact paid request and its automatic collection/Stage 2 preview; it does not authorize publication or another paid attempt.
+
+The API returns native sheet bytes plus grid/duration metadata, not necessarily the website ZIP. Preserve raw responses privately and the unchanged downloaded sheet; label generated atlas/timing metadata as derived. API collection alone is not gameplay implementation: the agent must continue through Stage 2 without another routine approval pause. Preserve the website/manual export route as fallback; never use fallback to generate again without a new spending decision.
+
 - Agree on one animation slot, approved reference asset, prompt, model/settings, and expected runtime scene.
 - Give the candidate a stable label before export (for example `bs-idle-seated-c01`), and capture its result ID or result URL while the generation is open. If unavailable, record that explicitly with the reason; never invent an ID.
 - Evaluate motion at its actual game size. Preserve an approved idle unless a visible issue warrants revision; choose the next useful slot, such as Talk, as a separate focused task. Low frame rate alone is not a reason to spend credits regenerating approved work.
 - Agent-controlled credit spending requires explicit approval before generation.
-- Preserve the downloaded ZIP exactly. Do not rename files inside it or re-encode the source sheet.
+- Preserve a downloaded website ZIP exactly. For native API output, preserve the unchanged source sheet and raw response; explicitly label derived atlas/timing metadata. Do not rename website ZIP members or re-encode original source sheets.
 - Providing the ZIP or its path to the focused task chat authorizes Stage 2. No additional approval is needed to copy and integrate it for preview.
 
 ### Export Failure Fallback
@@ -45,8 +51,8 @@ The normal path is **Ludo export -> VPS feature-branch preview on port 5173 -> o
 
 On the existing focused task branch in `/home/ZeShad/baim`, the agent should continue through all of these steps without conversational approval pauses:
 
-1. Inspect the ZIP read-only and validate its PNG/JSON structure, transparency, frame geometry, timing, and hash.
-2. Copy the unchanged ZIP into the character's `assets_src/.../input/` folder.
+1. Inspect the website ZIP or native API source read-only and validate its image/metadata structure, transparency, frame geometry, timing origin, and hash.
+2. Copy the unchanged website ZIP or collected native API source package into the character's `assets_src/.../input/` folder. Do not invent an original ZIP for API output.
 3. Record the prompt, tool/model/settings, result ID when available, credits, export filename, source hash, frame metadata, candidate status, and reference hashes.
 4. Produce optimized runtime assets without changing the approved source ZIP.
 5. Integrate the candidate into the actual scene as `runtime_review`, retaining the approved static/runtime fallback.
@@ -105,7 +111,7 @@ Stop and request a new decision if checks fail, conflict resolution or material 
 
 Every accepted animation should preserve, where the available tool provides it:
 
-- original ZIP and export filename;
+- original website ZIP and export filename, or unchanged native API sheet plus raw response and explicitly derived metadata;
 - SHA-256 source and derived-output hashes;
 - prompt, tool, model, settings, result ID, and credits spent;
 - frame count, dimensions, timings, duration, sheet layout, and transparency format;

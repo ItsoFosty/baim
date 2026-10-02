@@ -13,8 +13,11 @@ Copy this structure to `README.md` at the task's durable evidence root. Replace 
 
 ## Sources and approval
 
-- Original export filename, unchanged ZIP path and SHA-256:
-- Source PNG/JSON member names and hashes:
+- Transport: website export / REST API:
+- Original website export filename, unchanged ZIP path and SHA-256 (if applicable):
+- Native API source sheet path/hash and private raw-response location (if applicable; omit signed URLs/secrets):
+- Source PNG/JSON member names and hashes, or API grid/duration metadata and explicitly derived atlas hash/timing origin:
+- API request/job IDs, exact approved plan hash and credit cap, actual reported charge or unavailable reason:
 - Approved reference path/hash; derivative provenance if used:
 - Runtime asset path/hash:
 - Generation prompt/settings/result/credit evidence location:
@@ -35,7 +38,7 @@ Use relative links for files within the evidence root, repository-relative paths
 ## Cleanup and recovery
 
 - Exact approved removals, reason, hash verification and retained recovery source:
-- Material retained intentionally (original ZIP, reference/provenance, final logs and visuals):
+- Material retained intentionally (original ZIP or native API source, private job recovery, reference/provenance, final logs and visuals):
 - Unrelated work/services left untouched:
 
 ## Historical snapshots

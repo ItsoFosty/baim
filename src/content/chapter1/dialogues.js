@@ -167,6 +167,7 @@ const baseDialogues = [
       },
       challenge_deferred: {
         lineKey: "dialogue.tony.challenge_deferred",
+        reactionId: "slow_anger",
         choices: [{ textKey: "dialogue.tony.choice.prepare" }]
       },
       challenge_waiting: {

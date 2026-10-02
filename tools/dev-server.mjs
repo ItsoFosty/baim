@@ -4,6 +4,7 @@ import { createReadStream, existsSync, readFileSync, statSync, writeFileSync } f
 import { extname, isAbsolute, join, normalize, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { isPublicFile } from "./private-file-guard.mjs";
 
 const root = normalize(join(fileURLToPath(new URL("..", import.meta.url))));
 const port = Number(process.env.PORT || 5173);
@@ -85,11 +86,13 @@ function handleRequest(req, res) {
     handleActionFit(req, res);
     return;
   }
-  const requested = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
+  let requested;
+  try { requested = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname); }
+  catch { res.writeHead(404); res.end("Not found"); return; }
   const path = normalize(join(root, requested));
   const relativePath = relative(root, path);
 
-  if (relativePath.startsWith("..") || isAbsolute(relativePath) || !existsSync(path) || !statSync(path).isFile()) {
+  if (relativePath.startsWith("..") || isAbsolute(relativePath) || !isPublicFile(root, path) || !existsSync(path) || !statSync(path).isFile()) {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Not found");
     return;

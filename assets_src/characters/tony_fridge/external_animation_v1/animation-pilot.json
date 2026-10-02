@@ -729,6 +729,113 @@
         "promptDeviation": "Small hand lift during chuckle; explicitly accepted in human runtime approval on 2026-10-01."
       }
     },
+    "tony_approving_nod_seated_1": {
+      "label": "toni-approve-seated-c01",
+      "slot": "Reaction",
+      "status": "runtime_approved",
+      "use": true,
+      "loop": false,
+      "description": "One calm heavy seated approving nod on contest_result entry in Mehana, returning to active speech or quiet talk frame 4.",
+      "trigger": {
+        "dialogueId": "dialogue.tony_fridge",
+        "nodeId": "contest_result",
+        "reactionId": "approving_nod",
+        "oncePer": "node_entry"
+      },
+      "source": {
+        "exportFilename": "sprite-max-px-frames-36-rows-6-cols-6.zip",
+        "storedFilename": "input/toni-approve-seated-c01.zip",
+        "sourceZipSha256": "7fca21ae69b8cda46cf9b8a72931a015b5af36b0714f325b24ef79716a26205b",
+        "sourceSheetSha256": "866882b0be63b517aa1a92d52ff5a369ae64b9d29d066c652f3b1a8a642c0957",
+        "sourceMetadataSha256": "3399879be2258b19aade7d5fb830c39de57a739887e90c9e3bcf75e65e0ed6c5",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          },
+          {
+            "path": "assets_src/characters/tony_fridge/external_animation_v1/references/talk-seated-left-frame004.png",
+            "role": "approved_generation_reference",
+            "sha256": "911e8e3bc413dbfed39059f977b27b38cb9eb3f2e99fbf70bbefb9820d8dd587"
+          }
+        ]
+      },
+      "generation": {
+        "prompt": "3-second one-shot seated approving nod. Start in the supplied SCREEN-LEFT-facing pose. Give one calm, heavy approving nod with softened eyes, then settle to the exact starting pose with mouth closed. Keep looking toward the off-screen listener on SCREEN-LEFT. Preserve face, moustache, large build, clothing, painted style, seated proportions, canvas and scale. Hands, hips, legs and feet stay anchored. Fixed camera; transparent background. No speaking, chuckling, viewer-facing turn, mirroring, drift, standing, new props, chair, table, shadow or background.",
+        "promptEvidence": "Exact prepared prompt hash and completed result label recorded by the guarded desktop generation task.",
+        "tool": "Ludo.ai",
+        "model": "Hydra",
+        "settings": {
+          "maxDurationSeconds": 3,
+          "animationMargin": "Auto",
+          "loopAnimation": false,
+          "trimAnimationWhitespace": false,
+          "transparentBackground": true
+        },
+        "resultId": null,
+        "resultUrl": null,
+        "unavailableEvidenceReason": "The inspected completed result exposed no unique generation ID or share URL; the export metadata contains no generation identifier.",
+        "resultThumbnailUrl": "https://storage.googleapis.com/ludo-assets/6de0a8da44aaa690a14358fd9f2894d7.webp",
+        "creditsSpent": 9,
+        "creditsEvidence": "One owner-approved desktop generation; 9 displayed and observed charged credits.",
+        "generationMode": "agent_operated_browser"
+      },
+      "import": {
+        "frameCount": 36,
+        "frameWidth": 504,
+        "frameHeight": 896,
+        "frameDurationsMs": [82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82],
+        "totalDurationMs": 2952,
+        "fps": 12.195121951219512,
+        "sheetWidth": 3024,
+        "sheetHeight": 5376,
+        "format": "RGBA8888",
+        "alphaRange": [0, 255],
+        "chromaKeySettings": null,
+        "sourceContentBounds": {
+          "x": 22,
+          "y": 148,
+          "w": 461,
+          "h": 595
+        },
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/tony_fridge/approving-nod-seated-v1.webp": "494a4d1af90d1a2a6b7fe3631f22dc0d6c74b0875ab3a5c363bb550df68ed362"
+        },
+        "runtime": {
+          "asset": "assets/chapter1/characters/tony_fridge/approving-nod-seated-v1.webp",
+          "sheetWidth": 2304,
+          "sheetHeight": 2304,
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "contentBounds": {
+            "x": 112,
+            "y": 90,
+            "w": 155,
+            "h": 200
+          },
+          "registrationBounds": {
+            "x": 116,
+            "y": 91,
+            "w": 152,
+            "h": 198
+          },
+          "format": "alpha-webp",
+          "normalization": "Each 504x896 source frame was resized to 169x301 and placed at x105/y40 in the established 384x384 Tony registration space.",
+          "oneShotStartFrame": 0,
+          "oneShotEndFrame": 35,
+          "frameDurationMs": 82
+        }
+      },
+      "review": {
+        "candidateStatus": "runtime_approved",
+        "rejectionReason": null,
+        "reviewer": "owner",
+        "decision": "approved_for_runtime",
+        "approvedAt": "2026-10-02",
+        "evidenceLocation": "/home/ZeShad/baim/target/ludo-review/tony-approve/"
+      }
+    },
     "tony_skeptical_seated_1": {
       "label": "toni-skeptical-seated-c01",
       "slot": "Reaction",

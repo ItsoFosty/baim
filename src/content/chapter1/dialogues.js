@@ -176,6 +176,7 @@ const baseDialogues = [
       },
       contest_result: {
         lineKey: "dialogue.tony.contest_result",
+        reactionId: "approving_nod",
         choices: [{ textKey: "dialogue.tony.choice.leave" }]
       },
       support_confirmed: {

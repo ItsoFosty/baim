@@ -371,6 +371,28 @@ export const sceneLayerGeometry = {
               "h": 192
             },
             "npcId": "npc.tony_fridge"
+          },
+          "approving_nod": {
+            "registrationBounds": {
+              "x": 116,
+              "y": 91,
+              "w": 152,
+              "h": 198
+            },
+            "asset": "tonyFridgeApprovingNodSeated",
+            "frameWidth": 384,
+            "frameHeight": 384,
+            "frameCount": 36,
+            "columns": 6,
+            "frameDurationMs": 82,
+            "loop": false,
+            "contentBounds": {
+              "x": 112,
+              "y": 90,
+              "w": 155,
+              "h": 200
+            },
+            "npcId": "npc.tony_fridge"
           }
         }
       },

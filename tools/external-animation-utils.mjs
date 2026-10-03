@@ -3,6 +3,7 @@ import { basename, dirname, extname, join, normalize, relative } from "node:path
 import { inflateRawSync } from "node:zlib";
 import { PNG } from "pngjs";
 import gifenc from "gifenc";
+import { copyInputZips } from "./safe-input-copy.mjs";
 import {
   alphaBounds,
   blit,
@@ -29,22 +30,6 @@ export const CHROMA_REPORTS_DIR = join(TARGET_ROOT, "chroma_reports");
 export const CHROMA_PREVIEWS_DIR = join(TARGET_ROOT, "chroma_previews");
 export const SELECTION_PATH = join(EXTERNAL_ROOT, "external-animation-selection.json");
 
-export const EXTERNAL_INPUTS = [
-  { key: "walk_east_start", zipName: "bai-mitko-walk-east-start.zip", source: "C:/t/test/bai-mitko-walk-east-start.zip", active: true },
-  { key: "walk_east_loop", zipName: "bai-mitko-walk-east-loop.zip", source: "C:/t/test/bai-mitko-walk-east-loop.zip", active: true },
-  { key: "walk_east_stop", zipName: "bai-mitko-walk-east-stop.zip", source: "C:/t/test/bai-mitko-walk-east-stop.zip", active: true },
-  { key: "idle_east_1", zipName: "bai-mitko-idle-east-1.zip", source: "C:/t/test/bai-mitko-idle-east-1.zip", active: true },
-  { key: "idle_east_2", zipName: "bai-mitko-idle-east-2.zip", source: "C:/t/test/bai-mitko-idle-east-2.zip", active: true },
-  { key: "idle_east_3", zipName: "bai-mitko-idle-east-3.zip", source: "C:/t/test/bai-mitko-idle-east-3.zip", active: true },
-  { key: "idle_east_4", zipName: "bai-mitko-idle-east-4.zip", source: "C:/t/test/bai-mitko-idle-east-4.zip", active: true },
-  { key: "idle_east_5", zipName: "bai-mitko-idle-east-5.zip", source: "C:/t/test/bai-mitko-idle-east-5.zip", active: true },
-  { key: "idle_east_6", zipName: "bai-mitko-idle-east-6.zip", source: "C:/t/test/bai-mitko-idle-east-6.zip", active: true },
-  { key: "talk_east_long_1", zipName: "bai-mitko-talk-east-long-1.zip", source: "C:/t/test/bai-mitko-talk-east-long-1.zip", active: true },
-  { key: "talk_east_long_2", zipName: "bai-mitko-talk-east-long-2.zip", source: "C:/t/test/bai-mitko-talk-east-long-2.zip", active: true },
-  { key: "talk_east_short_1", zipName: "bai-mitko-talk-east-short-1.zip", source: "C:/t/test/bai-mitko-talk-east-short-1.zip", active: true },
-  { key: "reject_east_1", zipName: "bai-mitko-reject-east-1.zip", source: "C:/t/test/bai-mitko-reject-east-1.zip", active: true }
-];
-
 export const IMAGE_EXTENSIONS = new Set([".png"]);
 
 export function ensureDir(path) {
@@ -64,24 +49,8 @@ export function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
-export function copyKnownInputZips() {
-  ensureExternalAnimationDirs();
-  for (const entry of readdirSync(INPUT_DIR, { withFileTypes: true })) {
-    if (entry.isFile() && entry.name.toLowerCase().endsWith(".zip")) {
-      rmSync(join(INPUT_DIR, entry.name), { force: true });
-    }
-  }
-  const result = [];
-  for (const input of EXTERNAL_INPUTS) {
-    const destination = join(INPUT_DIR, input.zipName);
-    if (!existsSync(input.source)) {
-      result.push({ key: input.key, source: input.source, destination, copied: false, missing: true });
-      continue;
-    }
-    copyFileSync(input.source, destination);
-    result.push({ key: input.key, source: input.source, destination, copied: true, bytes: readFileSync(destination).byteLength });
-  }
-  return result;
+export function copyKnownInputZips({ sourceDir, destinationDir = INPUT_DIR, dryRun = false } = {}) {
+  return copyInputZips({ sourceDir, destinationDir, dryRun });
 }
 
 export function listFilesRecursive(root) {

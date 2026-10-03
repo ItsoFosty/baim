@@ -5,6 +5,7 @@ import { browserAvailable } from "./helpers/browser-availability.js";
 import { createServer } from "node:net";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { observeImageRequests, waitForLoadedImage } from "./helpers/browser-image-readiness.js";
 
 const projectRoot = fileURLToPath(new URL("..", import.meta.url));
 
@@ -277,6 +278,7 @@ test("fresh Chapter 1 journeys reach all three endings through real clicks in Bu
     for (const language of ["bg", "en"]) {
       const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, serviceWorkers: "block" });
       const page = await context.newPage();
+      const imageNetwork = observeImageRequests(page);
       await page.goto(`http://127.0.0.1:${port}/?play=1&testHarness=1`);
       await page.evaluate(() => window.__comradeCandidateTest.ready);
       // Language is setup; all progression below uses normal mouse input.
@@ -303,6 +305,7 @@ test("fresh Chapter 1 journeys reach all three endings through real clicks in Bu
       await waitFor(() => window.__comradeCandidateTest.game.inventory.has("item.campaign_pamphlets"));
       assert.equal(await page.evaluate(() => window.__comradeCandidateTest.game.inventory.has("item.unpaid_bills")), false);
       const pamphletIcon = page.locator('[data-item-id="item.campaign_pamphlets"] img');
+      await waitForLoadedImage(page, '[data-item-id="item.campaign_pamphlets"] img', { network: imageNetwork });
       assert.equal(await pamphletIcon.isVisible(), true);
       assert.equal(await pamphletIcon.evaluate(image => image.complete && image.naturalWidth > 0), true);
       await page.mouse.move(0, 0);

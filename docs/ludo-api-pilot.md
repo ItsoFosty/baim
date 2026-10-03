@@ -4,7 +4,7 @@ This development tool replaces website clicking/download transport, not the game
 
 ## Status and prerequisites
 
-Tooling can be tested without an account or spending. Live authentication and native output compatibility remain unverified until a private key and one explicitly approved pilot are available. Pro/Studio API access is currently advertised by Ludo; verify your account's API Settings. No real generation is authorized by installing this tool.
+Tooling can be tested without an account or spending. The original Tony pilot was collected and published; that historical result does not prove compatibility for another model/reference. Verify current authentication, task/job ownership and service paid-enable state privately before each task. Pro/Studio API access is currently advertised by Ludo; verify your account's API Settings. No real generation is authorized by installing this tool.
 
 Official references: [API guide](https://ludo.ai/developers/api), [OpenAPI schema](https://api.ludo.ai/api-documentation/openapi.json), [API credit/security documentation](https://ludo.ai/docs/api-mcp). Parameters/pricing were checked on 2026-10-01 against schema version 0.9.10. The tool checks current documented pricing again before submission and stops if it changes.
 
@@ -52,6 +52,24 @@ Optional `finalReference` and `finalReferenceSHA256` use an approved end-frame P
 5. On success, download the original PNG once, validate transparency/grid/duration, and preserve native raw response privately. The tool produces a new source folder containing `spritesheet.png`, `derived-atlas.json` and sanitized `provenance.json`. It never overwrites an existing source package.
 6. Agent continues existing Stage 2: inspect source, register/derive runtime art, update candidate provenance/manifests, build, focused/full tests, confirm manifest/source readiness, and review actual 1280x720 gameplay on port 5173. Collection is not a runnable animation and must not be published as a source-only delivery.
 7. User reviews actual runtime and approves publication once. Follow the existing bundled publication/merge-if-green/sync/exact-cleanup gates.
+
+## Automatic reference preparation
+
+All new native CLI plans prepare references before estimating cost and hashing the plan. The manager's future-task bridge uses this same CLI. Original approved PNG paths, bytes and hashes remain unchanged. Only a private API derivative is resized; no production art is replaced, cropped, stretched, regenerated or upscaled. Model, duration, loop and framing settings stay as reviewed. Resampling is not lossless.
+
+The tool fully decodes a bounded, single-page alpha PNG using Sharp (15 MB encoded, 16 million decoded pixels, maximum axis 16384). It rejects corrupt/unsupported images, orientation ambiguity, URLs, hidden/private source paths and symlink components. Different initial/final canvases require explicit registration reconciliation; equal canvases receive the same transform. Identical oversized references share one derivative.
+
+For True Size (`frame_size:-9`), sources must be strictly below 1,000,000 pixels. The current official OpenAPI describes True Size's position/untrimmed framing but **does not document this numerical threshold**. The threshold comes from the retained 2026-10-03 provider error on the 981x1604 Baba reference. The local policy targets 990,000 pixels when resizing is necessary: `scale=sqrt(990000/(width*height))`, floor both output axes, Lanczos3 over the entire canvas, no crop or added padding. Integer rounding causes at most one pixel of axis error; no independent artistic registration adjustment is made. Compatible sources keep their exact bytes. Fixed frame exports retain bounded input bytes; no undocumented input threshold is invented.
+
+Plan version 2 binds the original and prepared path/hash/decoded dimensions, actual request settings, constraint/schema fingerprint, transformation/version, Sharp/libvips versions and concise resize note. Derivatives live only in owner-only `.git/ludo-api/CANDIDATE/reference-SHA256.png`, blocked by the existing preview guard; private paths are redacted from public collected provenance. Reproducibility means the recorded algorithm, toolchain and exact retained bytes, not identical outputs across different Sharp/libvips releases.
+
+Use `npm run ludo:api -- validate-plan CANDIDATE` before a spending offer. It checks the originals, exact prepared bytes/dimensions, settings and current schema without resizing or rewriting the plan. The separate manager follow-up must invoke this command for both saved-plan reuse and every spending quote; installing game tooling alone does not protect the existing manager card path. `submit` performs the same validation immediately before durable intent and the single paid POST. Changed originals/derivatives/settings/schema require a fresh reviewed plan and exact paid decision; nothing is silently re-prepared after approval.
+
+Compatible legacy approved plans keep their original hash and byte-for-byte reference payload. Oversized legacy True Size plans stop before POST and require a new candidate/decision. Existing saved jobs remain collectible without reference migration or revalidation, preserving failed/uncertain jobs and receipt history. Never replay a consumed card, reset the bootstrap reservation or auto-retry a paid call.
+
+Authentication/runtime readiness proves neither model/image compatibility nor generation success. These checks prevent the known local reference incompatibility and some invalid inputs; unrelated provider/account/network failures can still occur. Mocked tests never establish real billing, artwork quality or provider acceptance. No disposable generation is needed for validation.
+
+Future focused chats must verify the live paid-enable state rather than copy dated disabled claims, retain current Telegram routing and decision receipts, and include the automatic preparation note in exact plan review. Send meaningful results/decisions through the existing guarded interfaces; no recurring AI checks or duplicate bot. Changes and publication still require the established separate approvals.
 
 ## Recovery and evidence
 

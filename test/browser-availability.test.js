@@ -20,6 +20,9 @@ test("optional local missing Chromium produces an explicit skip", () => {
 });
 test("CI installs Chromium before tests and all browser journeys use the required guard", () => {
   const workflow = readFileSync(".github/workflows/test.yml", "utf8");
+  assert.match(workflow, /uses: actions\/checkout@v5/);
+  assert.match(workflow, /uses: actions\/setup-node@v5/);
+  assert.match(workflow, /node-version: 22/);
   const install = workflow.indexOf("npx playwright install --with-deps chromium");
   assert.ok(install >= 0 && install < workflow.indexOf("- run: npm test"));
   assert.match(workflow, /BAIM_REQUIRE_BROWSER_TESTS: "1"/);

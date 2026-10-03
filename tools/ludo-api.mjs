@@ -1,10 +1,11 @@
 import { execFileSync } from 'node:child_process';
 import { hostname } from 'node:os';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, lstatSync, realpathSync, renameSync, unlinkSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, lstatSync, renameSync, unlinkSync } from 'node:fs';
 import { resolve, relative, join, isAbsolute } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { LudoClient, SPEC_URL, validateCandidate, pricingFromSpec, makePayload, referenceData, sha256, downloadSheet, normalizeSheet, deriveAtlas, submitWithIntent, verifyApproval } from './ludo-api-client.mjs';
+import { LudoClient, SPEC_URL, validateCandidate, pricingFromSpec, makePayload, sha256, downloadSheet, normalizeSheet, deriveAtlas, submitWithIntent, verifyApproval } from './ludo-api-client.mjs';
+import { prepareReferences, validateReferences } from './ludo-reference.mjs';
 
 const ROOT = '/home/ZeShad/baim';
 const PRIVATE = join(ROOT, '.git/ludo-api');
@@ -45,12 +46,6 @@ function save(path, data, exclusive = false) {
 function candidateDir(label) {
   if (!/^[a-z][a-z0-9-]{2,63}$/.test(label || '')) throw new Error('Invalid candidate label');
   const path = join(PRIVATE, label); privateDir(path); return path;
-}
-function safeReference(path) {
-  const full = realpathSync(resolve(ROOT, path));
-  const rel = relative(join(ROOT, 'assets_src/characters'), full);
-  if (rel.startsWith('..') || isAbsolute(rel) || !lstatSync(full).isFile()) throw new Error('Reference must stay within character source assets');
-  return readFileSync(full);
 }
 function sourceDir(path) {
   if (!/^assets_src\/characters\/[a-z0-9_]+\/external_animation_v1\/input$/.test(path || '')) throw new Error('Use the established character source input directory');
@@ -107,10 +102,25 @@ async function currentSpec() {
 }
 function print(value) { console.log(json(value)); }
 
+export async function buildPlan(config, environment, spec, root) {
+  validateCandidate(config);
+  const referencePreparation = await prepareReferences(config, spec, root);
+  const pricing = pricingFromSpec(spec, config.model, config.duration);
+  return { planVersion: 2, config, environment, requestId: randomUUID(), referencePreparation, pricing, createdAt: new Date().toISOString() };
+}
+
+export async function approvedPayload(plan, options, spec, root) {
+  validateCandidate(plan.config);
+  const pricing = pricingFromSpec(spec, plan.config.model, plan.config.duration);
+  const cap = verifyApproval(plan, options, pricing);
+  const images = await validateReferences(plan, spec, root);
+  return { cap, payload: makePayload(plan.config, images, plan.requestId) };
+}
+
 export async function main(args) {
   const [command, labelOrPath, ...options] = args;
   if (!command || command === 'help') {
-    console.log('Ludo pilot: setup | check | plan candidate.json | submit LABEL --approve-plan HASH --max-credits N | collect LABEL\nNo command generates by default. See docs/ludo-api-pilot.md.'); return;
+    console.log('Ludo pilot: setup | check | plan candidate.json | validate-plan LABEL | submit LABEL --approve-plan HASH --max-credits N | collect LABEL\nNo command generates by default. See docs/ludo-api-pilot.md.'); return;
   }
   const environment = requireEnvironment();
   if (command === 'setup') {
@@ -128,26 +138,31 @@ export async function main(args) {
     await verifyPrivacy();
     const config = validateCandidate(read(resolve(ROOT, labelOrPath)));
     sourceDir(config.sourceDir);
-    const initial = safeReference(config.reference); await referenceData(initial, config.referenceSHA256);
-    if (config.finalReference) await referenceData(safeReference(config.finalReference), config.finalReferenceSHA256);
-    const pricing = pricingFromSpec(await currentSpec(), config.model, config.duration);
-    const plan = { config, environment, requestId: randomUUID(), pricing, createdAt: new Date().toISOString() };
-    const dir = candidateDir(config.label); save(join(dir, 'plan.json'), plan, true);
-    print({ label: config.label, planSHA256: sha256(json(plan)), estimatedCredits: pricing.estimatedCredits,
-      submitted: false, note: 'Ask the user to approve this exact plan and maximum charge before submit.' }); return;
+    const dir = candidateDir(config.label);
+    if (existsSync(join(dir, 'plan.json'))) throw new Error('Plan already exists; preserve it and prepare a fresh reviewed candidate');
+    const spec = await currentSpec();
+    const plan = await buildPlan(config, environment, spec, ROOT);
+    save(join(dir, 'plan.json'), plan, true);
+    print({ label: config.label, planSHA256: sha256(json(plan)), estimatedCredits: plan.pricing.estimatedCredits,
+      submitted: false, referenceNote: plan.referencePreparation.note, note: 'Ask the user to approve this exact plan and maximum charge before submit.' }); return;
   }
-  if (!['submit', 'collect'].includes(command)) throw new Error('Unknown command; run help');
-  const dir = candidateDir(labelOrPath), plan = read(join(dir, 'plan.json'));
+  if (!['submit', 'collect', 'validate-plan'].includes(command)) throw new Error('Unknown command; run help');
+  const dir = candidateDir(labelOrPath), planPath = join(dir, 'plan.json');
+  const planBytes = readFileSync(planPath), plan = JSON.parse(planBytes);
   validateCandidate(plan.config);
   if (plan.environment.branch !== environment.branch) throw new Error('Candidate belongs to a different task branch');
-  await verifyPrivacy(); const client = new LudoClient(loadKey());
+  await verifyPrivacy();
+  if (command === 'validate-plan') {
+    await validateReferences(plan, await currentSpec(), ROOT);
+    if (sha256(readFileSync(planPath)) !== sha256(planBytes)) throw new Error('Saved plan changed during validation; fresh reviewed plan required');
+    print({ label: labelOrPath, valid: true, planSHA256: sha256(json(plan)), referenceNote: plan.referencePreparation?.note || 'Compatible legacy reference bytes unchanged.' }); return;
+  }
+  const client = new LudoClient(loadKey());
   const statePath = join(dir, 'job.json');
   if (command === 'submit') {
-    const pricing = pricingFromSpec(await currentSpec(), plan.config.model, plan.config.duration);
-    const cap = verifyApproval(plan, options, pricing);
-    const images = { initial: await referenceData(safeReference(plan.config.reference), plan.config.referenceSHA256) };
-    if (plan.config.finalReference) images.final = await referenceData(safeReference(plan.config.finalReference), plan.config.finalReferenceSHA256);
-    const payload = makePayload(plan.config, images, plan.requestId);
+    const spec = await currentSpec();
+    const { cap, payload } = await approvedPayload(plan, options, spec, ROOT);
+    if (sha256(readFileSync(planPath)) !== sha256(planBytes)) throw new Error('Saved plan changed during validation; fresh reviewed plan required');
     // Exclusive intent is durable BEFORE the only paid POST. Even a timeout cannot trigger another submission.
     const state = { requestId: plan.requestId, status: 'submission-uncertain', approvedPlanSHA256: options[1], approvedMaxCredits: cap, submittedAt: new Date().toISOString() };
     await submitWithIntent(client, payload, state, value => save(statePath, value, true), value => save(statePath, value));
@@ -200,6 +215,11 @@ export async function main(args) {
       ...(config.finalReference ? { final_image: '[reference-bytes-recorded-by-hash]' } : {}) },
     references: { initial: { path: config.reference, sha256: config.referenceSHA256 },
       ...(config.finalReference ? { final: { path: config.finalReference, sha256: config.finalReferenceSHA256 } } : {}) },
+    ...(plan.referencePreparation ? { referencePreparation: {
+      ...plan.referencePreparation, references: Object.fromEntries(Object.entries(plan.referencePreparation.references).map(([role, entry]) => [role, {
+        ...entry, prepared: { ...entry.prepared, path: entry.transformation.kind === 'unchanged' ? entry.prepared.path : '[private API derivative retained by hash]' }
+      }]))
+    } } : {}),
     nativeSourceFile, nativeSourceSHA256: normalized.nativeSHA256, nativeFormat: normalized.nativeFormat,
     normalization: normalized.nativeFormat === 'png' ? 'none-original-png' : 'lossless-decoded-webp-to-png; original bytes retained',
     sourceSHA256: sha256(bytes), returnedMetadata: { num_frames: state.result.num_frames, num_cols: state.result.num_cols,

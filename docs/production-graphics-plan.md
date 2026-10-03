@@ -44,17 +44,20 @@ ratio. Any new background request must still include a runtime preparation step 
 resizes/crops/pads the approved source to `1280x720` before placing it under
 `assets/chapter1/scenes/<scene>/background.png`.
 
-Each scene should be delivered as:
+Scene delivery separates prepared runtime images from authored source data. Image filenames
+and formats vary by the approved scene; this is a layout example, not a rename requirement:
 
 ```text
-background.webp
-foreground.webp
-props.webp
-lighting.webp
-scene.geometry.json
+assets/chapter1/scenes/<scene>/       # prepared background and prop/foreground images
+assets_src/chapter1/scenes/<scene>/
+  layers.json
+  object-geometry-v1.json
+  walk-geometry-v1.json              # where applicable
+  <original-images-and-prompts>
 ```
 
-The painted image is never the only source of truth. Gameplay geometry remains in JSON:
+The painted image is never the only source of truth. Scene authoring JSON remains under
+`assets_src/` and is compiled into runtime modules under `src/content/chapter1/`:
 
 - walk polygons
 - depth zones
@@ -120,19 +123,32 @@ Avoid:
 
 ## Asset Contracts
 
-### Character Source Package
+### Tracked Character Source Package
 
 ```text
-assets_src/characters/bai_mitko/
-  external_animation_v1/
-    input/
-    unpacked/
-    previews/
-    runtime_staging/
-    reports/
+assets_src/characters/<character>/external_animation_v1/
+  input/                 # original ZIPs or unchanged native API sources
+  references/            # when a candidate has retained reference derivatives
+  <selection-or-manifest>.json
+  <candidate-provenance>.md
 ```
 
-### Runtime Character Package
+The exact manifest filenames vary by character. Bai Mitko uses
+`external-animation-selection.json`; NPC pilots use `animation-pilot.json`. API-derived
+atlas/timing files must be identified as derived, not original website exports. Raw API
+responses and credentials remain protected private state, never shared source art.
+
+Scene-specific character cutouts and older production groups may remain under
+`assets_src/chapter1/`. Preserve those existing paths; this contract does not authorize
+relocation or deletion. See [art pipeline](art-pipeline.md) for placement and evidence rules.
+
+### Generated Bai Mitko Staging And Runtime Package
+
+Bai Mitko's build tools put unpacked sources, previews, cleanup outputs and reports under
+ignored `target/external_animation_v1/`, not the tracked source package. The runtime example
+below is also generated; other NPC production atlases live under
+`assets/chapter1/characters/<character>/`. Rebuild generated outputs from retained inputs;
+preserve final review evidence separately before approved cleanup.
 
 ```text
 target/external_animation_v1/runtime/

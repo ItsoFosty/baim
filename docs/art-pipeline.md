@@ -19,16 +19,41 @@ backgrounds, depth metadata, object layers, and character animation assets.
 
 ## Scene Construction
 
-Each scene is a package:
+Scene runtime art and editable authoring data are separate. Example layout (image names
+and PNG/WebP formats vary by the approved scene):
 
 ```text
 assets/chapter1/scenes/<scene_slug>/
-  background.webp
-  foreground.webp
-  props.webp
-  scene.geometry.json
-  scene.preview.png
+  background.png
+  <approved-prop-or-foreground>.png
+assets_src/chapter1/scenes/<scene_slug>/
+  layers.json
+  object-geometry-v1.json
+  walk-geometry-v1.json        # where the scene has authored walk geometry
+  <original-images-and-prompts>
 ```
+
+These are existing path conventions, not a migration request. Author scene placement and
+geometry under `assets_src/`; build tools compile the corresponding runtime modules under
+`src/content/chapter1/`. Do not create a parallel `scene.geometry.json` in `assets/`.
+
+### Source, generated output and evidence locations
+
+- Scene-specific production inputs live under `assets_src/chapter1/`, normally in the
+  relevant scene folder. Existing character cutouts grouped with a scene or production batch
+  stay there; their location alone is not a reason to move approved sources.
+- Reusable character references and animation sources live under `assets_src/characters/`.
+  Ludo originals and provenance use `<character>/external_animation_v1/`; preserve original
+  website ZIPs or unchanged native API sheets and clearly label derived metadata.
+- Most prepared production images live under `assets/`. Bai Mitko's external-animation
+  pipeline also serves generated runtime sheets from ignored `target/external_animation_v1/`.
+  Unpacked inputs, previews, cleanup outputs and reports from that pipeline belong in `target/`,
+  not beside tracked original exports. Do not hand-edit generated outputs.
+- Shared guides belong under `docs/`; durable private review evidence may remain outside Git.
+  Record its actual retained location in the candidate/evidence index. Ignored build output is
+  not a durable archive: retain final review evidence before approved temporary cleanup.
+- Preserve existing paths, approved art and source hashes. Moving an editable original or an
+  older source group requires a separate reference audit and explicit owner decision.
 
 Use separate layers when a character must walk behind or in front of an object:
 

@@ -169,8 +169,17 @@ http://localhost:5173/?play=1&characterVariant=external_animation_v1&debugAnimat
 
 ## Commands
 
+Historical benchmark commands, not a routine VPS setup recipe. Follow the current
+[Ludo production workflow](ludo-animation-production-workflow.md) for candidate intake
+and review.
+
+Do not run `tools/copy-external-animation-inputs.js` against retained inputs: its legacy
+helper deletes existing input ZIPs before attempting copies from hard-coded `C:/t/test/`
+paths. It is not called by the current npm build scripts. Repairing that helper is a
+separate code task; this warning does not authorize deleting or replacing originals.
+
 ```bash
-node tools/copy-external-animation-inputs.js
+# Historical only; unsafe against retained ZIPs: node tools/copy-external-animation-inputs.js
 node tools/unpack-external-animation-zips.js
 node tools/inspect-external-animation-metadata.js
 node tools/clean-green-screen-assets.js --key=auto --low=12 --high=55 --matteFilter=median3 --erode=1 --feather=1 --despill=0.75 --connectedBackground=true

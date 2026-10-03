@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
 import sharp from 'sharp';
-import { LudoClient, validateCandidate, pricingFromSpec, makePayload, referenceData, sha256, artifactURL, downloadSheet, deriveAtlas, submitWithIntent, verifyApproval } from '../tools/ludo-api-client.mjs';
+import { LudoClient, validateCandidate, pricingFromSpec, makePayload, referenceData, sha256, artifactURL, downloadSheet, normalizeSheet, deriveAtlas, submitWithIntent, verifyApproval } from '../tools/ludo-api-client.mjs';
 import { requireEnvironment } from '../tools/ludo-api.mjs';
 import { isPublicFile } from '../tools/private-file-guard.mjs';
 
@@ -110,6 +110,25 @@ test('Ludo artifact downloads never forward API credentials and reject unsafe ho
   });
   assert.equal(bytes.toString(), 'original-bytes');
   await assert.rejects(downloadSheet('https://storage.googleapis.com/x', async () => new Response(null, { status: 302, headers: { location: 'https://127.0.0.1/private' } })), /host is not approved/);
+});
+
+test('Ludo native WebP normalization preserves decoded pixels, geometry, alpha and original hash', async () => {
+  const raw = Buffer.alloc(8 * 8 * 4); raw.set([255, 100, 50, 255], 0);
+  const webp = await sharp(raw, { raw: { width: 8, height: 8, channels: 4 } }).webp({ lossless: true }).toBuffer();
+  const normalized = await normalizeSheet(webp);
+  assert.equal(normalized.nativeFormat, 'webp'); assert.equal(normalized.nativeSHA256, sha256(webp));
+  assert.equal((await sharp(normalized.bytes).metadata()).format, 'png');
+  assert.deepEqual(await sharp(normalized.bytes).raw().toBuffer(), await sharp(webp).raw().toBuffer());
+  assert.equal((await deriveAtlas(normalized.bytes, { num_frames: 4, num_cols: 2, num_rows: 2, duration: 1 })).frames.length, 4);
+});
+
+test('Ludo sheet normalization keeps original PNG bytes and rejects opaque or foreign formats', async () => {
+  const png = await sharp({ create: { width: 4, height: 4, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).png().toBuffer();
+  assert.equal((await normalizeSheet(png)).bytes, png);
+  const opaque = await sharp({ create: { width: 4, height: 4, channels: 3, background: 'white' } }).webp().toBuffer();
+  await assert.rejects(normalizeSheet(opaque), /single-page transparent/);
+  const gif = await sharp(png).gif().toBuffer();
+  await assert.rejects(normalizeSheet(gif), /single-page transparent/);
 });
 
 test('Ludo derived atlas uses returned geometry and explicitly labels inferred uniform timing', async () => {

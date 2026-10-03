@@ -785,13 +785,53 @@
         "frameCount": 36,
         "frameWidth": 504,
         "frameHeight": 896,
-        "frameDurationsMs": [82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82],
+        "frameDurationsMs": [
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82,
+          82
+        ],
         "totalDurationMs": 2952,
         "fps": 12.195121951219512,
         "sheetWidth": 3024,
         "sheetHeight": 5376,
         "format": "RGBA8888",
-        "alphaRange": [0, 255],
+        "alphaRange": [
+          0,
+          255
+        ],
         "chromaKeySettings": null,
         "sourceContentBounds": {
           "x": 22,
@@ -834,6 +874,113 @@
         "decision": "approved_for_runtime",
         "approvedAt": "2026-10-02",
         "evidenceLocation": "/home/ZeShad/baim/target/ludo-review/tony-approve/"
+      }
+    },
+    "tony_slow_anger_seated_1": {
+      "label": "toni-anger-seated-c01",
+      "slot": "Reaction",
+      "status": "runtime_approved",
+      "use": true,
+      "loop": false,
+      "description": "A seated slow-building anger reaction on challenge_deferred entry in Mehana, returning to active speech or quiet talk frame 4.",
+      "trigger": {
+        "dialogueId": "dialogue.tony_fridge",
+        "nodeId": "challenge_deferred",
+        "reactionId": "slow_anger",
+        "oncePer": "node_entry"
+      },
+      "source": {
+        "transport": "ludo-rest-api",
+        "storedPackage": "input/toni-anger-seated-c01-api",
+        "nativeSourceFile": "input/toni-anger-seated-c01-api/spritesheet.original.webp",
+        "nativeSourceSha256": "6b8dc9d5a251008a57097d554bdfaea7cb1f7eeed49b4956c46ece969e52852c",
+        "preservedPngFile": "input/toni-anger-seated-c01-api/spritesheet.png",
+        "preservedPngSha256": "93d112bf7031e7dc6f2ac10cc8eeef6678962b16c00b584049010a2b67c95d70",
+        "provenanceFile": "input/toni-anger-seated-c01-api/provenance.json",
+        "provenanceSha256": "e111af77dcbbde3c90270ef8fd0f56b42d38e3c86b2f7940c0598479f7a18d07",
+        "derivedAtlasMetadataFile": "input/toni-anger-seated-c01-api/derived-atlas.json",
+        "derivedAtlasMetadataSha256": "b0495d8b3f8237b0d7806452579ebd44d2bcb0432956207c465be308baa85857",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "b1d088b7d120490bcf5a4dcabcbab9531462a36e467661cff7242ae2c911bde8"
+          },
+          {
+            "path": "assets_src/characters/tony_fridge/external_animation_v1/references/talk-seated-left-frame004.png",
+            "role": "approved_generation_start_and_final_reference",
+            "sha256": "911e8e3bc413dbfed39059f977b27b38cb9eb3f2e99fbf70bbefb9820d8dd587"
+          }
+        ]
+      },
+      "generation": {
+        "prompt": "4-second one-shot seated slow-building anger reaction. Start in the supplied SCREEN-LEFT-facing pose, mouth closed. During the first 2 seconds, gradually narrow the eyes, tighten the jaw and build restrained tension in the shoulders; never snap or jerk. Hold the contained anger clearly for about 1 second, then slowly release the tension over the final second and return to the exact approved starting pose. Keep looking toward the off-screen listener on SCREEN-LEFT. Preserve face, moustache, large body mass, clothing, painted style, seated proportions, canvas and scale. Hands, hips, legs and feet stay anchored. Fixed camera; transparent background. No speaking, laughter, viewer-facing turn, mirroring, standing, large arm gesture, drift, new props, chair, table, background or shadow. One reaction only, not a looping angry idle.",
+        "tool": "Ludo.ai REST API",
+        "model": "hydra",
+        "settings": {
+          "requestedDurationSeconds": 4,
+          "requestedFrames": 36,
+          "loop": false,
+          "crop": false,
+          "marginRatioMode": "auto",
+          "transparentBackground": true,
+          "augmentPrompt": true
+        },
+        "requestId": "47782a3a-531a-452d-a074-5c4b1efc65bb",
+        "jobId": "9fdf1a5c-10c6-4262-b95b-d4c9e11ed642",
+        "resultId": null,
+        "resultUrl": null,
+        "generationCreatedAt": null,
+        "creditsSpent": 12,
+        "approvedMaxCredits": 12,
+        "generationMode": "guarded_rest_api"
+      },
+      "import": {
+        "frameCount": 36,
+        "frameWidth": 768,
+        "frameHeight": 768,
+        "sheetWidth": 4608,
+        "sheetHeight": 4608,
+        "format": "RGBA8888",
+        "returnedTotalDurationSeconds": 3.9166666666666665,
+        "timingOrigin": "derived_uniform_from_api_total_duration",
+        "derivedFrameDurationMsExact": 108.79629629629629,
+        "runtimeFrameDurationMsRounded": 109,
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/tony_fridge/anger-seated-v1.webp": "e465b951e6adfea679833e1db8b1d9ae0a565177ce37a74b53312edba35425f1"
+        },
+        "runtime": {
+          "asset": "assets/chapter1/characters/tony_fridge/anger-seated-v1.webp",
+          "sheetWidth": 2304,
+          "sheetHeight": 2304,
+          "frameWidth": 384,
+          "frameHeight": 384,
+          "contentBounds": {
+            "x": 113,
+            "y": 92,
+            "w": 156,
+            "h": 199
+          },
+          "registrationBounds": {
+            "x": 116,
+            "y": 91,
+            "w": 152,
+            "h": 198
+          },
+          "format": "alpha-webp",
+          "normalization": "The preserved 4608x4608 API PNG was resized to 2304x2304, retaining its 6x6 layout and established 384x384 Tony registration space; native and preserved source bytes remain unchanged.",
+          "oneShotStartFrame": 0,
+          "oneShotEndFrame": 35,
+          "frameDurationMs": 109
+        }
+      },
+      "review": {
+        "candidateStatus": "runtime_approved",
+        "rejectionReason": null,
+        "reviewer": "Svetozar",
+        "decision": "approved_for_runtime",
+        "approvedAt": "2026-10-03",
+        "evidenceLocation": "/home/ZeShad/baim/target/ludo-review/tony-anger/"
       }
     },
     "tony_skeptical_seated_1": {

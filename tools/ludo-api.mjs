@@ -4,7 +4,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, lstatSync, realpath
 import { resolve, relative, join, isAbsolute } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { LudoClient, SPEC_URL, validateCandidate, pricingFromSpec, makePayload, referenceData, sha256, downloadSheet, deriveAtlas, submitWithIntent, verifyApproval } from './ludo-api-client.mjs';
+import { LudoClient, SPEC_URL, validateCandidate, pricingFromSpec, makePayload, referenceData, sha256, downloadSheet, normalizeSheet, deriveAtlas, submitWithIntent, verifyApproval } from './ludo-api-client.mjs';
 
 const ROOT = '/home/ZeShad/baim';
 const PRIVATE = join(ROOT, '.git/ludo-api');
@@ -182,11 +182,14 @@ export async function main(args) {
     for (const [name, digest] of [['spritesheet.png', report.sourceSHA256], ['derived-atlas.json', report.derivedAtlasSHA256], ['provenance.json', report.provenanceSHA256]]) {
       if (sha256(readFileSync(join(destination, name))) !== digest) throw new Error('Collected source package changed; preserve user work and investigate');
     }
+    if (report.nativeSourceFile && sha256(readFileSync(join(destination, report.nativeSourceFile))) !== report.nativeSourceSHA256) throw new Error('Native source package changed; preserve user work and investigate');
     print(report); return;
   }
   const bytesPath = join(dir, 'spritesheet.png');
-  const bytes = existsSync(bytesPath) ? readFileSync(bytesPath) : await downloadSheet(state.result.spritesheet_url);
-  if (!existsSync(bytesPath)) writeFileSync(bytesPath, bytes, { flag: 'wx', mode: 0o600 });
+  const nativeBytes = existsSync(bytesPath) ? readFileSync(bytesPath) : await downloadSheet(state.result.spritesheet_url);
+  if (!existsSync(bytesPath)) writeFileSync(bytesPath, nativeBytes, { flag: 'wx', mode: 0o600 });
+  const normalized = await normalizeSheet(nativeBytes), bytes = normalized.bytes;
+  const nativeSourceFile = normalized.nativeFormat === 'png' ? 'spritesheet.png' : 'spritesheet.original.webp';
   const atlas = await deriveAtlas(bytes, state.result);
   const config = plan.config, destination = join(sourceDir(config.sourceDir), `${config.label}-api`);
   if (existsSync(destination)) throw new Error('Source package exists; preserve it and investigate before overwriting');
@@ -197,15 +200,19 @@ export async function main(args) {
       ...(config.finalReference ? { final_image: '[reference-bytes-recorded-by-hash]' } : {}) },
     references: { initial: { path: config.reference, sha256: config.referenceSHA256 },
       ...(config.finalReference ? { final: { path: config.finalReference, sha256: config.finalReferenceSHA256 } } : {}) },
+    nativeSourceFile, nativeSourceSHA256: normalized.nativeSHA256, nativeFormat: normalized.nativeFormat,
+    normalization: normalized.nativeFormat === 'png' ? 'none-original-png' : 'lossless-decoded-webp-to-png; original bytes retained',
     sourceSHA256: sha256(bytes), returnedMetadata: { num_frames: state.result.num_frames, num_cols: state.result.num_cols,
       num_rows: state.result.num_rows, duration: state.result.duration }, derivedAtlasSHA256: sha256(json(atlas)),
     timingOrigin: 'derived-uniform-from-api-duration', schemaVersion: plan.pricing.specVersion,
     note: 'Native API sheet + metadata; not an original website ZIP. Raw responses retained privately. Runtime integration and visual approval pending.' };
   mkdirSync(destination, { recursive: true });
+  if (nativeSourceFile !== 'spritesheet.png') writeFileSync(join(destination, nativeSourceFile), nativeBytes, { flag: 'wx' });
   writeFileSync(join(destination, 'spritesheet.png'), bytes, { flag: 'wx' });
   writeFileSync(join(destination, 'derived-atlas.json'), json(atlas), { flag: 'wx' });
   writeFileSync(join(destination, 'provenance.json'), json(provenance), { flag: 'wx' });
   const report = { label: config.label, status: 'source-collected-not-runtime-approved', sourceDir: relative(ROOT, destination), sourceSHA256: sha256(bytes),
+    nativeSourceFile, nativeSourceSHA256: normalized.nativeSHA256,
     derivedAtlasSHA256: sha256(json(atlas)), provenanceSHA256: sha256(json(provenance)),
     creditsCharged: state.credits_charged ?? null, next: 'Agent continues the existing Stage 2 runtime integration/build/test/5173 preview. No new approval pause.' };
   save(join(dir, 'download.json'), report, true); print(report);

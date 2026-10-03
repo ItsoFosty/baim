@@ -53,7 +53,20 @@ test("Tony's seated idle pilot records runtime approval after local review", () 
   assert.match(npcHtml, /Runtime approved/);
   assert.match(npcHtml, /Runtime Approved/);
   assert.match(npcHtml, /assets\/chapter1\/characters\/tony_fridge\/idle-seated-v1\.webp/);
-  assert.doesNotMatch(npcHtml, /Awaiting generated-source details and human review/);
+  // Other reactions may legitimately await review; only the approved idle is asserted here.
+  const idleDetails = npcHtml.match(/<p class="detail"><b>Pilot:<\/b> tony_idle_seated_1\b[\s\S]*?(?=<p class="detail"><b>(?:Pilot|Scene):<\/b>)/)?.[0];
+  assert.ok(idleDetails, 'Approved idle details must exist');
+  assert.match(idleDetails, /candidate: Runtime Approved/);
+  assert.doesNotMatch(idleDetails, /Awaiting generated-source details and human review/);
+});
+
+test('a pending Tony reaction does not invalidate an already approved idle', () => {
+  const anger = tonyPilot.animations.tony_slow_anger_seated_1;
+  assert.ok(anger, 'Integrated slow-anger candidate must remain cataloged');
+  assert.equal(anger.review.candidateStatus, anger.status);
+  assert.match(npcHtml, /tony_slow_anger_seated_1/);
+  assert.equal(tonyPilot.animations.tony_idle_seated_1.status, 'runtime_approved');
+  if (anger.status === 'runtime_review') assert.match(npcHtml, /data-entry-id="npc.tony_fridge"[^>]*data-status="Runtime review"/);
 });
 
 test("world catalog includes procedural, CSS, and static-state categories", () => {

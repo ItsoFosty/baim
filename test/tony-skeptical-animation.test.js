@@ -44,7 +44,7 @@ test('pause/menu and skip cancel pending or active skepticism without delayed re
  const f=fixture();f.enter('challenge_waiting');f.draw(1016);assert.equal(frame(f.draw(1252)),2);
  for(const key of ['paused','menuOpen']){f.game[key]=true;assert.equal(frame(f.draw(10000)),2);f.game[key]=false;}
  assert.equal(frame(f.draw(10118)),3);
- f.enter('challenge_deferred');assert.equal(f.draw(10134)[0],f.images[layer.talkAnimation.asset]);
+ f.enter('support_confirmed');assert.equal(f.draw(10134)[0],f.images[layer.talkAnimation.asset]);
  assert.equal(f.renderer.npcReactionPlayback.get(layer.id).phase,'idle');
  const pending=fixture(false);pending.enter('challenge_waiting');pending.draw(16);pending.dialogue.close();pending.draw(32);
  assert.notEqual(pending.draw(2000)[0],pending.images[skeptical.asset]);

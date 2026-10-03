@@ -142,6 +142,17 @@ export async function downloadSheet(value, fetchImpl = fetch) {
   }
 }
 
+// Preserve native download bytes separately; runtime tooling consumes an actual PNG.
+export async function normalizeSheet(bytes) {
+  const metadata = await sharp(bytes).metadata();
+  if (!['png', 'webp'].includes(metadata.format) || !metadata.hasAlpha
+      || (metadata.pages || 1) !== 1 || metadata.width * metadata.height > 64_000_000) {
+    throw new Error('Expected a bounded single-page transparent PNG or WebP sheet');
+  }
+  return { bytes: metadata.format === 'png' ? bytes : await sharp(bytes).png().toBuffer(),
+    nativeFormat: metadata.format, nativeSHA256: sha256(bytes) };
+}
+
 export async function deriveAtlas(bytes, result) {
   const { num_frames: count, num_cols: cols, num_rows: rows, duration } = result;
   if (![count, cols, rows].every(value => Number.isInteger(value) && value > 0 && value <= 64)

@@ -21,7 +21,6 @@
     "build:object-geometry": "node tools/build-scene-object-geometry.js",
     "build:scene-layers": "node tools/build-scene-layers.js",
     "build:scene-layer-runtime": "node tools/build-scene-layer-runtime.js",
-    "build:characters": "node tools/build-character-chroma-assets.js",
     "build:runtime-animations": "node tools/build-external-runtime-staging.js && node tools/optimize-external-runtime-assets.mjs",
     "build:runtime-assets": "node tools/build-runtime-asset-manifest.mjs",
     "build:runtime": "npm run build:runtime-animations && npm run build:runtime-assets && npm run build:animation-catalogs",

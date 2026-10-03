@@ -173,13 +173,26 @@ Historical benchmark commands, not a routine VPS setup recipe. Follow the curren
 [Ludo production workflow](ludo-animation-production-workflow.md) for candidate intake
 and review.
 
-Do not run `tools/copy-external-animation-inputs.js` against retained inputs: its legacy
-helper deletes existing input ZIPs before attempting copies from hard-coded `C:/t/test/`
-paths. It is not called by the current npm build scripts. Repairing that helper is a
-separate code task; this warning does not authorize deleting or replacing originals.
+The input-copy tool now requires an explicit source directory. It imports only top-level
+ZIP files, preserving filenames and original bytes. It validates the whole batch before
+copying, skips byte-identical retained files, and stops on conflicts, symlinks or invalid
+ZIP headers. Header validation is not animation metadata/content approval; continue the
+normal inspection and runtime review. Its destination is the existing Bai Mitko input
+directory in this repository, independent of the shell's current directory.
+
+First inspect the exact source folder with a dry run; remove `--dry-run` only for an
+authorized intake. Never use this command to replace retained originals. It is not part
+of routine npm builds, and it does not generate animations or spend credits. An I/O
+failure during copying may leave earlier new files; reruns skip identical copies rather
+than deleting them. The report is printed to stdout, not written over an old report.
 
 ```bash
-# Historical only; unsafe against retained ZIPs: node tools/copy-external-animation-inputs.js
+node tools/copy-external-animation-inputs.js --source-dir /absolute/export-folder --dry-run
+```
+
+```bash
+# After authorized intake from an explicitly reviewed folder:
+node tools/copy-external-animation-inputs.js --source-dir /absolute/export-folder
 node tools/unpack-external-animation-zips.js
 node tools/inspect-external-animation-metadata.js
 node tools/clean-green-screen-assets.js --key=auto --low=12 --high=55 --matteFilter=median3 --erode=1 --feather=1 --despill=0.75 --connectedBackground=true

@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { lstatSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
@@ -23,11 +25,52 @@ function parseAheadBehind(value) {
   return { ahead, behind };
 }
 
+// Porcelain -z keeps names literal and emits destination then source for renames.
 export function changedPathsFromStatus(status) {
-  return status
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => line.slice(3).split(" -> ").at(-1));
+  const records = status.split("\0");
+  const paths = [];
+  for (let index = 0; index < records.length; index += 1) {
+    const record = records[index];
+    if (!record) continue;
+    paths.push(record.slice(3));
+    if (/[RC]/.test(record.slice(0, 2))) paths.push(records[++index]);
+  }
+  return paths.filter(Boolean);
+}
+
+// Explicit reviewed snapshots only. New entries require checking that no runtime,
+// configuration, source-art or generation consumer uses the document.
+// Never infer historical status from directory names, extensions or prose.
+const HISTORICAL_DOCUMENTS = new Map([
+  ["assets_src/characters/bai_mitko/external_animation_v1/historical/look-east-c02-production-notes.json",
+    "8b270c9904000ca0cb1d87b51631d769016478b1c0e98adaeffeaa8bf413827f"],
+  ["assets_src/characters/bai_mitko/external_animation_v1/look-into-distance-source-history.md",
+    "ee174e90009b1a1b8a97cc17c0d72ed83fef2e24d7b929ef4a6464587b4c4fcb"]
+]);
+
+function documentSnapshots(path) {
+  if (!lstatSync(path).isFile()) throw new Error("Not a regular document");
+  const snapshots = [readFileSync(path)];
+  // Also inspect the index: a restored worktree must not hide a staged change.
+  const indexed = spawnSync("git", ["show", `:${path}`], { encoding: null });
+  if (indexed.status === 0) snapshots.push(indexed.stdout);
+  else {
+    const tracked = spawnSync("git", ["ls-files", "--error-unmatch", "--", path]);
+    if (tracked.status !== 1) throw new Error("Cannot inspect indexed document");
+  }
+  return snapshots;
+}
+
+export function isHistoricalDocument(path, readSnapshots = documentSnapshots) {
+  const expectedHash = HISTORICAL_DOCUMENTS.get(path);
+  if (!expectedHash) return false;
+  try {
+    const snapshots = readSnapshots(path);
+    return snapshots.length > 0 && snapshots.every((bytes) =>
+      createHash("sha256").update(bytes).digest("hex") === expectedHash);
+  } catch {
+    return false;
+  }
 }
 
 export function classifyWorkflow({ branch, dirty, ahead = 0, behind = 0, upstream = "" }) {
@@ -73,7 +116,8 @@ export function classifyWorkflow({ branch, dirty, ahead = 0, behind = 0, upstrea
   };
 }
 
-export function reviewRequirements(paths) {
+export function reviewRequirements(paths, readSnapshots = documentSnapshots) {
+  paths = paths.filter((path) => !isHistoricalDocument(path, readSnapshots));
   const visual = paths.some((path) => /(^|\/)(assets|assets_src)\/|\.(png|webp|jpe?g|gif|svg)$/i.test(path));
   const ludo = paths.some((path) => /ludo|external_animation|animation-catalog-metadata|animation-library-metadata/i.test(path));
   const code = paths.some((path) => /\.(?:js|mjs|cjs|json|css|html)$/i.test(path) || path === "package.json");
@@ -93,12 +137,12 @@ export function approvalGuidance({ ludo = false } = {}) {
   ];
 }
 
-function inspectRepository() {
+export function inspectRepository() {
   const root = runGit(["rev-parse", "--show-toplevel"]).stdout;
   const remote = runGit(["remote", "get-url", "marto"], { allowFailure: true }).stdout;
   const branch = runGit(["branch", "--show-current"]).stdout;
   const upstream = runGit(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"], { allowFailure: true }).stdout;
-  const status = runGit(["status", "--porcelain=v1"]).stdout;
+  const status = runGit(["status", "--porcelain=v1", "-z", "--untracked-files=all"]).stdout;
   const comparison = runGit(["rev-list", "--left-right", "--count", "HEAD...marto/master"], { allowFailure: true });
   const { ahead, behind } = comparison.ok ? parseAheadBehind(comparison.stdout) : { ahead: 0, behind: 0 };
   return {
@@ -130,9 +174,9 @@ function printSummary(info) {
   console.log(`Compared with marto/master: ${info.ahead} ahead, ${info.behind} behind`);
 }
 
-function collectReviewPaths(info) {
-  const committed = runGit(["diff", "--name-only", "marto/master...HEAD"], { allowFailure: true }).stdout;
-  return [...new Set([...info.changedPaths, ...committed.split("\n").filter(Boolean)])].sort();
+export function collectReviewPaths(info) {
+  const committed = runGit(["diff", "--name-only", "--no-renames", "-z", "marto/master...HEAD"]).stdout;
+  return [...new Set([...info.changedPaths, ...committed.split("\0").filter(Boolean)])].sort();
 }
 
 function runStatus(info) {
@@ -151,7 +195,7 @@ function runReview(info) {
     return;
   }
 
-  const workingCheck = runGit(["diff", "--check"], { allowFailure: true });
+  const workingCheck = runGit(["diff", "--check", "marto/master"], { allowFailure: true });
   const committedCheck = runGit(["diff", "--check", "marto/master...HEAD"], { allowFailure: true });
   if (!workingCheck.ok || !committedCheck.ok) {
     console.error(workingCheck.stderr || workingCheck.stdout || committedCheck.stderr || committedCheck.stdout);

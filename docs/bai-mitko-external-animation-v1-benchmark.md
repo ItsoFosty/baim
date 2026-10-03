@@ -24,6 +24,10 @@ Copied to:
 assets_src/characters/bai_mitko/external_animation_v1/input/
 ```
 
+For historical source provenance of the look-into-distance animation, see the
+[Bai Mitko source-history guide](../assets_src/characters/bai_mitko/external_animation_v1/look-into-distance-source-history.md).
+This guide is a historical record, not active configuration or a new approval gate.
+
 ## Metadata Rule
 
 Use the Ludo JSON metadata as source of truth for frame rectangles, frame order, frame count, frame timing/FPS when present, and sprite sheet references. Grid slicing is only a fallback if metadata is missing or unusable.

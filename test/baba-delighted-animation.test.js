@@ -64,7 +64,7 @@ test('Baba effects, prior approved animations, source provenance and election is
  assert.equal(sha('assets_src/characters/baba_stoyanka/external_animation_v1/'+candidate.source.preservedPngFile),candidate.source.preservedPngSha256);
  assert.equal(sha(candidate.import.runtime.asset),candidate.import.derivedOutputHashes[candidate.import.runtime.asset]);
  assert.equal(sha('assets/chapter1/characters/baba_stoyanka/seated-v2.png'),'65e1893cd678f0f05796e80c82d8f1b7d8dcc756f71bd86a0a8dfc3e0a552742');
- const current=readFileSync('src/content/chapter1/fountain.js','utf8').replace(', reactionId: "delighted_approval"','');
+ const current=readFileSync('src/content/chapter1/fountain.js','utf8').replace(', reactionId: "delighted_approval"','').replace(', reactionId: "skeptical_disapproval"','');
  assert.equal(createHash('sha256').update(current).digest('hex'),'1121fb5ec1b27298d801e1b58dd551e9c5b2d16cf5f5532bc8ac3026acac2889');
  assert.deepEqual([layer.left,layer.top,layer.height,layer.zIndex],[325,330,122,90]);assert.equal(reaction.loop,false);
  assert.deepEqual(reaction.contentBounds,{x:0,y:0,w:389,h:636});assert.deepEqual(reaction.registrationBounds,reaction.contentBounds);

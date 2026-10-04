@@ -1,0 +1,151 @@
+{
+  "candidate": "bs-skeptical-seated-c01",
+  "status": "candidate",
+  "transport": "ludo-rest-api",
+  "requestId": "f66cc69a-aa0a-45a1-8f3e-4539cee73380",
+  "jobId": "69d1c57a-afba-4390-baa6-ad6d7cbcad9a",
+  "generationCreatedAt": null,
+  "creditsCharged": 9,
+  "approvedMaxCredits": 9,
+  "estimatedCredits": 9,
+  "settings": {
+    "motion_prompt": "Create one restrained three-second seated skeptical reaction for Baba Stoyanka. Begin in the exact approved seated reference pose. She raises one eyebrow, gives a very small amused disapproving head shake, then settles smoothly into the original resting pose. Her expression says she has heard this promise before: funny, eccentric and unimpressed, never furious or grotesque. Remain seated and anchored throughout. Preserve her exact face, age, nose, compact silhouette, gray hair wisps, red floral headscarf, cardigan, cat pin, skirt, socks, shoes, colors and scratchy painted cartoon texture. Keep hands close to their resting positions, cane, woven shopping bag, feet and seated body fixed. Fixed camera and scale; genuinely transparent background. No speech or lip-sync, body drift, standing, viewer-facing turn, large gestures, new props, extra limbs, deformation, scenery, text, logo or watermark. One non-looping reaction ending in the original pose.",
+    "initial_image": "[reference-bytes-recorded-by-hash]",
+    "model": "hydra",
+    "duration": 3,
+    "frames": 36,
+    "frame_size": -9,
+    "loop": false,
+    "crop": false,
+    "margin_ratio_mode": "auto",
+    "image_type": "sprite",
+    "augment_prompt": true,
+    "gif": false,
+    "individual_frames": false,
+    "spritesheet_with_background": false,
+    "async": true,
+    "request_id": "f66cc69a-aa0a-45a1-8f3e-4539cee73380",
+    "final_image": "[reference-bytes-recorded-by-hash]"
+  },
+  "references": {
+    "initial": {
+      "path": "assets_src/characters/baba_stoyanka/external_animation_v1/references/approved-seated-v2-source.png",
+      "sha256": "09df105b2fc11784b8a68aa57bf59e0dd47dae181ad2412a92e439286fb5b7db"
+    },
+    "final": {
+      "path": "assets_src/characters/baba_stoyanka/external_animation_v1/references/approved-seated-v2-source.png",
+      "sha256": "09df105b2fc11784b8a68aa57bf59e0dd47dae181ad2412a92e439286fb5b7db"
+    }
+  },
+  "referencePreparation": {
+    "algorithm": "proportional-full-canvas-lanczos3-floor-v1",
+    "toolchain": {
+      "sharp": "0.35.2",
+      "vips": "8.18.3"
+    },
+    "constraints": {
+      "specVersion": "0.9.10",
+      "schemaSHA256": "43f873043ffdad052bc50f7cac18671b1f650d0049e3641ea9dda4265b9fcbfc",
+      "model": "hydra",
+      "frameSize": -9,
+      "maximumPixelsExclusive": 1000000,
+      "resizeTargetPixels": 990000,
+      "limitEvidence": "provider-error: True Size only works with source images under 1 megapixel; 2026-10-03",
+      "maximumInputBytes": 15000000,
+      "maximumDecodedPixels": 16000000
+    },
+    "settings": {
+      "model": "hydra",
+      "frameSize": -9,
+      "duration": 3,
+      "frames": 36,
+      "loop": false,
+      "crop": false,
+      "margin_ratio_mode": "auto",
+      "image_type": "sprite",
+      "augment_prompt": true,
+      "gif": false,
+      "individual_frames": false,
+      "spritesheet_with_background": false,
+      "async": true
+    },
+    "references": {
+      "initial": {
+        "original": {
+          "path": "assets_src/characters/baba_stoyanka/external_animation_v1/references/approved-seated-v2-source.png",
+          "sha256": "09df105b2fc11784b8a68aa57bf59e0dd47dae181ad2412a92e439286fb5b7db",
+          "width": 981,
+          "height": 1604,
+          "pixels": 1573524,
+          "format": "png",
+          "hasAlpha": true
+        },
+        "prepared": {
+          "path": "[private API derivative retained by hash]",
+          "sha256": "dec2e04f18ea2c5f114031ebc79b860fb25870b95549dc4a875e636517332d74",
+          "width": 778,
+          "height": 1272,
+          "pixels": 989616,
+          "format": "png",
+          "hasAlpha": true
+        },
+        "transformation": {
+          "kind": "proportional-downscale",
+          "scale": 0.793196723611651,
+          "rounding": "floor-both-axes",
+          "kernel": "lanczos3",
+          "crop": false,
+          "fullCanvas": true,
+          "upscale": false,
+          "lossless": false
+        }
+      },
+      "final": {
+        "original": {
+          "path": "assets_src/characters/baba_stoyanka/external_animation_v1/references/approved-seated-v2-source.png",
+          "sha256": "09df105b2fc11784b8a68aa57bf59e0dd47dae181ad2412a92e439286fb5b7db",
+          "width": 981,
+          "height": 1604,
+          "pixels": 1573524,
+          "format": "png",
+          "hasAlpha": true
+        },
+        "prepared": {
+          "path": "[private API derivative retained by hash]",
+          "sha256": "dec2e04f18ea2c5f114031ebc79b860fb25870b95549dc4a875e636517332d74",
+          "width": 778,
+          "height": 1272,
+          "pixels": 989616,
+          "format": "png",
+          "hasAlpha": true
+        },
+        "transformation": {
+          "kind": "proportional-downscale",
+          "scale": 0.793196723611651,
+          "rounding": "floor-both-axes",
+          "kernel": "lanczos3",
+          "crop": false,
+          "fullCanvas": true,
+          "upscale": false,
+          "lossless": false
+        }
+      }
+    },
+    "note": "Automatic API reference resize: 981x1604 -> 778x1272; full canvas retained; resampling is not lossless. Original approved art unchanged."
+  },
+  "nativeSourceFile": "spritesheet.original.webp",
+  "nativeSourceSHA256": "13c99da9a917ee749e165deb8a3a83d72acb291d1c3ec44472d0a96933f47112",
+  "nativeFormat": "webp",
+  "normalization": "lossless-decoded-webp-to-png; original bytes retained",
+  "sourceSHA256": "7427d50a7af3fc8fc120563a30c8885ca857e6d461273a69346250824846a43b",
+  "returnedMetadata": {
+    "num_frames": 36,
+    "num_cols": 6,
+    "num_rows": 6,
+    "duration": 2.8333333333333335
+  },
+  "derivedAtlasSHA256": "b332a5a61baf62430655252d75fa1a9057da0ee0a07e0d9019490318214bef72",
+  "timingOrigin": "derived-uniform-from-api-duration",
+  "schemaVersion": "0.9.10",
+  "note": "Native API sheet + metadata; not an original website ZIP. Raw responses retained privately. Runtime integration and visual approval pending."
+}

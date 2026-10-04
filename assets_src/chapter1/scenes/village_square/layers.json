@@ -78,6 +78,20 @@
         }
       },
       "reactionAnimations": {
+        "skeptical_disapproval": {
+          "npcId": "npc.baba_stoyanka",
+          "asset": "babaStoyankaSkepticalSeated",
+          "frameWidth": 389,
+          "frameHeight": 636,
+          "frameCount": 36,
+          "columns": 6,
+          "frameDurationMs": 78.70370370370371,
+          "interpolateFrames": true,
+          "transitionDurationMs": 148,
+          "loop": false,
+          "contentBounds": { "x": 0, "y": 0, "w": 389, "h": 636 },
+          "registrationBounds": { "x": 0, "y": 0, "w": 389, "h": 636 }
+        },
         "delighted_approval": {
           "npcId": "npc.baba_stoyanka",
           "asset": "babaStoyankaDelightedSeated",

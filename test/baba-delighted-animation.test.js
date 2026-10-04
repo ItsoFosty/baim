@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {execFileSync} from 'node:child_process';
 import {DialogueSystem} from '../src/engine/DialogueSystem.js';
 import {Renderer,sceneReactionBlendSamples} from '../src/engine/Renderer.js';
 import {chapter1} from '../src/content/chapter1/index.js';
@@ -54,8 +53,10 @@ test('Missing Baba reaction is consumed without late-loading replay; unrelated d
 });
 test('Baba effects, prior approved animations, source provenance and election isolation stay intact',()=>{
  const path='assets_src/characters/baba_stoyanka/external_animation_v1/animation-pilot.json';
- const pilot=JSON.parse(readFileSync(path));const baseline=JSON.parse(execFileSync('git',['show','HEAD:'+path],{encoding:'utf8'}));
- for(const id of ['baba_idle_seated_1','baba_talk_seated_1'])assert.deepEqual(pilot.animations[id],baseline.animations[id]);
+ const pilot=JSON.parse(readFileSync(path));
+ // Pin approved content from a764c64; HEAD includes the candidate after commit/CI.
+ const approvedHashes={baba_idle_seated_1:'4e378ad54eabb4a9550c14f62786f764dd738ba6914ad42b5725029e3b8fa70f',baba_talk_seated_1:'b0e6b096cc33c8a0a413211882577d6f2f69851789aaacb2cd50da2e0002558a'};
+ for(const [id,hash] of Object.entries(approvedHashes))assert.equal(createHash('sha256').update(JSON.stringify(pilot.animations[id])).digest('hex'),hash);
  const candidate=Object.values(pilot.animations).find(a=>a.label==='bs-delighted-seated-c02');
  assert.ok(['runtime_review','runtime_approved'].includes(candidate.status));assert.equal(candidate.review.candidateStatus,candidate.status);
  assert.equal(candidate.generation.creditsSpent,9);assert.equal(candidate.import.timingOrigin,'derived_uniform_from_api_total_duration');
@@ -64,7 +65,7 @@ test('Baba effects, prior approved animations, source provenance and election is
  assert.equal(sha(candidate.import.runtime.asset),candidate.import.derivedOutputHashes[candidate.import.runtime.asset]);
  assert.equal(sha('assets/chapter1/characters/baba_stoyanka/seated-v2.png'),'65e1893cd678f0f05796e80c82d8f1b7d8dcc756f71bd86a0a8dfc3e0a552742');
  const current=readFileSync('src/content/chapter1/fountain.js','utf8').replace(', reactionId: "delighted_approval"','');
- assert.equal(current,execFileSync('git',['show','HEAD:src/content/chapter1/fountain.js'],{encoding:'utf8'}));
+ assert.equal(createHash('sha256').update(current).digest('hex'),'1121fb5ec1b27298d801e1b58dd551e9c5b2d16cf5f5532bc8ac3026acac2889');
  assert.deepEqual([layer.left,layer.top,layer.height,layer.zIndex],[325,330,122,90]);assert.equal(reaction.loop,false);
  assert.deepEqual(reaction.contentBounds,{x:0,y:0,w:389,h:636});assert.deepEqual(reaction.registrationBounds,reaction.contentBounds);
  assert.equal(reaction.interpolateFrames,true);assert.equal(reaction.transitionDurationMs,148);

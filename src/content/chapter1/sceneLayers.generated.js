@@ -209,6 +209,31 @@ export const sceneLayerGeometry = {
             "h": 193
           }
         },
+        "stationaryLowerBody": {
+          "frameIndex": 0,
+          "fromY": 60,
+          "featherHeight": 6,
+          "animatedCutouts": [
+            [
+              [
+                43.5,
+                56
+              ],
+              [
+                47.5,
+                56
+              ],
+              [
+                55.5,
+                119
+              ],
+              [
+                51.5,
+                119
+              ]
+            ]
+          ]
+        },
         "talkAnimation": {
           "registrationBounds": {
             "x": 132,
@@ -230,6 +255,32 @@ export const sceneLayerGeometry = {
             "h": 194
           },
           "npcId": "npc.baba_stoyanka"
+        },
+        "reactionAnimations": {
+          "delighted_approval": {
+            "interpolateFrames": true,
+            "transitionDurationMs": 148,
+            "registrationBounds": {
+              "x": 0,
+              "y": 0,
+              "w": 389,
+              "h": 636
+            },
+            "asset": "babaStoyankaDelightedSeated",
+            "frameWidth": 389,
+            "frameHeight": 636,
+            "frameCount": 36,
+            "columns": 6,
+            "frameDurationMs": 74.07407407407408,
+            "loop": false,
+            "contentBounds": {
+              "x": 0,
+              "y": 0,
+              "w": 389,
+              "h": 636
+            },
+            "npcId": "npc.baba_stoyanka"
+          }
         }
       },
       {

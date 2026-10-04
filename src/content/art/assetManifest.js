@@ -30,6 +30,7 @@ export const assetManifest = {
       babaStoyankaSeated: "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
       babaStoyankaIdleSeated: "assets/chapter1/characters/baba_stoyanka/idle-seated-v1.webp",
       babaStoyankaTalkSeated: "assets/chapter1/characters/baba_stoyanka/talk-seated-v1.webp",
+      babaStoyankaDelightedSeated: "assets/chapter1/characters/baba_stoyanka/delighted-seated-v1.webp",
       kioskPapersPile: "assets/chapter1/scenes/village_square/kiosk-papers-pile-v1.png",
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },

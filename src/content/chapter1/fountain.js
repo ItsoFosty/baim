@@ -102,7 +102,7 @@ export const babaFountainDialogue = {
     vote_terms: { lineKey: "fountain.baba.terms", choicesFrom: "start" },
     tradition: { lineKey: "fountain.baba.tradition", choicesFrom: "start" },
     promise: { lineKey: "fountain.baba.promise", choicesFrom: "start" },
-    vote_confirmed: { lineKey: "fountain.baba.confirmed", choicesFrom: "start" }
+    vote_confirmed: { lineKey: "fountain.baba.confirmed", reactionId: "delighted_approval", choicesFrom: "start" }
   }
 };
 

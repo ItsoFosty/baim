@@ -145,6 +145,24 @@ export function sceneLayerAnimationSourceRect(animation, frameIndex) {
   };
 }
 
+export function sceneReactionBlendSamples(animation, elapsed) {
+  const duration = animation.frameDurationMs || 1000 / animation.fps;
+  const position = clamp(elapsed / duration, 0, animation.frameCount - 1);
+  const index = Math.floor(position);
+  const fraction = animation.interpolateFrames ? position - index : 0;
+  const total = duration * animation.frameCount;
+  const fade = Math.min(Math.max(0, animation.transitionDurationMs || 0), total / 2);
+  const edge = fade ? clamp(Math.min(elapsed, total - elapsed) / fade, 0, 1) : 1;
+  const weight = edge * edge * (3 - 2 * edge);
+  return {
+    baseWeight: 1 - weight,
+    frames: [
+      { frameIndex: index, weight: weight * (1 - fraction) },
+      { frameIndex: Math.min(index + 1, animation.frameCount - 1), weight: weight * fraction }
+    ].filter(sample => sample.weight > 0)
+  };
+}
+
 function usesExternalWalkPose(player, definition) {
   return player?.id === "npc.bai_mitko" && definition?.animationSource === "external_animation_v1";
 }
@@ -660,6 +678,22 @@ export class Renderer {
     this.npcReactionPlayback.set(layer.id, reactionResult.state);
     const reacting = reactionResult.frameIndex != null;
     const talking = (speechTime != null || talkFrame != null) && this.game.assets.isLoaded(talkImage);
+    const stationaryImage = layer.stationaryLowerBody && layer.animation
+      ? this.game.assets.getSceneImage(scene.id, layer.animation.asset) : null;
+    const stationarySample = this.game.assets.isLoaded(stationaryImage)
+      ? { animation: layer.animation, image: stationaryImage, frameIndex: layer.stationaryLowerBody.frameIndex } : null;
+    if (reacting && (reaction.interpolateFrames || reaction.transitionDurationMs > 0)) {
+      const blend = sceneReactionBlendSamples(reaction, reactionResult.state.elapsed);
+      const baseAnimation = talking ? layer.talkAnimation : layer.animation;
+      const baseImage = talking ? talkImage : this.game.assets.getSceneImage(scene.id, baseAnimation?.asset);
+      if (baseAnimation && this.game.assets.isLoaded(baseImage)) {
+        const baseFrame = talking && talkFrame != null ? talkFrame
+          : sceneLayerAnimationFrame(baseAnimation, talking ? speechTime : this.game.lastTime || 0);
+        const samples = blend.frames.map(sample => ({ ...sample, animation: reaction, image: reactionImage }));
+        if (blend.baseWeight > 0) samples.push({ animation: baseAnimation, image: baseImage, frameIndex: baseFrame, weight: blend.baseWeight });
+        if (this.drawSceneAnimationSamples(layer, samples, stationarySample)) return;
+      }
+    }
     const animation = reacting ? reaction : talking ? layer.talkAnimation : layer.animation;
     const animationImage = reacting ? reactionImage : talking ? talkImage : animation?.asset
       ? this.game.assets.getSceneImage(scene.id, animation.asset)
@@ -667,20 +701,10 @@ export class Renderer {
     if (animation && this.game.assets.isLoaded(animationImage)) {
       const frameIndex = reacting ? reactionResult.frameIndex : talking && talkFrame != null ? talkFrame
         : sceneLayerAnimationFrame(animation, talking ? speechTime : this.game.lastTime || 0);
+      if (stationarySample && this.drawSceneAnimationSamples(layer,
+        [{ animation, image: animationImage, frameIndex, weight: 1 }], stationarySample)) return;
       const source = sceneLayerAnimationSourceRect(animation, frameIndex);
-      const rect = this.sceneLayerRect(layer, { naturalWidth: source.w, naturalHeight: source.h });
-      // Register an alternate crop against the approved idle coordinate system,
-      // keeping the same scale and anchor without clipping its animated bounds.
-      if (animation.registrationBounds) {
-        const bounds = animation.registrationBounds;
-        const reference = this.sceneLayerRect(layer, { naturalWidth: bounds.w, naturalHeight: bounds.h });
-        const scaleX = reference.w / bounds.w;
-        const scaleY = reference.h / bounds.h;
-        rect.x = reference.x + (animation.contentBounds.x - bounds.x) * scaleX;
-        rect.y = reference.y + (animation.contentBounds.y - bounds.y) * scaleY;
-        rect.w = source.w * scaleX;
-        rect.h = source.h * scaleY;
-      }
+      const rect = this.sceneAnimationDrawRect(layer, animation, source);
       this.ctx.drawImage(
         animationImage,
         source.x,
@@ -697,6 +721,95 @@ export class Renderer {
     if (!this.game.assets.isLoaded(fallbackImage)) return;
     const rect = this.sceneLayerRect(layer, fallbackImage);
     this.ctx.drawImage(fallbackImage, rect.x, rect.y, rect.w, rect.h);
+  }
+
+  sceneAnimationDrawRect(layer, animation, source) {
+    const rect = this.sceneLayerRect(layer, { naturalWidth: source.w, naturalHeight: source.h });
+    // All samples retain the same approved registration; interpolation never
+    // changes the anchor or selects per-frame bounds.
+    if (animation.registrationBounds) {
+      const bounds = animation.registrationBounds;
+      const reference = this.sceneLayerRect(layer, { naturalWidth: bounds.w, naturalHeight: bounds.h });
+      const scaleX = reference.w / bounds.w;
+      const scaleY = reference.h / bounds.h;
+      rect.x = reference.x + (animation.contentBounds.x - bounds.x) * scaleX;
+      rect.y = reference.y + (animation.contentBounds.y - bounds.y) * scaleY;
+      rect.w = source.w * scaleX;
+      rect.h = source.h * scaleY;
+    }
+    return rect;
+  }
+
+  drawSceneAnimationSamples(layer, samples, stationarySample = null) {
+    const document = this.canvas?.ownerDocument;
+    if (!document || !samples.length) return false;
+    const draws = samples.map(sample => {
+      const source = sceneLayerAnimationSourceRect(sample.animation, sample.frameIndex);
+      return { ...sample, source, rect: this.sceneAnimationDrawRect(layer, sample.animation, source) };
+    });
+    const stationarySource = stationarySample && sceneLayerAnimationSourceRect(stationarySample.animation, stationarySample.frameIndex);
+    const stationaryRect = stationarySample && this.sceneAnimationDrawRect(layer, stationarySample.animation, stationarySource);
+    const bounds = stationaryRect ? [...draws.map(d => d.rect), stationaryRect] : draws.map(d => d.rect);
+    const left = Math.floor(Math.min(...bounds.map(r => r.x)));
+    const top = Math.floor(Math.min(...bounds.map(r => r.y)));
+    const width = Math.ceil(Math.max(...bounds.map(r => r.x + r.w))) - left;
+    const height = Math.ceil(Math.max(...bounds.map(r => r.y + r.h))) - top;
+    this.sceneAnimationBlendBuffers ||= new Map();
+    let buffer = this.sceneAnimationBlendBuffers.get(layer.id);
+    if (!buffer) {
+      buffer = document.createElement("canvas");
+      this.sceneAnimationBlendBuffers.set(layer.id, buffer);
+    }
+    if (buffer.width !== width || buffer.height !== height) { buffer.width = width; buffer.height = height; }
+    const ctx = buffer.getContext("2d");
+    ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    // Add weighted premultiplied colors on a transparent buffer. Source-over
+    // would make two half-weight opaque frames only 75% opaque and show scenery
+    // through Baba; lighter preserves the weighted alpha sum instead.
+    ctx.globalCompositeOperation = "lighter";
+    for (const { image, source, rect, weight } of draws) {
+      ctx.globalAlpha = weight;
+      ctx.drawImage(image, source.x, source.y, source.w, source.h, rect.x - left, rect.y - top, rect.w, rect.h);
+    }
+    ctx.restore();
+    if (stationarySample) {
+      this.sceneAnimationStationaryBuffers ||= new Map();
+      let fixed = this.sceneAnimationStationaryBuffers.get(layer.id);
+      if (!fixed) { fixed = document.createElement("canvas"); this.sceneAnimationStationaryBuffers.set(layer.id, fixed); }
+      if (fixed.width !== width || fixed.height !== height) { fixed.width = width; fixed.height = height; }
+      const fixedCtx = fixed.getContext("2d");
+      fixedCtx.clearRect(0, 0, width, height);
+      fixedCtx.drawImage(stationarySample.image, stationarySource.x, stationarySource.y, stationarySource.w, stationarySource.h,
+        stationaryRect.x - left, stationaryRect.y - top, stationaryRect.w, stationaryRect.h);
+      const origin = this.sceneLayerRect(layer, { width: 1, height: 1 });
+      const end = origin.y + layer.stationaryLowerBody.fromY - top;
+      const start = end - layer.stationaryLowerBody.featherHeight;
+      this.sceneAnimationStationaryMasks ||= new Map();
+      let mask = this.sceneAnimationStationaryMasks.get(layer.id);
+      if (!mask) { mask = document.createElement("canvas"); this.sceneAnimationStationaryMasks.set(layer.id, mask); }
+      if (mask.width !== width || mask.height !== height) { mask.width = width; mask.height = height; }
+      const maskCtx = mask.getContext("2d"); maskCtx.clearRect(0, 0, width, height);
+      const gradient = maskCtx.createLinearGradient(0, start, 0, end);
+      gradient.addColorStop(0, "rgba(0,0,0,0)"); gradient.addColorStop(1, "rgba(0,0,0,1)");
+      maskCtx.fillStyle = gradient; maskCtx.fillRect(0, 0, width, height);
+      maskCtx.save(); maskCtx.globalCompositeOperation = "destination-out"; maskCtx.fillStyle = "black";
+      for (const polygon of layer.stationaryLowerBody.animatedCutouts || []) {
+        maskCtx.beginPath();
+        polygon.forEach(([x, y], i) => maskCtx[i ? "lineTo" : "moveTo"](origin.x + x - left, origin.y + y - top));
+        maskCtx.closePath(); maskCtx.fill();
+      }
+      maskCtx.restore();
+      fixedCtx.save(); fixedCtx.globalCompositeOperation = "destination-in";
+      fixedCtx.drawImage(mask, 0, 0); fixedCtx.restore();
+      // Remove animated pixels completely below the waist, then add the same
+      // approved idle-frame pixels every time. The narrow seam alone feathers.
+      ctx.save(); ctx.globalCompositeOperation = "destination-out";
+      ctx.drawImage(mask, 0, 0); ctx.globalCompositeOperation = "lighter";
+      ctx.drawImage(fixed, 0, 0); ctx.restore();
+    }
+    this.ctx.drawImage(buffer, left, top);
+    return true;
   }
 
   sceneLayerRect(layer, image) {

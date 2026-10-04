@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "taskId": "baba-delighted",
+  "character": "baba_stoyanka",
+  "candidate": "bs-delighted-seated-c02",
+  "branch": "feat/baba-stoyanka-seated-delighted",
+  "prompt": "Create one restrained three-second seated delighted approval reaction for Baba Stoyanka. Begin in the exact supplied seated pose. Her small mischievous smile warms gently, she gives one small approving nod, and the upper hand makes one very slight approving movement near its current resting position before settling back. Keep the other hand resting on the cane. Finish smoothly in the exact supplied resting pose so the game can resume her approved seated speech or idle. Warm, funny and slightly eccentric; subtle and believable, never exaggerated or grotesque. Remain seated throughout. Preserve her exact face, age, long nose, proportions, compact silhouette, gray hair wisps, floral red headscarf, cardigan, cat pin, skirt, socks, shoes, scratchy painted cartoon texture, colors, full-body framing and scale. Keep the cane, woven shopping bag, feet and seated body anchor fixed. Fixed camera and genuinely transparent background. No body drift, standing, turning toward the camera, large gestures, speaking or lip-sync, new props, extra limbs, costume changes, deformation, scenery, text, logo or watermark. One non-looping reaction; end at the original pose.",
+  "referenceApproved": true,
+  "reference": {
+    "path": "assets_src/characters/baba_stoyanka/external_animation_v1/references/approved-seated-v2-source.png",
+    "sha256": "09df105b2fc11784b8a68aa57bf59e0dd47dae181ad2412a92e439286fb5b7db"
+  },
+  "settings": {
+    "durationSeconds": 3,
+    "loop": false,
+    "trim": false,
+    "transparentBackground": true
+  }
+}

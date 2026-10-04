@@ -401,6 +401,147 @@
         "evidenceLocation": "C:/Users/SveBiS/Desktop/myStuff/2026_GitPro/extraFixes/08_BabaStoyanka/talk/",
         "approvalEvidence": "User replied Approval after actual-game recording, direct VPS preview, complete diff, publication sequence and exact cleanup targets were presented."
       }
+    },
+    "baba_delighted_seated_1": {
+      "label": "bs-delighted-seated-c02",
+      "slot": "Reaction",
+      "status": "runtime_approved",
+      "use": true,
+      "loop": false,
+      "description": "One restrained seated delighted-approval reaction on vote_confirmed entry in the village square, returning to Baba's active speech or approved idle.",
+      "trigger": {
+        "dialogueId": "dialogue.baba_stoyanka",
+        "nodeId": "vote_confirmed",
+        "reactionId": "delighted_approval",
+        "oncePer": "node_entry"
+      },
+      "source": {
+        "transport": "ludo-rest-api",
+        "storedPackage": "input/bs-delighted-seated-c02-api",
+        "nativeSourceFile": "input/bs-delighted-seated-c02-api/spritesheet.original.webp",
+        "nativeSourceSha256": "e35bcdbb27112f6f095e2e3d2a531dbe37f361a087fee6e140df8d3c1687be5b",
+        "preservedPngFile": "input/bs-delighted-seated-c02-api/spritesheet.png",
+        "preservedPngSha256": "2c1083c91790677eac079958ca29910bcc47e4a797a2a3e87cbbdb6d52e078b8",
+        "provenanceFile": "input/bs-delighted-seated-c02-api/provenance.json",
+        "provenanceSha256": "315fa5b331bf3241f678553b1087df0c595e5f4621ee7202459129b1b308178c",
+        "derivedAtlasMetadataFile": "input/bs-delighted-seated-c02-api/derived-atlas.json",
+        "derivedAtlasMetadataSha256": "8e3b10729e46e4558588f7bd50c3519ef793d05349c09b9d93f39ffc7572601a",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "65e1893cd678f0f05796e80c82d8f1b7d8dcc756f71bd86a0a8dfc3e0a552742"
+          },
+          {
+            "path": "assets_src/characters/baba_stoyanka/external_animation_v1/references/approved-seated-v2-source.png",
+            "role": "approved_generation_start_and_final_reference",
+            "sha256": "09df105b2fc11784b8a68aa57bf59e0dd47dae181ad2412a92e439286fb5b7db"
+          }
+        ]
+      },
+      "generation": {
+        "prompt": "Create one restrained three-second seated delighted approval reaction for Baba Stoyanka. Begin in the exact supplied seated pose. Her small mischievous smile warms gently, she gives one small approving nod, and the upper hand makes one very slight approving movement near its current resting position before settling back. Keep the other hand resting on the cane. Finish smoothly in the exact supplied resting pose so the game can resume her approved seated speech or idle. Warm, funny and slightly eccentric; subtle and believable, never exaggerated or grotesque. Remain seated throughout. Preserve her exact face, age, long nose, proportions, compact silhouette, gray hair wisps, floral red headscarf, cardigan, cat pin, skirt, socks, shoes, scratchy painted cartoon texture, colors, full-body framing and scale. Keep the cane, woven shopping bag, feet and seated body anchor fixed. Fixed camera and genuinely transparent background. No body drift, standing, turning toward the camera, large gestures, speaking or lip-sync, new props, extra limbs, costume changes, deformation, scenery, text, logo or watermark. One non-looping reaction; end at the original pose.",
+        "tool": "Ludo.ai REST API",
+        "model": "hydra",
+        "settings": {
+          "requestedDurationSeconds": 3,
+          "requestedFrames": 36,
+          "frameSize": -9,
+          "loop": false,
+          "crop": false,
+          "marginRatioMode": "auto",
+          "transparentBackground": true,
+          "augmentPrompt": true
+        },
+        "requestId": "acd84e95-39f9-4e76-968b-2549acbdd0d7",
+        "jobId": "9a16c530-44e0-4977-93ca-19b5f4d08fd1",
+        "resultId": null,
+        "resultUrl": null,
+        "generationCreatedAt": null,
+        "creditsSpent": 9,
+        "approvedMaxCredits": 9,
+        "generationMode": "guarded_rest_api"
+      },
+      "import": {
+        "frameCount": 36,
+        "frameWidth": 778,
+        "frameHeight": 1272,
+        "sheetWidth": 4668,
+        "sheetHeight": 7632,
+        "format": "RGBA8888",
+        "alphaRange": [
+          0,
+          255
+        ],
+        "returnedTotalDurationSeconds": 2.6666666666666665,
+        "timingOrigin": "derived_uniform_from_api_total_duration",
+        "derivedFrameDurationMsExact": 74.07407407407408,
+        "runtimeFrameDurationMs": 74.07407407407408,
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/baba_stoyanka/delighted-seated-v1.webp": "004e4095046eae8c600fc695284409463dab6c8a4ee7cdf83ecefd7a008411e8"
+        },
+        "runtime": {
+          "asset": "assets/chapter1/characters/baba_stoyanka/delighted-seated-v1.webp",
+          "sheetWidth": 2334,
+          "sheetHeight": 3816,
+          "frameWidth": 389,
+          "frameHeight": 636,
+          "contentBounds": {
+            "x": 0,
+            "y": 0,
+            "w": 389,
+            "h": 636
+          },
+          "registrationBounds": {
+            "x": 0,
+            "y": 0,
+            "w": 389,
+            "h": 636
+          },
+          "format": "alpha-webp",
+          "normalization": "The preserved 4668x7632 API PNG was resized to 2334x3816, retaining its 6x6 layout; native WebP, losslessly decoded PNG and derived atlas metadata remain unchanged.",
+          "oneShotStartFrame": 0,
+          "oneShotEndFrame": 35,
+          "frameDurationMs": 74.07407407407408,
+          "interpolateFrames": true,
+          "transitionDurationMs": 148,
+          "stationaryLowerBody": {
+            "reference": "approved_idle_frame_0",
+            "frameIndex": 0,
+            "fromY": 60,
+            "featherHeight": 6,
+            "animatedCutouts": [
+              [
+                [
+                  43.5,
+                  56
+                ],
+                [
+                  47.5,
+                  56
+                ],
+                [
+                  55.5,
+                  119
+                ],
+                [
+                  51.5,
+                  119
+                ]
+              ]
+            ]
+          }
+        }
+      },
+      "review": {
+        "candidateStatus": "runtime_approved",
+        "rejectionReason": null,
+        "reviewer": "Svetozar",
+        "decision": "approved_for_runtime",
+        "approvedAt": null,
+        "evidenceLocation": "/home/ZeShad/baim/target/ludo-review/baba-delighted/",
+        "approvalEvidence": "Exact bound guarded runtime/publication card after full BG/EN gameplay, complete patch and strict tests; applied only on owner approval."
+      }
     }
   }
 }

@@ -52,6 +52,21 @@ function runtimeLayer(layer, sourcePath) {
   if (layer.hiddenWhenItemOwned) result.hiddenWhenItemOwned = String(layer.hiddenWhenItemOwned);
   if (layer.hiddenWhenState) result.hiddenWhenState = String(layer.hiddenWhenState);
   if (layer.animation) result.animation = runtimeAnimation(layer.animation, sourcePath, layer.id);
+  if (layer.stationaryLowerBody) {
+    const fixed = layer.stationaryLowerBody;
+    if (!layer.animation || !Number.isInteger(fixed.frameIndex) || fixed.frameIndex < 0 || fixed.frameIndex >= layer.animation.frameCount
+      || !Number.isFinite(fixed.fromY) || fixed.fromY <= 0 || fixed.fromY >= layer.height
+      || !Number.isFinite(fixed.featherHeight) || fixed.featherHeight <= 0 || fixed.featherHeight > fixed.fromY) {
+      throw new Error(`${sourcePath} ${layer.id} stationaryLowerBody needs a valid idle frame and in-layer seam`);
+    }
+    if (fixed.animatedCutouts != null && (!Array.isArray(fixed.animatedCutouts) || fixed.animatedCutouts.length > 8
+      || fixed.animatedCutouts.some(p => !Array.isArray(p) || p.length < 3 || p.length > 16
+        || p.some(point => !Array.isArray(point) || point.length !== 2 || !point.every(Number.isFinite))))) {
+      throw new Error(`${sourcePath} ${layer.id} stationaryLowerBody animatedCutouts must contain finite polygons`);
+    }
+    result.stationaryLowerBody = { frameIndex: fixed.frameIndex, fromY: fixed.fromY, featherHeight: fixed.featherHeight,
+      ...(fixed.animatedCutouts ? { animatedCutouts: fixed.animatedCutouts } : {}) };
+  }
   if (layer.talkAnimation) {
     if (!layer.talkAnimation.npcId) throw new Error(`${sourcePath} ${layer.id} talkAnimation npcId is required`);
     result.talkAnimation = {
@@ -104,6 +119,12 @@ function runtimeAnimation(animation, sourcePath, layerId) {
     throw new Error(`${sourcePath} ${layerId} animation registrationBounds must contain finite x, y and positive w, h`);
   }
   const phaseKeys = ["loopStartFrame", "loopEndFrame", "returnStartFrame"];
+  if (animation.interpolateFrames != null && typeof animation.interpolateFrames !== "boolean") {
+    throw new Error(`${sourcePath} ${layerId} interpolateFrames must be boolean`);
+  }
+  if (animation.transitionDurationMs != null && (!Number.isFinite(animation.transitionDurationMs) || animation.transitionDurationMs < 0)) {
+    throw new Error(`${sourcePath} ${layerId} transitionDurationMs must be finite and nonnegative`);
+  }
   const phases = {};
   for (const key of phaseKeys) if (animation[key] != null) {
     if (!Number.isInteger(animation[key]) || animation[key] < 0 || animation[key] >= Number(animation.frameCount)) {
@@ -119,6 +140,8 @@ function runtimeAnimation(animation, sourcePath, layerId) {
   }
   return {
     ...phases,
+    ...(animation.interpolateFrames != null ? { interpolateFrames: animation.interpolateFrames } : {}),
+    ...(animation.transitionDurationMs != null ? { transitionDurationMs: animation.transitionDurationMs } : {}),
     ...(registration ? { registrationBounds: Object.fromEntries(["x", "y", "w", "h"].map((key) => [key, Number(registration[key])])) } : {}),
     asset: String(animation.asset),
     frameWidth: Math.floor(Number(animation.frameWidth)),

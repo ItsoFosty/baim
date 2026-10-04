@@ -257,6 +257,30 @@ export const sceneLayerGeometry = {
           "npcId": "npc.baba_stoyanka"
         },
         "reactionAnimations": {
+          "skeptical_disapproval": {
+            "interpolateFrames": true,
+            "transitionDurationMs": 148,
+            "registrationBounds": {
+              "x": 0,
+              "y": 0,
+              "w": 389,
+              "h": 636
+            },
+            "asset": "babaStoyankaSkepticalSeated",
+            "frameWidth": 389,
+            "frameHeight": 636,
+            "frameCount": 36,
+            "columns": 6,
+            "frameDurationMs": 78.70370370370371,
+            "loop": false,
+            "contentBounds": {
+              "x": 0,
+              "y": 0,
+              "w": 389,
+              "h": 636
+            },
+            "npcId": "npc.baba_stoyanka"
+          },
           "delighted_approval": {
             "interpolateFrames": true,
             "transitionDurationMs": 148,

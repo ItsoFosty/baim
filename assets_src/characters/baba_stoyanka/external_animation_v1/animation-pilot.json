@@ -542,6 +542,147 @@
         "evidenceLocation": "/home/ZeShad/baim/target/ludo-review/baba-delighted/",
         "approvalEvidence": "Exact bound guarded runtime/publication card after full BG/EN gameplay, complete patch and strict tests; applied only on owner approval."
       }
+    },
+    "baba_skeptical_seated_1": {
+      "label": "bs-skeptical-seated-c01",
+      "slot": "Reaction",
+      "status": "runtime_approved",
+      "use": true,
+      "loop": false,
+      "description": "One restrained seated skeptical-disapproval reaction on promise entry in the village square, returning to Baba's active speech or approved idle.",
+      "trigger": {
+        "dialogueId": "dialogue.baba_stoyanka",
+        "nodeId": "promise",
+        "reactionId": "skeptical_disapproval",
+        "oncePer": "node_entry"
+      },
+      "source": {
+        "transport": "ludo-rest-api",
+        "storedPackage": "input/bs-skeptical-seated-c01-api",
+        "nativeSourceFile": "input/bs-skeptical-seated-c01-api/spritesheet.original.webp",
+        "nativeSourceSha256": "13c99da9a917ee749e165deb8a3a83d72acb291d1c3ec44472d0a96933f47112",
+        "preservedPngFile": "input/bs-skeptical-seated-c01-api/spritesheet.png",
+        "preservedPngSha256": "7427d50a7af3fc8fc120563a30c8885ca857e6d461273a69346250824846a43b",
+        "provenanceFile": "input/bs-skeptical-seated-c01-api/provenance.json",
+        "provenanceSha256": "9a1135b0bdc89bd581ce3bfed19e87869907de9977f021a54b3dfb5a78b642ac",
+        "derivedAtlasMetadataFile": "input/bs-skeptical-seated-c01-api/derived-atlas.json",
+        "derivedAtlasMetadataSha256": "b332a5a61baf62430655252d75fa1a9057da0ee0a07e0d9019490318214bef72",
+        "references": [
+          {
+            "path": "assets/chapter1/characters/baba_stoyanka/seated-v2.png",
+            "role": "approved_runtime_identity_and_pose_reference",
+            "sha256": "65e1893cd678f0f05796e80c82d8f1b7d8dcc756f71bd86a0a8dfc3e0a552742"
+          },
+          {
+            "path": "assets_src/characters/baba_stoyanka/external_animation_v1/references/approved-seated-v2-source.png",
+            "role": "approved_generation_start_and_final_reference",
+            "sha256": "09df105b2fc11784b8a68aa57bf59e0dd47dae181ad2412a92e439286fb5b7db"
+          }
+        ]
+      },
+      "generation": {
+        "prompt": "Create one restrained three-second seated skeptical reaction for Baba Stoyanka. Begin in the exact approved seated reference pose. She raises one eyebrow, gives a very small amused disapproving head shake, then settles smoothly into the original resting pose. Her expression says she has heard this promise before: funny, eccentric and unimpressed, never furious or grotesque. Remain seated and anchored throughout. Preserve her exact face, age, nose, compact silhouette, gray hair wisps, red floral headscarf, cardigan, cat pin, skirt, socks, shoes, colors and scratchy painted cartoon texture. Keep hands close to their resting positions, cane, woven shopping bag, feet and seated body fixed. Fixed camera and scale; genuinely transparent background. No speech or lip-sync, body drift, standing, viewer-facing turn, large gestures, new props, extra limbs, deformation, scenery, text, logo or watermark. One non-looping reaction ending in the original pose.",
+        "tool": "Ludo.ai REST API",
+        "model": "hydra",
+        "settings": {
+          "requestedDurationSeconds": 3,
+          "requestedFrames": 36,
+          "frameSize": -9,
+          "loop": false,
+          "crop": false,
+          "marginRatioMode": "auto",
+          "transparentBackground": true,
+          "augmentPrompt": true
+        },
+        "requestId": "f66cc69a-aa0a-45a1-8f3e-4539cee73380",
+        "jobId": "69d1c57a-afba-4390-baa6-ad6d7cbcad9a",
+        "resultId": null,
+        "resultUrl": null,
+        "generationCreatedAt": null,
+        "creditsSpent": 9,
+        "approvedMaxCredits": 9,
+        "generationMode": "guarded_rest_api"
+      },
+      "import": {
+        "frameCount": 36,
+        "frameWidth": 778,
+        "frameHeight": 1272,
+        "sheetWidth": 4668,
+        "sheetHeight": 7632,
+        "format": "RGBA8888",
+        "alphaRange": [
+          0,
+          255
+        ],
+        "returnedTotalDurationSeconds": 2.8333333333333335,
+        "timingOrigin": "derived_uniform_from_api_total_duration",
+        "derivedFrameDurationMsExact": 78.70370370370371,
+        "runtimeFrameDurationMs": 78.70370370370371,
+        "derivedOutputHashes": {
+          "assets/chapter1/characters/baba_stoyanka/skeptical-seated-v1.webp": "8e519165c2b12fa1366fca13bfded5bbc21d232d7ed607f8961037dbd43d4f07"
+        },
+        "runtime": {
+          "asset": "assets/chapter1/characters/baba_stoyanka/skeptical-seated-v1.webp",
+          "sheetWidth": 2334,
+          "sheetHeight": 3816,
+          "frameWidth": 389,
+          "frameHeight": 636,
+          "contentBounds": {
+            "x": 0,
+            "y": 0,
+            "w": 389,
+            "h": 636
+          },
+          "registrationBounds": {
+            "x": 0,
+            "y": 0,
+            "w": 389,
+            "h": 636
+          },
+          "format": "alpha-webp",
+          "normalization": "The preserved 4668x7632 PNG was proportionally resampled to 2334x3816, retaining the 6x6 layout and encoded as lossless alpha WebP. Native WebP, pixel-equivalent PNG and derived atlas remain unchanged; spatial resampling is not lossless.",
+          "oneShotStartFrame": 0,
+          "oneShotEndFrame": 35,
+          "frameDurationMs": 78.70370370370371,
+          "interpolateFrames": true,
+          "transitionDurationMs": 148,
+          "stationaryLowerBody": {
+            "reference": "approved_idle_frame_0",
+            "frameIndex": 0,
+            "fromY": 60,
+            "featherHeight": 6,
+            "animatedCutouts": [
+              [
+                [
+                  43.5,
+                  56
+                ],
+                [
+                  47.5,
+                  56
+                ],
+                [
+                  55.5,
+                  119
+                ],
+                [
+                  51.5,
+                  119
+                ]
+              ]
+            ]
+          }
+        }
+      },
+      "review": {
+        "candidateStatus": "runtime_approved",
+        "rejectionReason": null,
+        "reviewer": "Svetozar",
+        "decision": "approved_for_runtime",
+        "approvedAt": null,
+        "evidenceLocation": "/home/ZeShad/baim/target/ludo-review/baba-skeptical/",
+        "approvalEvidence": "Exact bound guarded runtime/publication card after actual BG/EN gameplay, complete private patch/assets and full strict tests; this promotion applies only on owner approval."
+      }
     }
   }
 }

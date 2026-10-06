@@ -1,0 +1,25 @@
+{
+  "status": "runtime_approved",
+  "visualApproved": "2026-10-06",
+  "threadId": "01a10c10-8823-7d10-b394-d30a652d6417",
+  "approvedPreview": "bartender-behind-bar-v5",
+  "placement": {
+    "left": 733,
+    "top": 238,
+    "height": 230
+  },
+  "generatedOriginalSHA256": "4161db7f73daf979263860ab15df591cd68c9e14468293cad2dd24dc66a65735",
+  "cutoutSHA256": "6511704758fc78b045239dcbf69c4518709bdad0274de79558fac00f0d799152",
+  "crop": [
+    10,
+    18,
+    708,
+    2124
+  ],
+  "method": "Built-in imagegen; native crop retaining original alpha. Fictional bartender from owner appearance references. Still character, no animation generation.",
+  "preservedOriginalWaiter": {
+    "path": "assets/chapter1/characters/mehana_waiter/idle-v1.png",
+    "sha256": "c1c3ec8e93ab0bfc3e842c80746470bc5aaab149f4be0ab62badcda17bd54c26"
+  },
+  "publication": "Publication-v7 bundled scope approved by owner in focused chat; exact approval timestamp and execution receipts retained privately."
+}

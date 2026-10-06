@@ -14,6 +14,16 @@ await sharp(original).png().toFile(out+'/background-redesign-v1.png');
 for(const [key,name] of [['left','table-group-left-redesign-v1'],['right','table-group-right-redesign-v1'],['rearChair','rear-chairs-redesign-v1'],['counter','counter-front-redesign-v1']]){
  fs.writeFileSync(out+'/'+name+'.png',await clip(original,spec[key]));
 }
+// Restore the complete rear edge in front of the approved smaller bartender.
+// Pixels come from the accepted room, not generated wood or a moved counter.
+if(spec.counterRearEdgeRepair){
+ const r=spec.counterRearEdgeRepair;
+ if(r.canvas.width!==size.width||r.canvas.height!==size.height)throw Error('Counter repair canvas mismatch');
+ const counter=await sharp(out+'/counter-front-redesign-v1.png').ensureAlpha().raw().toBuffer();
+ const clean=await sharp(original).ensureAlpha().raw().toBuffer();
+ for(let y=r.y;y<r.y+r.height;y++)for(let x=r.x;x<r.x+r.width;x++){const i=(y*size.width+x)*4;for(let c=0;c<4;c++)counter[i+c]=clean[i+c];}
+ await sharp(counter,{raw:{...size,channels:4}}).png().toFile(out+'/counter-front-redesign-v1.png');
+}
 const old=await sharp(out+'/background.png').ensureAlpha().png().toBuffer();
 fs.writeFileSync(out+'/cellar-hatch-preserved-v1.png',await clip(old,spec.hatch,size));
 // The room omits fully opaque counter pixels. Its original one-pixel antialiased

@@ -42,5 +42,16 @@
   "rearChair": "M1206 572 L1209 555 Q1211 543 1227 543 L1294 548 Q1316 550 1318 584 L1270 580 Z M893 622 L891 565 Q891 554 908 549 L963 538 Q982 535 988 548 L998 591 L974 595 L971 555 L924 562 L927 611 Z",
   "counter": "M809 462 L906 452 L1099 453 L1111 451 L1186 453 L1288 455 L1294 481 L1288 652 L1274 709 L1255 712 L1255 694 L1048 670 L1035 677 L1023 673 L1021 660 L843 646 L837 649 L820 645 L822 599 L813 599 Z",
   "repairRegion": "M285 475 L799 475 L804 941 L280 941 Z M860 531 L1559 531 L1571 941 L855 941 Z",
-  "hatch": "M853 587 L1081 593 L1135 720 L823 705 Z"
+  "hatch": "M853 587 L1081 593 L1135 720 L823 705 Z",
+  "counterRearEdgeRepair": {
+    "canvas": {
+      "width": 1280,
+      "height": 720
+    },
+    "x": 720,
+    "y": 343,
+    "width": 105,
+    "height": 13,
+    "note": "Owner-approved v5: original clean counter RGB and opaque alpha restored over whole rear-edge/plank strip in front of bartender."
+  }
 }

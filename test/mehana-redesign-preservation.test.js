@@ -40,3 +40,15 @@ test('static chairs and floor retain every approved painting RGB pixel outside c
  const room=await sharp(assetManifest.scenes['scene.chapter1.mehana'].background).ensureAlpha().raw().toBuffer();
  for(let i=0;i<room.length;i+=4)if(room[i+3]!==0)assert.deepEqual(room.subarray(i,i+3),original.subarray(i,i+3));
 });
+
+test('approved smaller bartender remains static with the original waiter and dialogue preserved',async()=>{
+ const scene=chapter1.scenes.find(s=>s.id==='scene.chapter1.mehana');const layer=scene.foregroundLayers.find(l=>l.id==='layer.mehana.waiter_idle');
+ assert.deepEqual([layer.left,layer.top,layer.height],[733,238,230]);assert.equal(layer.animation,undefined);
+ assert.equal(scene.npcs.find(n=>n.id==='npc.mehana_waiter').dialogueId,'dialogue.mehana_waiter');
+ const {createHash}=await import('node:crypto');assert.equal(createHash('sha256').update(readFileSync('assets/chapter1/characters/mehana_waiter/idle-v1.png')).digest('hex'),'c1c3ec8e93ab0bfc3e842c80746470bc5aaab149f4be0ab62badcda17bd54c26');
+});
+test('entire approved rear-edge strip is clean opaque counter in front of the bartender',async()=>{
+ const map=assetManifest.scenes['scene.chapter1.mehana'];const counter=await sharp(map.mehanaCounterFront).ensureAlpha().raw().toBuffer();
+ const clean=await sharp('assets_src/chapter1/scenes/mehana/redesign-v1/accepted-room-v13.png').resize(1280,720,{fit:'fill'}).ensureAlpha().raw().toBuffer();
+ for(let y=343;y<356;y++)for(let x=720;x<825;x++){const i=(y*1280+x)*4;assert.equal(counter[i+3],255);assert.deepEqual(counter.subarray(i,i+3),clean.subarray(i,i+3));}
+});

@@ -75,6 +75,7 @@ test('Skeptical source and timing are bound; original approved assets, systems a
  const priorManifest=readFileSync(manifest,'utf8')
  .replace('      babaStoyankaSkepticalSeated: "assets/chapter1/characters/baba_stoyanka/skeptical-seated-v1.webp",\n','')
  .replace('background: "assets/chapter1/scenes/mehana/background-redesign-v1.png"','background: "assets/chapter1/scenes/mehana/background.png"')
+ .replace('mehana_waiter/idle-bartender-v2.png','mehana_waiter/idle-v1.png')
  .replace('table-group-left-redesign-v1.png','table-group-left-v2.png')
  .replace('table-group-right-redesign-v1.png','table-group-right-v2.png')
  .replace('      mehanaRearChairs: "assets/chapter1/scenes/mehana/rear-chairs-redesign-v1.png",\n','')

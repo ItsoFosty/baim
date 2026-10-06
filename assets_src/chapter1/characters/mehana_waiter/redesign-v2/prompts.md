@@ -1,0 +1,15 @@
+# Bartender generation prompts — recovered exact text
+
+Original prompt notes mistakenly contained `undefined`. These exact submitted strings were recovered from the retained focused-chat tool calls on2026-10-06. User references, generated originals and approved cutout remain unchanged.
+
+## v1
+
+Tool call: call_Xdn3ly2IqjACZsFhxJVG7DBf. Prompt SHA256: a8b56aef8baa79fa59e6fab43481c8835524134a01acc5246fc4d5aff0ad7565.
+
+Use case: stylized painted adventure-game character concept from photo references. Transform the two reference photos into an ORIGINAL FICTIONAL tavern bartender character, not a recognizable portrait of the photographed person. The third reference is ONLY the existing game's painted style and warm light. Create ONE full-body standing character isolated on transparent background, head and shoes fully inside canvas, no scenery, no floor or cast shadow, no text, no watermark. Skinny older man around60, narrow shoulders and slender arms, slightly stooped anxious posture. Long thin distinctive cartoon face with prominent slender nose, modest grey moustache, high balding crown with sparse grey hair at sides and a few wispy comb-over strands; make balding clearly visible. Nervous but believable expression: slightly raised brows, alert worried eyes, tight hesitant smile; a few subtle sweat beads and a slight sheen at forehead and temple. Do not make him grotesque or drenched. Old Bulgarian provincial tavern, 1990s. Off-white shirt with sleeves rolled to elbows, worn dark burgundy waistcoat hanging loosely on skinny torso, dark brown trousers, practical old shoes. He is three-quarter facing camera and slightly to the RIGHT, glancing toward a patron to the right. Both hands held around chest/waist level, nervously polishing an ordinary small empty glass with a white cloth; fingers anatomically clean, natural pose, elbows close to body. Match the room's hand-painted 2D humorous adventure style, warm golden upper-left light, textured brushwork, softened ink-like edges, expressive proportions and readable silhouette. Avoid photorealism,3D,pixel art, extra limbs, a bow tie or serving tray. This is a still PNG, not an animation or sprite sheet.
+
+## v2
+
+Tool call: call_E02uoq0VlVTpx5Fy6XQUnykE. Prompt SHA256: bbc3128b1d04484c7c09c086bf94436f56114c354246a8df482b90abc0efff2d.
+
+Precise edit of this approved fictional bartender cutout. Change ONLY his head angle and gaze: tilt his head/chin gently DOWN toward the small glass in his hands, with both eyes clearly looking down at that glass while he nervously polishes it. Preserve his identity, long thin nose, grey moustache, bald crown, sparse grey hair, worried eyebrows and subtle sweat beads. Preserve body, skinny proportions, hands, glass, polishing cloth, vest, shirt, trousers, shoes, pose, painted style, warm light and composition. Do not move or alter the glass/hands. Keep full body visible, return isolated character on genuinely transparent background; no background, glow, room, ground or cast shadow. The room placement will be changed separately; don't change his scale or position within this cutout. Still PNG only, no animation or text.

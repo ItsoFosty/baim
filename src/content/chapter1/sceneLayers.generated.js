@@ -351,9 +351,9 @@ export const sceneLayerGeometry = {
         "id": "layer.mehana.waiter_idle",
         "asset": "mehanaWaiterIdle",
         "zIndex": 50,
-        "top": 208,
-        "left": 658,
-        "height": 275
+        "top": 238,
+        "left": 733,
+        "height": 230
       },
       {
         "id": "layer.mehana.tony_fridge_seated",

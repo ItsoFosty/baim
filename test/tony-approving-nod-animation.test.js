@@ -36,7 +36,7 @@ test('contest result plays every approving-nod frame once and deliberate reentry
 
 test('approving nod waits for intro, preserves registration, freezes with menu and cancels on skip',()=>{
  const f=fixture(false);f.enter('contest_result');assert.equal(f.draw(16)[0],f.images[layer.talkAnimation.asset]);
- const d=f.draw(748),scale=244/198;assert.equal(frame(d),0);assert.deepEqual(d.slice(5),[861-4*scale,310-1*scale,nod.contentBounds.w*scale,nod.contentBounds.h*scale]);
+ const d=f.draw(748),scale=320 / 198;assert.equal(frame(d),0);assert.deepEqual(d.slice(5),[877-4*scale,296-1*scale,nod.contentBounds.w*scale,nod.contentBounds.h*scale]);
  f.game.menuOpen=true;assert.equal(frame(f.draw(2000)),0);f.game.menuOpen=false;assert.equal(frame(f.draw(2082)),1);
  f.enter('support_confirmed');assert.equal(f.draw(2098)[0],f.images[layer.talkAnimation.asset]);assert.equal(f.renderer.npcReactionPlayback.get(layer.id).phase,'idle');
 });

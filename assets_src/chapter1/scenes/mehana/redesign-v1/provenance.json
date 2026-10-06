@@ -1,0 +1,23 @@
+{
+  "status": "runtime_approved",
+  "approvedDirection": "mehana-approved-direction-scale-corrected-v1.png",
+  "approvedDirectionSHA256": "307af9357ad09de3628e09aa50d50242d64ad1f3dbafe4a3d8e884387abbf531",
+  "cleanPlateSHA256": "eefc287f126564d21a861e9f1d2a7969fcd7e2cc249380004711ddf74ae414a8",
+  "manualMasksSHA256": "f2fdbfadac1326b9a024ec7d8f0b8cf2c08e748f0d284410af591677c02f07d5",
+  "baseline": "c4eb300673b5eb9aee77b3d9c247ceafbb22b7e4",
+  "threadId": "01a10c10-8823-7d10-b394-d30a652d6417",
+  "method": "Owner-approved v13 room repairs: normal corner supports, marked chair remnants removed, lace curtains and brass foot rail removed. Continuous static background and masked foregrounds consumed from accepted-room-v13.png. Original approved direction retained unchanged.",
+  "waiter": "Owner approved smaller glass-focused fictional bartender v5 on2026-10-06; static PNG left733/top238/height230, original waiter retained. Counter rear-edge strip restored from accepted room pixels for full occlusion.",
+  "tony": "Owner accepted v14 renderer PNG and requested implementation: left877/top296/height320. All original animation sources, timing and hooks retained; click polygon and speech anchor follow registration.",
+  "generation": "No Ludo spending or paid API coding worker",
+  "publication": "Publication-v7 bundled scope approved by owner in focused chat; exact approval timestamp and execution receipts retained privately.",
+  "geometry": "1280x720. Current NPC/world/index HTML and PDF catalogs reflect the approved integrated candidate. Post-merge rebuilds use bounded runtime-only stages without regenerating tracked catalogs.",
+  "hatch": "Preserved source and stable retired interaction ID, but layer and hotspot disabled per owner visual removal request.",
+  "acceptedRoom": {
+    "path": "accepted-room-v13.png",
+    "sha256": "52fd891803279facd1523a941239d4dd746da47b49210c1dfd52f5c55efbf51d",
+    "ownerApproved": "2026-10-06",
+    "threadId": "01a10c10-8823-7d10-b394-d30a652d6417"
+  },
+  "visualApproved": "2026-10-06"
+}

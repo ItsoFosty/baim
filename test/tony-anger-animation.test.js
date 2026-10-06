@@ -36,7 +36,7 @@ test('challenge deferred plays every slow-anger frame once and deliberate reentr
 
 test('slow anger waits for intro, preserves registration, freezes with menu and cancels on skip',()=>{
  const f=fixture(false);f.enter('challenge_deferred');assert.equal(f.draw(16)[0],f.images[layer.talkAnimation.asset]);
- const d=f.draw(748),scale=244/198;assert.equal(frame(d),0);assert.deepEqual(d.slice(5),[861-3*scale,310+1*scale,anger.contentBounds.w*scale,anger.contentBounds.h*scale]);
+ const d=f.draw(748),scale=320 / 198;assert.equal(frame(d),0);assert.deepEqual(d.slice(5),[877-3*scale,296+1*scale,anger.contentBounds.w*scale,anger.contentBounds.h*scale]);
  f.game.menuOpen=true;assert.equal(frame(f.draw(2000)),0);f.game.menuOpen=false;assert.equal(frame(f.draw(2109)),1);
  f.enter('support_confirmed');assert.equal(f.draw(2125)[0],f.images[layer.talkAnimation.asset]);assert.equal(f.renderer.npcReactionPlayback.get(layer.id).phase,'idle');
 });

@@ -70,7 +70,18 @@ test('Skeptical source and timing are bound; original approved assets, systems a
  const source='assets_src/chapter1/scenes/village_square/layers.json';const layers=JSON.parse(readFileSync(source));
  delete layers.layers.find(l=>l.id===layer.id).reactionAnimations.skeptical_disapproval;
  assert.equal(sha(JSON.stringify(layers)),baseline.semantic.layers,'prior layers/geometry and delighted reaction remain unchanged');
- const manifest='src/content/art/assetManifest.js';assert.equal(sha(readFileSync(manifest,'utf8').replace('      babaStoyankaSkepticalSeated: "assets/chapter1/characters/baba_stoyanka/skeptical-seated-v1.webp",\n','')),baseline.source.manifest);
+ // Normalize only the explicit mehana redesign mappings; keep the frozen Baba baseline intact.
+ const manifest='src/content/art/assetManifest.js';
+ const priorManifest=readFileSync(manifest,'utf8')
+ .replace('      babaStoyankaSkepticalSeated: "assets/chapter1/characters/baba_stoyanka/skeptical-seated-v1.webp",\n','')
+ .replace('background: "assets/chapter1/scenes/mehana/background-redesign-v1.png"','background: "assets/chapter1/scenes/mehana/background.png"')
+ .replace('mehana_waiter/idle-bartender-v2.png','mehana_waiter/idle-v1.png')
+ .replace('table-group-left-redesign-v1.png','table-group-left-v2.png')
+ .replace('table-group-right-redesign-v1.png','table-group-right-v2.png')
+ .replace('      mehanaRearChairs: "assets/chapter1/scenes/mehana/rear-chairs-redesign-v1.png",\n','')
+ .replace('      mehanaCounterFront: "assets/chapter1/scenes/mehana/counter-front-redesign-v1.png",\n','')
+ .replace('      mehanaCellarHatch: "assets/chapter1/scenes/mehana/cellar-hatch-preserved-v1.png",\n','');
+ assert.equal(sha(priorManifest),baseline.source.manifest,'all mappings outside the named mehana redesign must preserve the fixed approved baseline');
  const election=chapter1.scenes.find(s=>s.id==='scene.chapter1.election_booth');assert.ok(election.foregroundLayers.every(l=>!l.reactionAnimations));
 });
 test('Skeptical blending preserves duration, total opacity and entry/exit endpoints',()=>{

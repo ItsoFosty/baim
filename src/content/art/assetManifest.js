@@ -36,10 +36,13 @@ export const assetManifest = {
       droppedBelongingsPile: "assets/chapter1/items/dropped-belongings-pile-v1.png"
     },
     "scene.chapter1.mehana": {
-      background: "assets/chapter1/scenes/mehana/background.png",
-      tableGroupLeft: "assets/chapter1/scenes/mehana/table-group-left-v2.png",
-      tableGroupRight: "assets/chapter1/scenes/mehana/table-group-right-v2.png",
-      mehanaWaiterIdle: "assets/chapter1/characters/mehana_waiter/idle-v1.png",
+      background: "assets/chapter1/scenes/mehana/background-redesign-v1.png",
+      tableGroupLeft: "assets/chapter1/scenes/mehana/table-group-left-redesign-v1.png",
+      tableGroupRight: "assets/chapter1/scenes/mehana/table-group-right-redesign-v1.png",
+      mehanaRearChairs: "assets/chapter1/scenes/mehana/rear-chairs-redesign-v1.png",
+      mehanaCounterFront: "assets/chapter1/scenes/mehana/counter-front-redesign-v1.png",
+      mehanaCellarHatch: "assets/chapter1/scenes/mehana/cellar-hatch-preserved-v1.png",
+      mehanaWaiterIdle: "assets/chapter1/characters/mehana_waiter/idle-bartender-v2.png",
       tonyFridgeSeated: "assets/chapter1/characters/tony_fridge/seated-v1.png",
       tonyFridgeIdleSeated: "assets/chapter1/characters/tony_fridge/idle-seated-v1.webp",
       tonyFridgeTalkSeated: "assets/chapter1/characters/tony_fridge/talk-seated-v1.webp",

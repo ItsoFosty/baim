@@ -808,8 +808,11 @@ test("Mehana starts Bai Mitko seated with waiter and table interactions", () => 
   assert.equal(scene.interactables.some((target) => target.id === "hotspot.mehana.table"), true);
   assert.equal(waiter.dialogueId, "dialogue.mehana_waiter");
   assert.equal(waiterLayer.asset, "mehanaWaiterIdle");
-  assert.equal(waiterLayer.height, 322);
-  assert.equal(waiterLayer.left, 653);
+  assert.equal(waiterLayer.height, 230);
+  assert.equal(waiterLayer.left, 733);
+  assert.equal(waiterLayer.top, 238);
+  const counter = scene.foregroundLayers.find(layer => layer.id === "layer.mehana.counter_front");
+  assert.ok(counter.zIndex < waiterLayer.zIndex, "counter must occlude waiter lower body");
   assert.equal(scene.npcs.some((npc) => npc.id === "npc.tony_fridge"), true);
 });
 
@@ -825,17 +828,20 @@ test("Mehana sideboard props, larger furniture, and moved cellar align with the 
   const newspaperLayer = scene.foregroundLayers.find((layer) => layer.id === "layer.mehana.newspaper_left_table");
   const cellar = scene.interactables.find((target) => target.id === "hotspot.mehana.cellar_hatch");
 
-  assert.equal(pointInPolygon({ x: 1155, y: 340 }, oil.polygon), true);
-  assert.equal(pointInPolygon({ x: 1220, y: 360 }, water.polygon), true);
+  assert.equal(pointInPolygon({ x: 1045, y: 310 }, oil.polygon), true);
+  assert.equal(pointInPolygon({ x: 1100, y: 320 }, water.polygon), true);
   assert.equal(pointInPolygon({ x: 575, y: 440 }, oil.polygon), false);
   assert.equal(pointInPolygon({ x: 950, y: 650 }, cellar.polygon), true);
   assert.equal(pointInPolygon({ x: 1160, y: 520 }, cellar.polygon), false);
   assert.equal(oilLayer.hiddenWhenState, "hasSunflowerOil");
   assert.equal(waterLayer.hiddenWhenState, "hasGlassOfWater");
-  assert.equal(leftTableLayer.width, 395);
-  assert.equal(rightTableLayer.width, 414);
-  assert.equal(tonyLayer.height, 244);
-  assert.equal(tonyLayer.top, 310);
+  assert.deepEqual([leftTableLayer.left, leftTableLayer.top], [0, 0]);
+  assert.equal(leftTableLayer.width, undefined);
+  assert.deepEqual([rightTableLayer.left, rightTableLayer.top], [0, 0]);
+  assert.equal(rightTableLayer.width, undefined);
+  assert.ok(rightTableLayer.zIndex < tonyLayer.zIndex, "table must occlude seated Tony");
+  assert.equal(tonyLayer.height, 320);
+  assert.equal(tonyLayer.top, 296);
   assert.deepEqual(tonyLayer.animation, {
     asset: "tonyFridgeIdleSeated",
     frameWidth: 384,
@@ -879,14 +885,14 @@ test("animated scene layers use exported timing, atlas coordinates, and a static
     }
   });
   renderer.drawSceneRasterLayer(scene, layer);
-  assert.deepEqual(calls[0].slice(0, 8), [animationImage, 500, 91, 152, 198, 861, 310, 187.3131313131313]);
-  assert.equal(calls[0][8], 244);
+  assert.deepEqual(calls[0].slice(0, 8), [animationImage, 500, 91, 152, 198, 877, 296, 152 * (320 / 198)]);
+  assert.equal(calls[0][8], 320);
 
   calls.length = 0;
   loaded.clear();
   loaded.add(fallbackImage);
   renderer.drawSceneRasterLayer(scene, layer);
-  assert.deepEqual(calls[0], [fallbackImage, 861, 310, 191.26586620926244, 244]);
+  assert.deepEqual(calls[0], [fallbackImage, 877, 296, 914 * (320 / 1166), 320]);
 });
 
 test("Bai Mitko keeps his calibrated entrance height in the apartment and Mehana", () => {

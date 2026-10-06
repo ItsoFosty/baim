@@ -352,16 +352,16 @@ export const sceneLayerGeometry = {
         "asset": "mehanaWaiterIdle",
         "zIndex": 50,
         "top": 238,
-        "left": 653,
-        "height": 322
+        "left": 733,
+        "height": 230
       },
       {
         "id": "layer.mehana.tony_fridge_seated",
         "asset": "tonyFridgeSeated",
         "zIndex": 35,
-        "top": 310,
-        "left": 861,
-        "height": 244,
+        "top": 296,
+        "left": 877,
+        "height": 320,
         "animation": {
           "asset": "tonyFridgeIdleSeated",
           "frameWidth": 384,
@@ -496,36 +496,34 @@ export const sceneLayerGeometry = {
       {
         "id": "layer.mehana.kaliakra_oil",
         "asset": "kaliakraOil",
-        "zIndex": 95,
-        "top": 297,
-        "left": 1145,
-        "height": 88,
+        "zIndex": 30,
+        "top": 273,
+        "left": 1033,
+        "height": 65,
         "hiddenWhenState": "hasSunflowerOil"
       },
       {
         "id": "layer.mehana.water_jug",
         "asset": "waterJug",
-        "zIndex": 95,
-        "top": 327,
-        "left": 1200,
-        "height": 70,
+        "zIndex": 30,
+        "top": 293,
+        "left": 1080,
+        "height": 50,
         "hiddenWhenState": "hasGlassOfWater"
       },
       {
         "id": "layer.mehana.table_group_left",
         "asset": "tableGroupLeft",
         "zIndex": 20,
-        "top": 369,
-        "left": 230,
-        "width": 395
+        "top": 0,
+        "left": 0
       },
       {
         "id": "layer.mehana.table_group_right",
         "asset": "tableGroupRight",
         "zIndex": 20,
-        "top": 372,
-        "left": 714,
-        "width": 414
+        "top": 0,
+        "left": 0
       },
       {
         "id": "layer.mehana.newspaper_left_table",
@@ -542,6 +540,30 @@ export const sceneLayerGeometry = {
         "top": 396,
         "left": 378,
         "height": 38,
+        "visibleWhenFlag": "tonyChallengeStarted",
+        "hiddenWhenState": "tonyVote"
+      },
+      {
+        "id": "layer.mehana.rear_chairs",
+        "asset": "mehanaRearChairs",
+        "zIndex": 40,
+        "top": 0,
+        "left": 0
+      },
+      {
+        "id": "layer.mehana.counter_front",
+        "asset": "mehanaCounterFront",
+        "zIndex": 45,
+        "top": 0,
+        "left": 0
+      },
+      {
+        "id": "layer.mehana.tony_competition_glass",
+        "asset": "mitkoCompetitionGlass",
+        "zIndex": 18,
+        "top": 431,
+        "left": 810,
+        "height": 34,
         "visibleWhenFlag": "tonyChallengeStarted",
         "hiddenWhenState": "tonyVote"
       }

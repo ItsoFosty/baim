@@ -34,9 +34,9 @@ test('waiting entry reacts once for all source frames; UI refresh keeps token, d
 });
 test('skepticism defers until initial left turn, preserves registration and returns only after close',()=>{
  const f=fixture(false);f.enter('challenge_waiting');assert.equal(f.draw(16)[0],f.images[layer.talkAnimation.asset]);
- const d=f.draw(748),scale=244/198;
+ const d=f.draw(748),scale=320 / 198;
  assert.equal(d[0],f.images[skeptical.asset]);assert.equal(frame(d),0);
- assert.deepEqual(d.slice(5),[861,310+5*scale,153*scale,192*scale]);
+ assert.deepEqual(d.slice(5),[877,296+5*scale,153*scale,192*scale]);
  f.dialogue.close();assert.equal(frame(f.draw(764)),22);assert.equal(f.draw(1325)[0],f.images[layer.animation.asset]);
  f.dialogue.start('dialogue.tony_fridge');assert.equal(frame(f.draw(1341)),0);f.game.speech=null;assert.equal(frame(f.draw(2341)),4);
 });
@@ -73,7 +73,7 @@ test('skeptical import matches source timing and hash; original dialogues/effect
  assert.equal(sha(candidate.import.runtime.asset),candidate.import.derivedOutputHashes[candidate.import.runtime.asset]);
  assert.equal(skeptical.frameCount,25);assert.equal(skeptical.frameDurationMs,118);assert.equal(skeptical.loop,false);
  assert.deepEqual(skeptical.registrationBounds,layer.animation.contentBounds);
- assert.deepEqual([layer.left,layer.top,layer.height,layer.zIndex],[861,310,244,35]);
+ assert.deepEqual([layer.left,layer.top,layer.height,layer.zIndex],[877,296,320,35]);
  assert.equal(dialogues['dialogue.tony_fridge'].nodes.challenge_waiting.choicesFrom,'start');
  assert.equal(dialogues['dialogue.tony_fridge'].nodes.challenge_waiting.effect,undefined);
  assert.equal(dialogues['dialogue.tony_fridge'].nodes.challenge_accepted.reactionId,'confident_chuckle');

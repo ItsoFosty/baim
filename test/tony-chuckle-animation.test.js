@@ -76,8 +76,8 @@ test('reaction waits for the left pose, freezes in menus and cancels pending or 
 test('renderer prioritizes chuckle, preserves registration, then resumes speech without another turn', () => {
   const f = fixture(); f.accept();
   let draw = f.draw(1016); assert.equal(draw[0], f.images.reaction); assert.equal(frame(draw), 0);
-  const scale = 244 / 198;
-  assert.deepEqual(draw.slice(5), [861, 310 + scale, 152 * scale, 196 * scale]);
+  const scale = 320 / 198;
+  assert.deepEqual(draw.slice(5), [877, 296 + scale, 152 * scale, 196 * scale]);
   draw = f.draw(1016 + 24 * 112); assert.equal(frame(draw), 24);
   draw = f.draw(3816); assert.equal(draw[0], f.images.talk); assert.ok(frame(draw) >= 4 && frame(draw) <= 21);
   draw = f.draw(5000); assert.equal(draw[0], f.images.talk);
@@ -127,7 +127,7 @@ test('fast acceptance defers chuckle until intro finishes and closes without a d
 });
 test('chuckle preloads only in Mehana and keeps approved idle/talk/reference and election assets intact', () => {
   assert.ok(imageAssetPaths(assetManifest.scenes[scene.id]).includes(assetManifest.scenes[scene.id].tonyFridgeChuckleSeated));
-  assert.deepEqual([layer.left, layer.top, layer.height, layer.zIndex], [861, 310, 244, 35]);
+  assert.deepEqual([layer.left, layer.top, layer.height, layer.zIndex], [877, 296, 320, 35]);
   assert.deepEqual(reaction.registrationBounds, layer.animation.contentBounds);
   assert.equal(reaction.loop, false);
   const election = chapter1.scenes.find(s => s.id === 'scene.chapter1.election_booth');

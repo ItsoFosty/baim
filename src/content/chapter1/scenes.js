@@ -521,6 +521,7 @@ const rawScenes = [
         nameKey: "hotspot.mehana.cellar_hatch.name",
         rect: { x: 815, y: 585, w: 270, h: 130 },
         lookKey: "look.mehana.cellar_hatch",
+        requirements: { disabled: true },
         useRules: [{ messageKey: "archive.cellar_retired", reject: true }]
       },
       {
@@ -555,8 +556,8 @@ const rawScenes = [
         id: "npc.tony_fridge",
         kind: "npc",
         nameKey: "npc.tony_fridge.name",
-        rect: { x: 862, y: 315, w: 145, h: 240 },
-        speechAnchor: { x: 934, y: 285 },
+        rect: { x: 878, y: 302, w: 190, h: 315 },
+        speechAnchor: { x: 973, y: 264 },
         itemRejectKey: "msg.inventory.npc_reject.tony_fridge",
         dialogueId: "dialogue.tony_fridge",
         lookKey: "look.npc.tony_fridge",

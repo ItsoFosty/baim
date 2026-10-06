@@ -38,7 +38,7 @@ test('Tony talk and return preserve idle scale and anchor with missing-asset fal
  const game={lastTime:0,npcSpeechAnimationTime:()=>speechTime,assets:{getSceneImage:(_id,alias)=>alias===a.asset?talk:alias===layer.animation.asset?idle:fallback,isLoaded:img=>loaded.has(img)}};
  const renderer=Object.assign(Object.create(Renderer.prototype),{ctx:{drawImage:(...args)=>calls.push(args)},game});
  renderer.drawSceneRasterLayer(mehana,layer);
- const scale=244/198,rect=[861-2*scale,310+2*scale,156*scale,198*scale];
+ const scale=320 / 198,rect=[877-2*scale,296+2*scale,156*scale,198*scale];
  assert.deepEqual(calls.at(-1).slice(5),rect);
  speechTime=8000;game.lastTime=8000;renderer.drawSceneRasterLayer(mehana,layer);assert.deepEqual(calls.at(-1).slice(5),rect);
  speechTime=null;game.lastTime=8016;renderer.drawSceneRasterLayer(mehana,layer);assert.equal(calls.at(-1)[0],talk);assert.equal(Math.floor(calls.at(-1)[2]/384)*5+Math.floor(calls.at(-1)[1]/384),22);
@@ -49,7 +49,7 @@ test('Tony talk and return preserve idle scale and anchor with missing-asset fal
  renderer.drawSceneRasterLayer(mehana,layer);assert.equal(calls.at(-1)[0],idle);
 });
 test('Tony is preloaded only in Mehana; approved reference, idle and election remain stable',()=>{
- assert.deepEqual([layer.left,layer.top,layer.height,layer.zIndex],[861,310,244,35]);
+ assert.deepEqual([layer.left,layer.top,layer.height,layer.zIndex],[877,296,320,35]);
  assert.deepEqual(layer.animation.contentBounds,{x:116,y:91,w:152,h:198});
  assert.deepEqual(a.registrationBounds,layer.animation.contentBounds);
  assert.equal(a.npcId,'npc.tony_fridge');assert.equal(a.frameDurationMs,187);

@@ -1,0 +1,143 @@
+{
+  "approvedBaseline": "c4eb300673b5eb9aee77b3d9c247ceafbb22b7e4",
+  "tony": {
+    "id": "layer.mehana.tony_fridge_seated",
+    "enabled": true,
+    "asset": "tonyFridgeSeated",
+    "output": "assets/chapter1/characters/tony_fridge/seated-v1.png",
+    "zIndex": 35,
+    "top": 310,
+    "left": 861,
+    "height": 244,
+    "animation": {
+      "asset": "tonyFridgeIdleSeated",
+      "frameWidth": 384,
+      "frameHeight": 384,
+      "frameCount": 25,
+      "columns": 5,
+      "frameDurationMs": 198,
+      "loop": true,
+      "contentBounds": {
+        "x": 116,
+        "y": 91,
+        "w": 152,
+        "h": 198
+      }
+    },
+    "talkAnimation": {
+      "registrationBounds": {
+        "x": 116,
+        "y": 91,
+        "w": 152,
+        "h": 198
+      },
+      "asset": "tonyFridgeTalkSeated",
+      "frameWidth": 384,
+      "frameHeight": 384,
+      "frameCount": 25,
+      "columns": 5,
+      "frameDurationMs": 187,
+      "loop": true,
+      "contentBounds": {
+        "x": 114,
+        "y": 93,
+        "w": 156,
+        "h": 198
+      },
+      "npcId": "npc.tony_fridge",
+      "loopStartFrame": 4,
+      "loopEndFrame": 21,
+      "returnStartFrame": 22
+    },
+    "reactionAnimations": {
+      "confident_chuckle": {
+        "asset": "tonyFridgeChuckleSeated",
+        "frameWidth": 384,
+        "frameHeight": 384,
+        "frameCount": 25,
+        "columns": 5,
+        "frameDurationMs": 112,
+        "loop": false,
+        "contentBounds": {
+          "x": 116,
+          "y": 92,
+          "w": 152,
+          "h": 196
+        },
+        "registrationBounds": {
+          "x": 116,
+          "y": 91,
+          "w": 152,
+          "h": 198
+        },
+        "npcId": "npc.tony_fridge"
+      },
+      "skeptical_glance": {
+        "asset": "tonyFridgeSkepticalSeated",
+        "frameWidth": 384,
+        "frameHeight": 384,
+        "frameCount": 25,
+        "columns": 5,
+        "frameDurationMs": 118,
+        "loop": false,
+        "contentBounds": {
+          "x": 116,
+          "y": 96,
+          "w": 153,
+          "h": 192
+        },
+        "registrationBounds": {
+          "x": 116,
+          "y": 91,
+          "w": 152,
+          "h": 198
+        },
+        "npcId": "npc.tony_fridge"
+      },
+      "approving_nod": {
+        "asset": "tonyFridgeApprovingNodSeated",
+        "frameWidth": 384,
+        "frameHeight": 384,
+        "frameCount": 36,
+        "columns": 6,
+        "frameDurationMs": 82,
+        "loop": false,
+        "contentBounds": {
+          "x": 112,
+          "y": 90,
+          "w": 155,
+          "h": 200
+        },
+        "registrationBounds": {
+          "x": 116,
+          "y": 91,
+          "w": 152,
+          "h": 198
+        },
+        "npcId": "npc.tony_fridge"
+      },
+      "slow_anger": {
+        "asset": "tonyFridgeAngerSeated",
+        "frameWidth": 384,
+        "frameHeight": 384,
+        "frameCount": 36,
+        "columns": 6,
+        "frameDurationMs": 109,
+        "loop": false,
+        "contentBounds": {
+          "x": 113,
+          "y": 92,
+          "w": 156,
+          "h": 199
+        },
+        "registrationBounds": {
+          "x": 116,
+          "y": 91,
+          "w": 152,
+          "h": 198
+        },
+        "npcId": "npc.tony_fridge"
+      }
+    }
+  }
+}

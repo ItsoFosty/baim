@@ -1,4 +1,6 @@
 import { accordionCue, footstepSurfaces } from "./audio.js";
+import { sceneAmbiences, repairedFountainAmbience } from "./soundscapes.js";
+import { accordionReactions } from "./accordionReactions.js";
 import { electionObjectGeometry } from "./sceneObjectGeometry.generated.js";
 import { electionScene } from "./election.js";
 import { archiveObjectGeometry } from "./sceneObjectGeometry.generated.js";
@@ -311,16 +313,6 @@ const rawScenes = [
         lookKey: "look.square.statue"
       },
       {
-        id: "hotspot.square.old_men_bench",
-        kind: "hotspot",
-        nameKey: "hotspot.old_men_bench.name",
-        rect: { x: 480, y: 365, w: 150, h: 70 },
-        lookKey: "look.square.old_men_bench",
-        lookRules: oldMenRules,
-        talkRules: oldMenRules,
-        useRules: oldMenRules
-      },
-      {
         id: "hotspot.square.election_notice",
         kind: "hotspot",
         nameKey: "hotspot.election_notice.name",
@@ -338,6 +330,18 @@ const rawScenes = [
       }
     ],
     npcs: [
+      {
+        id: "hotspot.square.old_men_bench",
+        // Keep the existing geometry/content ID; the occupants are now the target.
+        kind: "npc",
+        nameKey: "hotspot.old_men_bench.name",
+        rect: { x: 488, y: 322, w: 110, h: 99 },
+        speechAnchor: { x: 543, y: 312 },
+        lookKey: "look.square.old_men_bench",
+        lookRules: oldMenRules,
+        talkRules: oldMenRules,
+        useRules: oldMenRules
+      },
       {
         id: "npc.baba_stoyanka",
         kind: "npc",
@@ -538,8 +542,8 @@ const rawScenes = [
         id: "npc.mehana_waiter",
         kind: "npc",
         nameKey: "npc.mehana_waiter.name",
-        rect: { x: 733, y: 238, w: 76, h: 105 },
-        speechAnchor: { x: 773, y: 226 },
+        rect: { x: 727, y: 222, w: 88, h: 121 },
+        speechAnchor: { x: 773, y: 208 },
         itemRejectKey: "msg.inventory.npc_reject.mehana_waiter",
         dialogueId: "dialogue.mehana_waiter",
         lookKey: "look.npc.mehana_waiter",
@@ -578,7 +582,7 @@ const rawScenes = [
               state: { tonyVote: false }
             },
             effects: [{ type: "setFlag", key: "tonyDistracted" }],
-            soundCue: accordionCue, messageKey: "msg.accordion_tony"
+            soundCue: accordionCue, messageKey: "msg.accordion_tony", messageKeys: accordionReactions.tonyDistracted
           },
           {
             itemId: "item.glass_of_water",
@@ -779,7 +783,14 @@ const rawScenes = [
   electionScene
 ];
 
-export const scenes = applySceneObjectGeometry(wireRegistrationScenes(rawScenes.map(scene => ({ ...scene, footsteps: footstepSurfaces[scene.id] }))), {
+export const scenes = applySceneObjectGeometry(wireRegistrationScenes(rawScenes.map(scene => ({
+  ...scene,
+  footsteps: footstepSurfaces[scene.id],
+  ambience: scene.ambience || sceneAmbiences[scene.id],
+  ...(scene.id === "scene.chapter1.village_square" ? {
+    ambienceRules: [{ requirements: { flags: ["fountainRepaired"] }, ambience: repairedFountainAmbience }]
+  } : {})
+}))), {
   [electionObjectGeometry.sceneId]: electionObjectGeometry,
   [mayorOfficeObjectGeometry.sceneId]: mayorOfficeObjectGeometry,
   [archiveObjectGeometry.sceneId]: archiveObjectGeometry,

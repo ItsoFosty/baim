@@ -1,4 +1,4 @@
-// Additive campaign foundation. Later milestones connect posting to registration.
+import { paperRustle } from "./soundscapes.js";
 export const openingLookRules = [
   {
     requirements: { notFlags: ["chapter1OpeningHeard"], state: { chapter1Completed: false } },
@@ -19,7 +19,7 @@ export const kioskPaperRule = {
     { type: "setFlag", key: "kioskPamphletsIssued" },
     { type: "adjustState", key: "suspicion", amount: 4 }
   ],
-  messageKey: "campaign.kiosk.papers_ready"
+  soundCue: paperRustle, messageKey: "campaign.kiosk.papers_ready"
 };
 
 export const kioskPamphletRule = {
@@ -31,7 +31,7 @@ export const kioskPamphletRule = {
     { type: "addItem", itemId: "item.campaign_pamphlets" },
     { type: "setFlag", key: "kioskPamphletsIssued" }
   ],
-  messageKey: "campaign.kiosk.pamphlets_ready"
+  soundCue: paperRustle, messageKey: "campaign.kiosk.pamphlets_ready"
 };
 
 export const campaignPostedRule = {
@@ -53,7 +53,7 @@ export const campaignPosterRules = [
       { type: "setFlag", key: "campaignPosted" },
       { type: "startQuest", questId: "quest.chapter1.journalist" }
     ],
-    messageKey: "campaign.poster.posted_now"
+    soundCue: paperRustle, messageKey: "campaign.poster.posted_now"
   },
   { itemId: "item.campaign_pamphlets", ...campaignPostedRule }
 ];

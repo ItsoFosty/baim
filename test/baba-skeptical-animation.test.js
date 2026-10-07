@@ -52,7 +52,26 @@ test('Baba skeptical pauses in menus, cancels on close and never replays a late-
 test('Skeptical source and timing are bound; original approved assets, systems and localization are preserved',()=>{
  assert.equal(baseline.approvedBaseline,'a69ac4f2f8a164a6ac4859d9c6e8f61b2fb117dd');
  const pilotPath='assets_src/characters/baba_stoyanka/external_animation_v1/animation-pilot.json';
- for(const [p,expected]of Object.entries(baseline.files))assert.equal(sha(readFileSync(p)),expected,`approved baseline changed: ${p}`);
+ // Retain the original baseline hash; remove only the reviewed opt-in idle extension.
+ const preservedBytes=p=>{
+  if(p!=='src/engine/Renderer.js')return readFileSync(p);
+  let source=readFileSync(p,'utf8');
+  const hook="  sceneLayerIdleAnimation(scene, layer) {\n    const animation = layer.animation;\n    if (animation?.quietOnly !== true) return animation;\n    const npcId = animation.npcId;\n    const game = this.game;\n    if (!npcId || !scene.npcs?.some(npc => npc.id === npcId)\n      || game.paused || game.menuOpen || game.devHome || game.editMode\n      || game.content?.dialogues?.[game.dialogue?.current?.id]?.npcId === npcId\n      || game.npcSpeechBubble?.npcId === npcId\n      || game.npcSpeechAnimationTime?.(npcId) != null) return null;\n    return animation;\n  }\n\n";
+  for(const [added,original]of [[hook,''],['    const idleAnimation = this.sceneLayerIdleAnimation(scene, layer);\n',''],['const baseAnimation = talking ? layer.talkAnimation : idleAnimation;','const baseAnimation = talking ? layer.talkAnimation : layer.animation;'],['const animation = reacting ? reaction : talking ? layer.talkAnimation : idleAnimation;','const animation = reacting ? reaction : talking ? layer.talkAnimation : layer.animation;']]){
+   assert.equal(source.split(added).length,2,'exact reviewed quiet-idle extension required');source=source.replace(added,original);
+  }
+  return source;
+ };
+ // The 2026-10-07 merge explicitly retains Ubuntu's existing audio, accordion,
+ // and phone presentation work. Pin those exact files separately; preserve the
+ // original historical fixture and every artwork/animation hash unchanged.
+ const retainedUbuntuFiles={
+  'src/content/localization/bg.js':'1cb6105da0d08d0d49c5d46660d0980ce464e577ecaf019a2687d56abe5becf1',
+  'src/content/localization/en.js':'4b12f43b6fc0b61d045a5aa30c38c4c15a42c694cadcaeb0ef8d75f629efbc39',
+  'src/engine/AudioSystem.js':'2a3154b6cc4b98cb5be644857428b25c60ca604399afc3fbdd84c5f76f19f26c',
+  'src/engine/Game.js':'d7b20d2a4a29b266e0d0e513488d205b572b2e4d91145fa3adcbde0964635691'
+ };
+ for(const [p,expected]of Object.entries(baseline.files))assert.equal(sha(preservedBytes(p)),retainedUbuntuFiles[p]??expected,`approved baseline changed: ${p}`);
  const pilot=JSON.parse(readFileSync(pilotPath));
  const candidate=pilot.animations.baba_skeptical_seated_1;delete pilot.animations.baba_skeptical_seated_1;
  assert.equal(sha(JSON.stringify(pilot)),baseline.semantic.pilot,'all prior Baba animation records must remain unchanged');
@@ -66,7 +85,7 @@ test('Skeptical source and timing are bound; original approved assets, systems a
  assert.equal(reaction.loop,false);assert.equal(reaction.interpolateFrames,true);assert.equal(reaction.transitionDurationMs,148);
  assert.deepEqual([layer.left,layer.top,layer.height,layer.zIndex],[325,330,122,90]);
  assert.equal(assetManifest.scenes[scene.id].babaStoyankaSkepticalSeated,candidate.import.runtime.asset);
- const fountain='src/content/chapter1/fountain.js';assert.equal(sha(readFileSync(fountain,'utf8').replace(', reactionId: "skeptical_disapproval"','')),baseline.source.fountain);
+ const fountain='src/content/chapter1/fountain.js';assert.equal(sha(withoutRetainedFountainAudio(readFileSync(fountain,'utf8')).replace(', reactionId: "skeptical_disapproval"','')),baseline.source.fountain);
  const source='assets_src/chapter1/scenes/village_square/layers.json';const layers=JSON.parse(readFileSync(source));
  delete layers.layers.find(l=>l.id===layer.id).reactionAnimations.skeptical_disapproval;
  assert.equal(sha(JSON.stringify(layers)),baseline.semantic.layers,'prior layers/geometry and delighted reaction remain unchanged');
@@ -89,3 +108,11 @@ test('Skeptical blending preserves duration, total opacity and entry/exit endpoi
  for(let t=0;t<duration;t+=4.9){const s=sceneReactionBlendSamples(reaction,t);assert.ok(Math.abs(s.baseWeight+s.frames.reduce((n,f)=>n+f.weight,0)-1)<1e-12);assert.ok(s.frames.every(f=>f.frameIndex>=0&&f.frameIndex<36));}
  assert.equal(sceneReactionBlendSamples(reaction,0).baseWeight,1);assert.equal(sceneReactionBlendSamples(reaction,duration).baseWeight,1);
 });
+
+// Remove only the retained Ubuntu sound cues when checking historical puzzle bytes.
+function withoutRetainedFountainAudio(source) {
+ return source
+  .replace('import { waterStarts, oilPour } from "./soundscapes.js";\n', '')
+  .replace('soundCue: waterStarts, messageKey:', 'messageKey:')
+  .replace('soundCue: oilPour, messageKey:', 'messageKey:');
+}

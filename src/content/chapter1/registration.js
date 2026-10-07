@@ -1,4 +1,4 @@
-import { stampCue } from "./audio.js";
+import { stampImpact, paperRustle } from "./soundscapes.js";
 import { clerkArchiveChoices } from "./archive.js";
 const receipt = "item.suspicious_receipt";
 const diploma = "item.fake_diploma";
@@ -14,7 +14,7 @@ export const receiptHandover = {
     { type: "setFlag", key: "journalistHasReceipt" },
     { type: "setFlag", key: "journalistInOffice" },
     { type: "startQuest", questId: "quest.chapter1.journalist" }
-  ], messageKey: "registration.receipt_handover"
+  ], soundCue: paperRustle, messageKey: "registration.receipt_handover"
 };
 export const stampRequirements = {
   items: [diploma], flags: ["journalistHasReceipt", "journalistInOffice", "municipalityCredentialsAccepted"],
@@ -23,7 +23,7 @@ export const stampRequirements = {
 export const stampRule = {
   requirements: stampRequirements,
   effects: [{ type: "setFlag", key: "mayorDiplomaStamped" }],
-  soundCue: stampCue, messageKey: "registration.stamped"
+  soundCue: stampImpact, messageKey: "registration.stamped"
 };
 export const registerRule = {
   itemId: diploma,
@@ -34,7 +34,7 @@ export const registerRule = {
     { type: "setFlag", key: "journalistInOffice", value: false },
     { type: "completeQuest", questId: "quest.chapter1.fake_diploma" },
     { type: "startQuest", questId: "quest.chapter1.ballot_box" }
-  ], messageKey: "registration.registered"
+  ], soundCue: paperRustle, messageKey: "registration.registered"
 };
 const clerkRules = [registerRule,
   { itemId: diploma, requirements: { flags: ["candidateRegistrationStamped"] }, effects: [], messageKey: "registration.already_registered" },

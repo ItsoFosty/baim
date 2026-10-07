@@ -1,3 +1,4 @@
+import { accordionBg } from "./chapter1Accordion.js";
 import { electionBg } from "./chapter1Election.js";
 import { archiveBg } from "./chapter1Archive.js";
 import { registrationBg } from "./chapter1Registration.js";
@@ -5,7 +6,11 @@ import { campaignBg } from "./chapter1Campaign.js";
 import { fountainBg } from "./chapter1Fountain.js";
 
 export const bg = {
+  ...accordionBg,
   "ui.sound.volume": "Сила на звука",
+  "ui.phone.landscape_hint": "Завърти телефона настрани за по-голяма картина.",
+  "ui.ending.view_room": "Виж стаята",
+  "ui.ending.show_results": "Обратно към резултатите",
   "ui.sound.on": "Звук: включен",
   "ui.sound.off": "Звук: изключен",
 
@@ -127,7 +132,7 @@ export const bg = {
   "hotspot.fountain.name": "Фонтан",
   "hotspot.kiosk.name": "Вестникарска будка",
   "hotspot.statue.name": "Паметник",
-  "hotspot.old_men_bench.name": "Пейка на старците",
+  "hotspot.old_men_bench.name": "Двамата старци",
   "hotspot.election_notice.name": "Изборно съобщение",
   "hotspot.square.mehana_menu.name": "Менюто на механата",
   "hotspot.dropped_items.name": "Оставени вещи",
@@ -176,7 +181,7 @@ export const bg = {
   "look.square.kiosk": "Будката знае повече новини, отколкото продава.",
   "look.square.empty_envelope": "Празен плик, изпаднал от будката. Адрес няма, но самочувствието му е служебно.",
   "look.square.statue": "Паметник на местен герой от бюста нагоре. Отдолу бюджетът е свършил.",
-  "look.square.old_men_bench": "Пейката е единствената социология с постоянна извадка.",
+  "look.square.old_men_bench": "Двама старци, три мнения. Нито едно не е от днес.",
   "look.square.election_notice": "Пише, че изборите са прозрачни. Хартията обаче е леко мътна.",
   "look.square.mehana_menu": "Менюто е ламинирано, за да не попиват цените.",
   "look.dropped_items": "Торбата пази {count} изоставени решения. За разлика от Бай Митко, тя не губи нищо.",

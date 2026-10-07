@@ -1,7 +1,9 @@
-// Optional synthesized cues; no network assets or autoplay dependency.
-// Content supplies notes and ambience. Muting ramps the shared output to silence.
+import { foleySamples } from "./SoundSynthesis.js";
+
+// Content supplies recorded or synthesized cues and ambience.
+// All playback shares the same volume/mute output and requires audio enablement.
 export class AudioSystem {
-  constructor() { this.enabled = false; this.volume = 0.6; this.context = null; this.ambient = null; this.voices = new Set(); }
+  constructor() { this.enabled = false; this.volume = 0.6; this.context = null; this.ambient = null; this.voices = new Set(); this.buffers = new Map(); this.playRequest = 0; }
   setVolume(value) {
     this.volume = Number.isFinite(Number(value)) ? Math.max(0, Math.min(1, Number(value))) : 0.6;
     this.updateVolume();
@@ -11,6 +13,7 @@ export class AudioSystem {
   }
   async setEnabled(enabled) {
     this.enabled = Boolean(enabled);
+    if (!this.enabled) this.playRequest++;
     const Context = globalThis.AudioContext || globalThis.webkitAudioContext;
     if (!this.context && this.enabled && Context) {
       this.context = new Context();
@@ -23,10 +26,13 @@ export class AudioSystem {
     this.updateVolume();
   }
   play(cue) {
-    if (!this.enabled || !this.context || !cue?.notes) return;
+    if (!this.enabled || !this.context || (!cue?.notes && !cue?.src && !cue?.foley)) return;
+    const request = ++this.playRequest;
     // Restart a short phrase instead of stacking melodies on repeated clicks.
     for (const voice of this.voices) voice.stop();
     this.voices.clear();
+    if (cue.src) return this.playRecording(cue, request);
+    if (cue.foley) return this.playFoley(cue);
     const now = this.context.currentTime;
     const reed = cue.instrument === "accordion";
     if (reed && !this.reedWave) {
@@ -62,6 +68,61 @@ export class AudioSystem {
         oscillator.start(start); oscillator.stop(start + duration + 0.02);
       }
     }
+  }
+
+  async playRecording(cue, request) {
+    try {
+      let pending = this.buffers.get(cue.src);
+      if (!pending) {
+        pending = (async () => {
+          const response = await fetch(cue.src);
+          if (!response.ok) throw new Error(`Audio request failed: ${response.status}`);
+          return this.context.decodeAudioData(await response.arrayBuffer());
+        })();
+        this.buffers.set(cue.src, pending);
+        pending.catch(() => this.buffers.delete(cue.src));
+      }
+      const buffer = await pending;
+      // A newer cue or disabling audio cancels playback still waiting on a download.
+      if (!this.enabled || request !== this.playRequest) return;
+      const source = this.context.createBufferSource();
+      const gain = this.context.createGain();
+      source.buffer = buffer;
+      gain.gain.value = cue.volume ?? 1;
+      source.connect(gain);
+      gain.connect(this.master);
+      this.voices.add(source);
+      source.onended = () => {
+        this.voices.delete(source);
+        source.disconnect();
+        gain.disconnect();
+      };
+      source.start();
+    } catch (error) {
+      // Audio is optional; a failed download must not interrupt an interaction.
+      console.warn(`Could not play audio cue: ${cue.src}`, error);
+    }
+  }
+
+  playFoley(cue) {
+    const context = this.context;
+    const duration = Math.max(0.05, Math.min(3, Number(cue.duration) || 0.4));
+    const key = `${cue.foley}:${duration}:${context.sampleRate}`;
+    this.foleyBuffers ||= new Map();
+    if (!this.foleyBuffers.has(key)) {
+      const samples = foleySamples(cue.foley, context.sampleRate, duration);
+      const buffer = context.createBuffer(1, samples.length, context.sampleRate);
+      buffer.copyToChannel(samples, 0);
+      this.foleyBuffers.set(key, buffer);
+    }
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    source.buffer = this.foleyBuffers.get(key);
+    gain.gain.value = Math.max(0, Math.min(1, cue.volume ?? 0.6));
+    source.connect(gain); gain.connect(this.master);
+    this.voices.add(source);
+    source.onended = () => { this.voices.delete(source); source.disconnect(); gain.disconnect(); };
+    source.start();
   }
 
   resetFootsteps() { this.stepDistance = 0; }
@@ -108,15 +169,34 @@ export class AudioSystem {
   }
 
   setAmbience(definition) {
+    if (this.enabled && this.ambient && this.ambientDefinition === definition) return;
     if (this.ambient) { this.ambient.stop(); this.ambient.disconnect(); this.ambient = null; }
-    if (!this.enabled || !this.context || !definition?.frequency) return;
-    const oscillator = this.context.createOscillator();
+    this.ambientDefinition = definition;
+    if (!this.enabled || !this.context || (!definition?.frequency && !definition?.noise)) return;
+    const source = definition.noise ? this.context.createBufferSource() : this.context.createOscillator();
     const gain = this.context.createGain();
-    oscillator.type = "sine";
-    oscillator.frequency.value = definition.frequency;
+    let filter;
+    if (definition.noise) {
+      if (!this.ambientNoise) {
+        this.ambientNoise = this.context.createBuffer(1, this.context.sampleRate * 3, this.context.sampleRate);
+        const samples = this.ambientNoise.getChannelData(0);
+        for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
+      }
+      source.buffer = this.ambientNoise;
+      source.loop = true;
+      filter = this.context.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = definition.noise.cutoff || 600;
+      filter.Q.value = 0.5;
+      source.connect(filter); filter.connect(gain);
+    } else {
+      source.type = "sine";
+      source.frequency.value = definition.frequency;
+      source.connect(gain);
+    }
     gain.gain.value = definition.volume ?? 0.025;
-    oscillator.connect(gain); gain.connect(this.master); oscillator.start();
-    oscillator.onended = () => gain.disconnect();
-    this.ambient = oscillator;
+    gain.connect(this.master); source.start();
+    source.onended = () => { source.disconnect(); filter?.disconnect(); gain.disconnect(); };
+    this.ambient = source;
   }
 }

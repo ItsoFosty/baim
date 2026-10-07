@@ -1,3 +1,4 @@
+import { accordionEn } from "./chapter1Accordion.js";
 import { electionEn } from "./chapter1Election.js";
 import { archiveEn } from "./chapter1Archive.js";
 import { registrationEn } from "./chapter1Registration.js";
@@ -5,7 +6,11 @@ import { campaignEn } from "./chapter1Campaign.js";
 import { fountainEn } from "./chapter1Fountain.js";
 
 export const en = {
+  ...accordionEn,
   "ui.sound.volume": "Volume",
+  "ui.phone.landscape_hint": "Turn your phone sideways for a larger scene.",
+  "ui.ending.view_room": "View the room",
+  "ui.ending.show_results": "Back to results",
   "ui.sound.on": "Sound: on",
   "ui.sound.off": "Sound: off",
 
@@ -127,7 +132,7 @@ export const en = {
   "hotspot.fountain.name": "Fountain",
   "hotspot.kiosk.name": "News Kiosk",
   "hotspot.statue.name": "Statue",
-  "hotspot.old_men_bench.name": "Old Men Bench",
+  "hotspot.old_men_bench.name": "The Two Old Men",
   "hotspot.election_notice.name": "Election Notice",
   "hotspot.square.mehana_menu.name": "Mehana Menu",
   "hotspot.dropped_items.name": "Dropped Belongings",
@@ -176,7 +181,7 @@ export const en = {
   "look.square.kiosk": "The kiosk knows more news than it sells.",
   "look.square.empty_envelope": "An empty envelope fallen from the kiosk. No address, but plenty of official confidence.",
   "look.square.statue": "A monument to a local hero from the bust upward. Below that, the budget ran out.",
-  "look.square.old_men_bench": "The bench is the only polling institute with a permanent sample.",
+  "look.square.old_men_bench": "Two old men, three opinions. None formed today.",
   "look.square.election_notice": "It says the election is transparent. The paper looks slightly cloudy.",
   "look.square.mehana_menu": "The menu is laminated so the prices cannot soak away.",
   "look.dropped_items": "The bag holds {count} abandoned decisions. Unlike Bai Mitko, it loses nothing.",

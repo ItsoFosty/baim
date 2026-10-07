@@ -21,18 +21,18 @@
     {
       "id": "layer.election.baba",
       "asset": "babaSeated",
-      "left": 292,
-      "top": 320,
-      "height": 183,
+      "left": 318,
+      "top": 283,
+      "height": 140,
       "zIndex": 56,
       "visibleWhenTargetId": "npc.baba_stoyanka"
     },
     {
       "id": "layer.election.tony",
       "asset": "tonySeated",
-      "left": 420,
-      "top": 265,
-      "height": 243,
+      "left": 367,
+      "top": 266,
+      "height": 165,
       "zIndex": 56,
       "visibleWhenTargetId": "npc.tony_fridge"
     },

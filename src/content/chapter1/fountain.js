@@ -1,3 +1,4 @@
+import { waterStarts, oilPour } from "./soundscapes.js";
 const active = { chapter1Completed: false };
 const startQuest = { type: "startQuest", questId: "quest.chapter1.baba_vote" };
 const asked = { type: "setFlag", key: "babaFountainRequested" };
@@ -15,7 +16,7 @@ export const fountainUseRules = [
   {
     requirements: { flags: ["fountainValveOiled"], state: active },
     effects: [{ type: "setFlag", key: "fountainRepaired" }],
-    messageKey: "fountain.use.repaired"
+    soundCue: waterStarts, messageKey: "fountain.use.repaired"
   },
   {
     requirements: { flags: ["fountainValveTried"], state: active },
@@ -39,7 +40,7 @@ export const fountainItemRules = [
     requirements: { items: ["item.sunflower_oil"], notFlags: ["fountainRepaired"], state: active },
     effects: [diagnosed, clue, { type: "removeItem", itemId: "item.sunflower_oil" },
       { type: "setFlag", key: "fountainValveOiled" }],
-    messageKey: "fountain.oil.applied"
+    soundCue: oilPour, messageKey: "fountain.oil.applied"
   },
   ...["item.glass_of_water", "item.rakia", "item.village_wine"].map(itemId => ({
     itemId, requirements: { state: active, notFlags: ["fountainRepaired"] },

@@ -59,6 +59,7 @@ const types = {
   ".json": "application/json; charset=utf-8",
   ".webmanifest": "application/manifest+json; charset=utf-8",
   ".pdf": "application/pdf",
+  ".wav": "audio/wav",
   ".png": "image/png",
   ".webp": "image/webp",
   ".jpg": "image/jpeg",

@@ -12,9 +12,9 @@
       "asset": "mehanaWaiterIdle",
       "output": "assets/chapter1/characters/mehana_waiter/idle-bartender-v2.png",
       "zIndex": 50,
-      "top": 238,
-      "left": 733,
-      "height": 230
+      "top": 222,
+      "left": 727,
+      "height": 265
     },
     {
       "id": "layer.mehana.tony_fridge_seated",

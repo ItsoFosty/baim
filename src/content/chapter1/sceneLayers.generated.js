@@ -23,18 +23,18 @@ export const sceneLayerGeometry = {
         "id": "layer.election.baba",
         "asset": "babaSeated",
         "zIndex": 56,
-        "top": 320,
-        "left": 292,
-        "height": 183,
+        "top": 283,
+        "left": 318,
+        "height": 140,
         "visibleWhenTargetId": "npc.baba_stoyanka"
       },
       {
         "id": "layer.election.tony",
         "asset": "tonySeated",
         "zIndex": 56,
-        "top": 265,
-        "left": 420,
-        "height": 243,
+        "top": 266,
+        "left": 367,
+        "height": 165,
         "visibleWhenTargetId": "npc.tony_fridge"
       },
       {
@@ -351,9 +351,9 @@ export const sceneLayerGeometry = {
         "id": "layer.mehana.waiter_idle",
         "asset": "mehanaWaiterIdle",
         "zIndex": 50,
-        "top": 238,
-        "left": 733,
-        "height": 230
+        "top": 222,
+        "left": 727,
+        "height": 265
       },
       {
         "id": "layer.mehana.tony_fridge_seated",

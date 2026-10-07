@@ -1,4 +1,5 @@
 import { Game } from "./engine/Game.js";
+import { viewportLayout } from "./engine/ViewportLayout.js";
 
 const app = document.querySelector("#app");
 const canvas = document.querySelector("#game");
@@ -10,8 +11,20 @@ const installedDisplayMode = () =>
   window.navigator.standalone === true;
 
 function syncAppScale() {
-  const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
-  app?.style.setProperty("--app-scale", String(Math.max(0.01, scale)));
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const layout = viewportLayout(width, height);
+  const query = new URLSearchParams(window.location.search);
+  const gameplay = query.get("play") === "1" || query.has("scene") || query.has("review");
+  const developerView = ["edit", "animLab", "simpleAnimTest"].some(key => query.get(key) === "1");
+  app?.classList.toggle("compact-ui", layout.compact && gameplay && !developerView);
+  for (const [name, value] of Object.entries({
+    "app-scale": layout.scale,
+    "ui-inverse-scale": layout.inverseScale,
+    "ui-left": `${layout.uiLeft}px`, "ui-top": `${layout.uiTop}px`,
+    "viewport-width": `${width}px`, "viewport-height": `${height}px`,
+    "scene-top": `${layout.sceneTop}px`, "scene-height": `${layout.sceneHeight}px`
+  })) app?.style.setProperty(`--${name}`, String(value));
 }
 
 syncAppScale();
@@ -26,7 +39,7 @@ if (installedDisplayMode() && !document.fullscreenElement) {
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch((error) => {
+    navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).catch((error) => {
       console.warn("Web app service worker registration failed", error);
     });
   });

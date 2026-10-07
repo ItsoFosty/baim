@@ -1,12 +1,14 @@
-# 22 September runtime checkpoint
+# 30 September runtime checkpoint
 
 The election room now has a painted background, reused character art, table
 occlusion, conditional supporters and ballot-box placement, plus a new creditor
 pair. Every inventory item has an icon; diploma icons reflect stamp state. The
 journalist uses standing-v2 in the square, office and polling room. Earlier debug
 journalist/election-placeholder statements below are historical and superseded.
-See [browser review](chapter1-review-220926.md) for current coverage and remaining
-animation exports. New assets await human visual approval.
+See [production status](chapter1-production-status-300926.md) for current coverage,
+static finale/phone/sound changes and the remaining work. Priority 1 and all Ludo
+and animation work are deferred by the user. The current pass changes placement
+only; it creates no art and grants no new asset approval.
 
 # Runtime Art Coverage
 
@@ -19,19 +21,19 @@ animation exports. New assets await human visual approval.
   bentwood-chair table layers, seated Tony, the standing waiter, a separate newspaper, and separate
   sideboard-mounted oil/water gameplay props are integrated. The radio is intentionally baked into
   the background but has authored interaction geometry.
-- Municipality: its complete Chapter 1 interactions are integrated with the approved style-match
-  medium V1 painted background, independently positioned archive/register props, Penka's
+- Municipality: its complete Chapter 1 interactions use the painted Mayor-door background
+  variant, independently positioned archive/register props, Penka's
   chair/character/desk stack, and the
   security officer/table stack. This closes the municipality background and technical-integration
   milestones; later work is limited to scene polish and additional animation.
-- Election booth: its complete Chapter 1 interaction is functional as a geometry graybox and still
-  needs a painted background and foreground treatment.
-- Journalist: complete bilingual interview and square interaction are functional with an intentional
-  labelled debug silhouette pending final character art and animation.
+- Election booth: painted background, table occlusion, conditional seated supporters,
+  delivered box and ending creditors are integrated. Static seating now matches the
+  painted chairs; the result panel can be hidden to inspect the room.
+- Journalist: standing-v2 painted art is integrated in the square, office and polling room.
+  The bilingual interview is playable; additional animation is deferred.
 - Bai Mitko model sheet: locked identity source.
-- Baba Stoyanka: seated painted cutout integrated at the village-square bus stop; the layer is
-  calibrated to `122px`, approximately 20% smaller than Bai Mitko's calculated height at the bench
-  depth, and its dialogue hotspot is aligned with the visible character.
+- Baba Stoyanka: seated-v2 fallback with approved square idle/talk sequences and
+  aligned dialogue geometry. The polling room uses the static seated-v2 cutout.
 - Old Men Chorus: two seated painted characters now occupy the existing square bench,
   using its stable Look/Talk/Use hotspot and fountain clues. Static pair at `99px` height;
   character animation remains future work. The walk mask excludes the area
@@ -42,12 +44,12 @@ animation exports. New assets await human visual approval.
 - Bai Mitko runtime animation: the active Ludo.ai sprite-sheet path provides east walk
   start/loop/short/stop, six idle variants, three talk variants, rejection, and take. West mirrors
   east. North/south walk and additional look/use/puzzle actions remain deferred.
-- Inventory icons: icons integrated for accordion, unpaid bills, empty envelope, sunflower oil, and
-  water. The remaining items, including rakia and Shopska salad, use the text fallback.
+- Inventory icons: all fifteen items have icons, including food/drinks, evidence,
+  campaign papers, archive props and diploma stamp-state variants.
 - Apartment interaction geometry now includes the visible lower-left rakia bottle and treats the
   existing right-hand green sofa as a temporary sofa-bed recovery hotspot. Dedicated bed art is
   still pending approval.
-- UI skin: prototype.
+- UI skin: prototype, with compact phone controls/readable dialogue added for review.
 - Debug geometry: should remain hidden unless `Shift+G` or `?debugGeometry=1` is enabled.
 
 ## Direction Lock
@@ -93,7 +95,12 @@ The current village square stays as a runtime proof and layout reference, not fi
 - `assets/chapter1/scenes/mehana/newspaper-v3.png`
 - `assets/chapter1/characters/tony_fridge/seated-v1.png`
 - `assets/chapter1/characters/mehana_waiter/idle-v1.png`
-- `assets/chapter1/scenes/municipality/background-style-match-medium-v1.png`
+- `assets/chapter1/scenes/municipality/background-mayor-door-v1.png`
+- `assets/chapter1/scenes/mayor_office/background-v1.png`
+- `assets/chapter1/scenes/election_booth/background-v1.png`
+- `assets/chapter1/scenes/election_booth/table-occluder-v1.png`
+- `assets/chapter1/characters/journalist/standing-v2.png`
+- `assets/chapter1/characters/creditors/pair-v1.png`
 - `assets/chapter1/scenes/municipality/archive-cabinet-v6.png`
 - `assets/chapter1/scenes/municipality/candidate-register-v4.png`
 - `assets/chapter1/scenes/municipality/penka-chair-v1.png`
@@ -107,16 +114,17 @@ The current village square stays as a runtime proof and layout reference, not fi
 - `assets/chapter1/items/accordion.png`
 - `assets/chapter1/items/unpaid_bills.png`
 - `assets/chapter1/items/empty_envelope.png`
-- `assets/chapter1/characters/baba_stoyanka/seated-v1.png`
+- `assets/chapter1/characters/baba_stoyanka/seated-v2.png`
 
-## Remaining Placeholders
+## Remaining Production Work
 
-- Bai Mitko look/use and additional puzzle-specific animations
-- Mehana character animation beyond the current static Tony/waiter presentation
-- Election booth background
-- Journalist final character art and animation
-- UI skin
-- Remaining inventory item icons
+- Review static election seating and result/room presentation.
+- UI skin and physical-phone usability review.
+- Existing background/art direction refinements require separate human decisions.
+- Bai Mitko puzzle-specific performances and further NPC/finale animation are
+  deferred, including Ludo production. Tony already has a mehana idle sequence;
+  Baba already has square idle/talk sequences. Other static poses are intentional
+  interim coverage, not missing painted character assets.
 
 
 ## Archive close-up — 16 September

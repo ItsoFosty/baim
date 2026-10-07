@@ -1,5 +1,6 @@
 import { createReviewSaveSystem } from "./ReviewState.js";
 import { AudioSystem } from "./AudioSystem.js";
+import { MessageVariationSystem } from "./MessageVariationSystem.js";
 import { DialogueSystem } from "./DialogueSystem.js";
 import { applyEffects, firstMatchingRule, requirementsMet } from "./EffectSystem.js";
 import { resolveEnding } from "./EndingSystem.js";
@@ -240,12 +241,14 @@ export class Game {
 
   bindInput() {
     const resumeAudio = async () => {
-      if (this.state.audioEnabled && !this.audio.enabled) {
+      if (this.state.audioEnabled && (!this.audio.enabled || this.audio.context?.state !== "running")) {
         await this.audio.setEnabled(true);
-        this.audio.setAmbience(this.currentScene?.ambience);
+        this.audio.setAmbience(this.sceneAmbience());
       }
     };
-    window.addEventListener("pointerdown", resumeAudio);
+    // Unlock before canvas handlers can play a cue; also recover a context that
+    // the browser suspended while our saved sound preference stayed enabled.
+    window.addEventListener("pointerdown", resumeAudio, { capture: true });
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) this.audio.setEnabled(false);
     });
@@ -1096,7 +1099,7 @@ export class Game {
   }
 
   handleWorldClick(point) {
-    if (this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action") return;
+    if (this.state?.chapter1Completed || this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action") return;
     if (this.selectedInventoryItemId && !this.inventoryUseItemId) {
       this.selectedInventoryItemId = null;
       this.renderUi();
@@ -1130,7 +1133,7 @@ export class Game {
 
   updateHoveredTarget(point) {
     const blocked = this.menuOpen || this.paused || this.dialogue.current
-      || this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action";
+      || this.state?.chapter1Completed || this.sceneTransitionPending || this.player?.actionSequence || this.player?.animation === "action";
     const previousTargetId = this.hoveredTarget?.id || null;
     this.hoveredTarget = !blocked && point
       ? findTargetAt(this.currentScene, point, (candidate) => this.targetAvailable(candidate))
@@ -1530,9 +1533,16 @@ export class Game {
     return { state: this.state, inventory: this.inventory, quests: this.quests, now: () => Date.now() };
   }
 
+  sceneAmbience() {
+    if (this.state.chapter1Completed) return null;
+    return firstMatchingRule(this.currentScene?.ambienceRules, this.effectContext())?.ambience
+      || this.currentScene?.ambience;
+  }
+
   applyContentEffect(definition = {}, options = {}) {
     if (definition.endingTrigger) return this.requestEnding(definition.endingTrigger);
     applyEffects(definition.effects, this.effectContext());
+    this.audio?.setAmbience?.(this.sceneAmbience());
     this.audio?.play(definition.soundCue);
     const stateMessage = definition.messageByState;
     const stateValue = Number(this.state[stateMessage?.key]);
@@ -1540,7 +1550,10 @@ export class Game {
       (!Number.isFinite(Number(range.min)) || stateValue >= Number(range.min))
       && (!Number.isFinite(Number(range.max)) || stateValue <= Number(range.max))
     ));
-    const messageKey = matchingMessage?.messageKey || definition.messageKey;
+    const messageKeys = matchingMessage?.messageKeys || (!matchingMessage?.messageKey && definition.messageKeys);
+    const messageKey = messageKeys?.length
+      ? (this.messageVariations ??= new MessageVariationSystem()).next(messageKeys)
+      : matchingMessage?.messageKey || definition.messageKey;
     if (messageKey) {
       const message = this.t(messageKey);
       if (options.speakerTarget?.kind === "npc") this.setNpcSpeechMessage(options.speakerTarget, message);
@@ -1602,7 +1615,7 @@ export class Game {
       await this.assets.preloadSceneAssets(sceneId);
       if (this.sceneLoadToken !== sceneLoadToken) return;
       this.currentScene = this.sceneWithDroppedItems(this.content.scenes[sceneId]);
-      this.audio?.setAmbience(this.currentScene.ambience);
+      this.audio?.setAmbience(this.sceneAmbience());
       this.droppedItemsOpen = false;
       this.clearInventoryInteraction();
       this.state.currentSceneId = sceneId;
@@ -1641,6 +1654,7 @@ export class Game {
   }
 
   reset() {
+    this.endingReportHidden = false;
     this.state = this.saveSystem.reset();
     this.localization.setLanguage(this.state.language);
     this.currentScene = this.sceneWithDroppedItems(this.content.scenes[this.state.currentSceneId]);
@@ -1986,15 +2000,19 @@ export class Game {
       this.clearInventoryInteraction();
       this.performTargetAction(returnExit);
     }));
+    for (const verb of verbs) {
+      const control = button(this.t(`verb.${verb}`), () => this.selectVerb(verb));
+      control.classList.toggle("active", verb === this.selectedVerb);
+      control.setAttribute("aria-pressed", String(verb === this.selectedVerb));
+      right.appendChild(control);
+    }
     right.append(
-      button(this.t("verb.look"), () => this.selectVerb(VERBS.LOOK)),
-      button(this.t("verb.talk"), () => this.selectVerb(VERBS.TALK)),
-      button(this.t("verb.use"), () => this.selectVerb(VERBS.USE)),
-      button(this.t("verb.take"), () => this.selectVerb(VERBS.TAKE)),
       button("BG", () => this.setLanguage("bg")),
       button("EN", () => this.setLanguage("en"))
     );
-    bar.append(left, right);
+    const orientationHint = element("p", "orientation-hint");
+    orientationHint.textContent = this.t("ui.phone.landscape_hint");
+    bar.append(left, right, orientationHint);
     return bar;
   }
 
@@ -2158,6 +2176,18 @@ export class Game {
       || this.content.endings.find((candidate) => candidate.id === "ending.chapter1.loss");
     const panel = element("section", "panel ending-panel");
     panel.dataset.endingId = ending?.id || "ending.chapter1.loss";
+    const sceneToggle = button(this.t(this.endingReportHidden ? "ui.ending.show_results" : "ui.ending.view_room"), () => {
+      this.endingReportHidden = !this.endingReportHidden;
+      this.renderUi();
+      this.uiRoot.querySelector(".ending-scene-toggle")?.focus();
+    });
+    sceneToggle.classList.add("ending-scene-toggle");
+    sceneToggle.setAttribute("aria-expanded", String(!this.endingReportHidden));
+    if (this.endingReportHidden) {
+      panel.classList.add("ending-panel-collapsed");
+      panel.appendChild(sceneToggle);
+      return panel;
+    }
     panel.innerHTML = `
       <p class="ending-kicker">${escapeHtml(this.t("ending.chapter1.complete"))}</p>
       <h1>${escapeHtml(this.t(ending?.titleKey || "ending.chapter1.loss.title"))}</h1>
@@ -2200,6 +2230,7 @@ export class Game {
     const languages = element("div", "ending-languages");
     languages.append(button("BG", () => this.setLanguage("bg")), button("EN", () => this.setLanguage("en")));
     panel.appendChild(languages);
+    panel.appendChild(sceneToggle);
     return panel;
   }
 
@@ -2635,7 +2666,7 @@ node tools/build-external-runtime-staging.js</pre>
     const soundButton = button(this.t(this.state.audioEnabled ? "ui.sound.on" : "ui.sound.off"), async () => {
       this.state.audioEnabled = !this.state.audioEnabled;
       await this.audio.setEnabled(this.state.audioEnabled);
-      this.audio.setAmbience(this.state.audioEnabled ? this.currentScene?.ambience : null);
+      this.audio.setAmbience(this.state.audioEnabled ? this.sceneAmbience() : null);
       this.save();
       this.renderUi();
     });
@@ -2714,6 +2745,16 @@ node tools/build-external-runtime-staging.js</pre>
     const panel = element("section", "dialogue-panel");
     const dialogue = this.content.dialogues[this.dialogue.current?.id];
     const isNpcDialogue = Boolean(dialogue?.npcId);
+    if (node.lineKey && isNpcDialogue) {
+      const line = element("p", "compact-dialogue-line");
+      const npc = this.currentScene.npcs?.find(entry => entry.id === (node.npcId || dialogue.npcId));
+      const speaker = element("strong");
+      const text = this.t(firstMatchingRule(node.lineRules, this.effectContext())?.lineKey || node.lineKey);
+      // Several authored lines already include the speaker's name.
+      speaker.textContent = npc && !/^[^:]{1,40}:\s/u.test(text) ? `${this.t(npc.nameKey)}: ` : "";
+      line.append(speaker, text);
+      panel.appendChild(line);
+    }
     if (node.lineKey && !isNpcDialogue) {
       panel.classList.add("dialogue-panel-with-line");
       const line = document.createElement("p");

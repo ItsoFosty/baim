@@ -1,4 +1,5 @@
 import { sceneLayerGeometry } from "./sceneLayers.generated.js";
+import { paperRustle, jarClink } from "./soundscapes.js";
 const box = "item.ballot_box";
 const jar = "item.pickle_jar";
 const flag = key => ({ type: "setFlag", key });
@@ -14,11 +15,11 @@ export const archiveOpenRule = {
   requirements: { items: ["item.accordion"], flags: ["candidateRegistrationStamped", "archiveHandleInspected"], notFlags: ["archiveOpened"], state: unfinished },
   effects: [flag("archiveOpened")], messageKey: "archive.opened"
 };
-export const ledgerRule = { effects: [flag("archiveLedgerRead")], messageKey: "archive.ledger_text" };
+export const ledgerRule = { effects: [flag("archiveLedgerRead")], soundCue: paperRustle, messageKey: "archive.ledger_text" };
 export const jarExchangeRule = {
   itemId: jar,
   requirements: { items: [jar], flags: ["archiveOpened", "archiveLedgerRead", "candidateRegistrationStamped"], notFlags: ["archiveJarPlaced", "ballotBoxRecovered"], state: unfinished },
-  effects: [{ type: "removeItem", itemId: jar }, flag("archiveJarPlaced")], messageKey: "archive.exchanged"
+  effects: [{ type: "removeItem", itemId: jar }, flag("archiveJarPlaced")], soundCue: jarClink, messageKey: "archive.exchanged"
 };
 export const boxTakeRules = [
   { requirements: { notFlags: ["archiveLedgerRead"] }, messageKey: "archive.read_first", reject: true },

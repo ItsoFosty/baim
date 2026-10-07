@@ -1,4 +1,6 @@
-> **22 September checkpoint:** Election staging and all three outcome branches are implemented. Both supporters guarantee a win. See [current review and outcome contract](chapter1-review-220926.md), which supersedes earlier “next: election” notes and narrow-win rules below. Human visual/playtest review and dedicated Ludo.ai action exports remain.
+> **30 September scope:** See the [current production status](chapter1-production-status-300926.md). The user has completely deferred priority 1 and all Ludo/animation work. Static finale presentation, phone usability and initial sound polish are the active scope. The plan below is historical; it does not authorize work on deferred items.
+
+> **22 September checkpoint:** Election staging and all three outcome branches are implemented. Both supporters guarantee a win. See the [outcome contract](chapter1-review-220926.md), which supersedes earlier “next: election” notes and narrow-win rules below. Human visual/playtest review remains; dedicated animation exports are now deferred.
 
 # Chapter 1 completion plan — 16 September 2026
 

@@ -1,4 +1,4 @@
-import { paperCue } from "./audio.js";
+import { boxSetDown } from "./soundscapes.js";
 import { electionWalkGeometry } from "./walkMasks.generated.js";
 import { sceneLayerGeometry } from "./sceneLayers.generated.js";
 
@@ -17,7 +17,7 @@ export const deliverBoxRule = {
   itemId: "item.ballot_box",
   requirements: { ...electionEntryRequirements, items: ["item.ballot_box"], state: { ...electionEntryRequirements.state, ballotBoxDelivered: false } },
   effects: [{ type: "removeItem", itemId: "item.ballot_box" }, { type: "setState", key: "ballotBoxDelivered", value: true }],
-  soundCue: paperCue, messageKey: "election.delivered"
+  soundCue: boxSetDown, messageKey: "election.delivered"
 };
 const objections = [
   ["credentials", "electionCredentialsAnswered"],
@@ -94,9 +94,9 @@ export const electionScene = {
       dialogueId: electionDialogue.id, lookKey: "election.mayor_look" },
     { id: "npc.journalist", kind: "npc", nameKey: "npc.journalist.name", rect: { x: 570, y: 210, w: 90, h: 280 },
       talkKey: "election.reporter", lookKey: "look.npc.journalist" },
-    { id: "npc.baba_stoyanka", kind: "npc", nameKey: "npc.baba_stoyanka.name", rect: { x: 295, y: 317, w: 110, h: 190 },
+    { id: "npc.baba_stoyanka", kind: "npc", nameKey: "npc.baba_stoyanka.name", rect: { x: 318, y: 283, w: 78, h: 140 },
       requirements: { state: { babaStoyankaVote: true } }, talkKey: "election.baba", lookKey: "election.baba" },
-    { id: "npc.tony_fridge", kind: "npc", nameKey: "npc.tony_fridge.name", rect: { x: 420, y: 272, w: 135, h: 235 },
+    { id: "npc.tony_fridge", kind: "npc", nameKey: "npc.tony_fridge.name", rect: { x: 367, y: 266, w: 132, h: 165 },
       requirements: { state: { tonyVote: true } }, talkKey: "election.tony", lookKey: "election.tony" }
   ]
 };

@@ -187,3 +187,20 @@ The reusable renderer animates the stream without modifying the background asset
 Accordion audio follow-up: `soundCue.instrument: "accordion"` selects detuned reed
 ranks. Notes may be frequencies or `{ frequency, at, duration }` events for a short
 phrase. The saved `audioVolume` range is 0–1; the menu exposes it as 0–100%.
+
+## Sound presentation — 30 September
+
+`soundCue` also accepts a recorded `src` with optional `volume`, or a procedural
+`foley` kind (`paper`, `glass`, `wood`, `stamp`, `water`) with `duration` in seconds
+and `volume` from 0 to 1. Recorded cues take precedence over foley, then note cues.
+All use the existing master mute/volume path. Repeating a cue replaces the current
+cue; it does not stack copies. Foley buffers are cached and voices disconnect on completion.
+
+Scenes can supply `ambience: { noise: { cutoff: 600 }, volume: 0.06 }` for filtered
+air/room noise, or the existing `{ frequency: 100, volume: 0.02 }` for a quiet hum.
+Optional ordered `ambienceRules: [{ requirements, ambience }]` select the first
+matching definition, falling back to the scene's `ambience`. Rules are reevaluated
+after content effects and on scene entry/audio enablement. Reusing a definition
+keeps its current loop; changing it stops the old source. Completed chapters have
+no scene ambience. Content owns the definitions in `chapter1/soundscapes.js`;
+the engine contains no fountain-specific condition.

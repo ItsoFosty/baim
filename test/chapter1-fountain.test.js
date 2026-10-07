@@ -146,7 +146,7 @@ test("finished loss saves do not reactivate expired Baba business or allow refil
 
 test("the chorus Talk action uses the same authored clue as Look and Use", () => {
   const ctx = context();
-  const bench = square.interactables.find(target => target.id === "hotspot.square.old_men_bench");
+  const bench = square.npcs.find(target => target.id === "hotspot.square.old_men_bench");
   const game = Object.create(Game.prototype);
   Object.assign(game, ctx, { selectedVerb: VERBS.TALK, player: {},
     applyContentEffect(rule) { apply(rule, ctx); this.message = rule.messageKey; } });

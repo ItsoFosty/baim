@@ -1,37 +1,36 @@
 import { accordionCue } from "./audio.js";
+import { accordionReactions, accordionCharacterReactions } from "./accordionReactions.js";
 export const items = [
   {
     id: "item.accordion",
     nameKey: "item.accordion.name",
     descriptionKey: "item.accordion.desc",
-    selfUseRules: [{ soundCue: accordionCue, effects: [], messageKey: "msg.self.accordion" }],
+    selfUseRules: [{ soundCue: accordionCue, effects: [], messageKey: "msg.self.accordion", messageKeys: accordionReactions.self }],
     targetUseRules: [
       {
         targetIds: ["npc.baba_stoyanka"],
         requirements: { state: { babaStoyankaVote: false } },
         soundCue: accordionCue, effects: [],
-        messageKey: "msg.accordion_baba_before_vote"
+        messageKey: "msg.accordion_baba_before_vote", messageKeys: accordionReactions.babaBefore
       },
       {
         targetIds: ["npc.baba_stoyanka"],
         requirements: { state: { babaStoyankaVote: true } },
         soundCue: accordionCue, effects: [],
-        messageKey: "msg.accordion_baba_after_vote"
+        messageKey: "msg.accordion_baba_after_vote", messageKeys: accordionReactions.babaAfter
       },
-      {
-        targetIds: ["npc.mehana_waiter"],
-        soundCue: accordionCue, effects: [],
-        messageKey: "msg.accordion_kiro"
-      },
+      ...accordionCharacterReactions.map(rule => ({
+        ...rule, soundCue: accordionCue, effects: [], messageKey: rule.messageKeys[0]
+      })),
       {
         targetTags: ["animal"],
         soundCue: accordionCue, effects: [],
-        messageKey: "msg.accordion_animal"
+        messageKey: "msg.accordion_animal", messageKeys: accordionReactions.animal
       },
       {
         targetKinds: ["npc"],
         soundCue: accordionCue, effects: [],
-        messageKey: "msg.accordion_generic_npc"
+        messageKey: "msg.accordion_generic_npc", messageKeys: accordionReactions.fallback
       }
     ]
   },

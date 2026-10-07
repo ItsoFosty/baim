@@ -1,5 +1,9 @@
 # Chapter 1 browser review — 22 September 2026
 
+> Historical review. The [30 September production status](chapter1-production-status-300926.md)
+> records the current implementation and queue. Priority 1 and all Ludo/animation
+> work are deferred by the user. Later sections below describe their dated checkpoint.
+
 ## Implemented in this pass
 
 The polling room now has a painted background, the existing Mayor/reporter/Penka
@@ -79,7 +83,8 @@ contain walks, idles, talks, rejection, take and window opening; they do not con
 these dedicated performances. State changes and dialogue currently stage them.
 No alternative rig, fake animation sheet or pipeline replacement was introduced.
 
-NPC poses are static. First-time-player review and art approval remain human
+Election NPC poses are static. Baba's square idle/talk and Tony's mehana idle have
+since been integrated; additional animation is deferred. First-time-player review and art approval remain human
 milestones. Existing square style and optional UI/art restyling remain separate
 review work, not grounds to replace approved art automatically.
 
@@ -112,6 +117,10 @@ Sound opt-in creates a running audio context and polling-room ambience; mute
 works. Human art approval and first-time-player review remain outstanding.
 
 ## Accordion and volume follow-up
+
+The synthesized-accordion description below is historical. The current checkout
+uses `assets/chapter1/audio/accordion-vivid-v1.wav`, a seven-second recording.
+The 30 September presentation pass preserves that existing work.
 
 The accordion now plays an original 2.1-second synthesized reed melody when used
 on Mitko or performed for an NPC, including Tony's distraction. Detuned reed

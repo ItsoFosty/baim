@@ -1,6 +1,6 @@
-const SHELL_CACHE = "comrade-candidate-shell-v5";
-const RUNTIME_CACHE = "comrade-candidate-runtime-v1";
-const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./src/styles.css", "./src/main.js"];
+const SHELL_CACHE = "comrade-candidate-shell-v7";
+const RUNTIME_CACHE = "comrade-candidate-runtime-v2";
+const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./src/styles.css", "./src/presentation.css", "./src/main.js"];
 const RUNTIME_MANIFEST_PATH = "/target/runtime-assets/manifest.json";
 const RUNTIME_ASSET_PREFIX = "/target/runtime-assets/assets/";
 const MAX_SHELL_ENTRIES = 64;
@@ -30,7 +30,9 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(networkFirst(new Request(event.request, { cache: "no-store" }), SHELL_CACHE, MAX_SHELL_ENTRIES));
     return;
   }
-  event.respondWith(networkFirst(event.request, SHELL_CACHE, MAX_SHELL_ENTRIES));
+  // Revalidate mutable app code/assets against the server, not the browser's
+  // HTTP cache. Offline fallback still uses this release's service-worker cache.
+  event.respondWith(networkFirst(new Request(event.request, { cache: "no-store" }), SHELL_CACHE, MAX_SHELL_ENTRIES));
 });
 
 async function cacheFirst(request, cacheName, maxEntries) {
